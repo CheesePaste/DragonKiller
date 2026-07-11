@@ -9,7 +9,9 @@
 		"WorldSimplifierMixin",
 		"NoDragonHealingMixin",
 		"HungerDisableMixin",
-		"RLTickMixin"
+		"StaticDragonMixin",
+		"RLTickMixin",
+		"PlayerManagerAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

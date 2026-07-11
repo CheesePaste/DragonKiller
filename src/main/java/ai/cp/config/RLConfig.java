@@ -19,4 +19,9 @@ public class RLConfig {
     public static final double REWARD_DEATH = -20.0;
     public static final double REWARD_ENDERMAN_KILL = -5.0;
     public static final double REWARD_DRAGON_DEATH = 200.0;
+
+    // Approach & movement rewards (Phase 1)
+    public static final double REWARD_APPROACH = 0.05;   // per block closer to dragon
+    public static final double REWARD_SPRINT = 0.01;     // per tick while sprinting
+    public static final double REWARD_PROXIMITY = 0.1;   // per tick when within 10 blocks
 }

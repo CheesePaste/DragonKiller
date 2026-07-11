@@ -3,7 +3,7 @@
 	"package": "ai.cp.client.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"client": [
-		"ExampleClientMixin"
+		"NoPauseMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

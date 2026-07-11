@@ -33,10 +33,11 @@ src/main/java/ai/cp/
 │   └── RLConfig.java              # 配置：端口、种子、奖励系数
 ├── mixin/
 │   ├── FixedSeedMixin.java        # 固定世界种子 (12345)
-│   ├── EndSpawnMixin.java         # 末地出生 (30.5, 70, 30.5)
+│   ├── EndSpawnMixin.java         # 末地出生 + 破水晶 (Y=70)
 │   ├── EquipmentMixin.java        # 初始钻石装备
-│   ├── WorldSimplifierMixin.java  # 阻止末影人生成
-│   ├── NoDragonHealingMixin.java  # 龙不连接水晶回血
+│   ├── WorldSimplifierMixin.java   # 阻止末影人生成
+│   ├── NoDragonHealingMixin.java   # 龙不连接水晶回血
+│   ├── StaticDragonMixin.java     # 静态龙（无 AI，Phase 1）
 │   ├── HungerDisableMixin.java    # 禁用饥饿
 │   └── RLTickMixin.java           # Server tick 驱动 RL 循环
 └── rl/
@@ -54,6 +55,10 @@ train/
 │   ├── __init__.py
 │   ├── protocol.py                # Python TCP 客户端
 │   └── dragon_env.py              # Gymnasium Env (21 动作, 583 维观察)
+├── config.py                      # PPO 超参数配置
+├── train.py                       # SB3 PPO 训练入口
+├── watch.py                       # 已训练模型评估
+├── test_env.py                    # 环境连接闭环测试
 └── requirements.txt               # gymnasium, stable-baselines3, numpy, tensorboard
 ```
 
@@ -73,13 +78,26 @@ train/
 - [x] Python env wrapper (gymnasium, protocol)
 - [x] 构建通过 (`./gradlew build` SUCCESS)
 
-## Phase 2 下一步 — 基线训练
+## Phase 2 — 基线训练
 
 1. **启动 MC 客户端** (`./gradlew runClient`)，确认 TCP 5670 端口监听
-2. **Python 端测试**：用 `train/env/protocol.py` 连接、reset、step 循环验证闭环
-3. **单实例 PPO 训练**：写 `train/train.py`，用 SB3 PPO + DragonEnv
-4. **TensorBoard** 监控训练曲线
-5. **调参**：奖励系数、action_repeat、sticky_attack 根据训练效果调整
+2. **Python 端测试**：`python train/test_env.py` 连接、reset、step 循环验证闭环
+3. **单实例 PPO 训练**：`python train/train.py`，用 SB3 PPO + DragonEnv
+4. **TensorBoard**：`tensorboard --logdir logs` 监控训练曲线
+5. **评估模型**：`python train/watch.py --model models/best/best_model.zip`
+6. **调参**：奖励系数、action_repeat、sticky_attack 根据训练效果调整
+
+### Phase 2 已完成
+
+- [x] 修复 Java 端奖励 bug（玩家死亡不再错误获得 +200 屠龙奖励）
+- [x] 修复攻击距离 bug（`findClosestDragonPart` 超出 6 格返回 null）
+- [x] `StaticDragonMixin` — 取消 `tickMovement()`，龙冻结在龙巢不 AI
+- [x] 新增密集奖励：靠近龙 (+0.05/格)、疾跑 (+0.01/tick)、近距离 (+0.1/tick, <10格)
+- [x] `train/config.py` — PPO 超参数与环境配置
+- [x] `train/train.py` — SB3 PPO 训练流程（含 checkpoint、eval、TensorBoard 回调）
+- [x] `train/watch.py` — 加载已训练模型进行评估
+- [x] `train/test_env.py` — 环境连接闭环冒烟测试（obs 维度、action 空间、step 循环）
+- [x] 构建通过 (`./gradlew build` SUCCESS)
 
 ## 关键技术栈
 
