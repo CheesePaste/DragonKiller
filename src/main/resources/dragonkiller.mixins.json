@@ -11,7 +11,8 @@
 		"HungerDisableMixin",
 		"StaticDragonMixin",
 		"RLTickMixin",
-		"PlayerManagerAccessor"
+		"PlayerManagerAccessor",
+		"TickRateMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

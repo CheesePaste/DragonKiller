@@ -2,8 +2,8 @@ package ai.cp.config;
 
 public class RLConfig {
     public static final int TCP_PORT = 5670;
-    public static final int ACTION_REPEAT = 5;
-    public static final int STICKY_ATTACK = 10;
+    public static final int ACTION_REPEAT = 3;
+    public static final int STICKY_ATTACK = 3;
     public static final int EPISODE_TIMEOUT = 6000;
     public static final long WORLD_SEED = 12345L;
     public static final int HEIGHTMAP_RADIUS = 7;
