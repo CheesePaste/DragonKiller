@@ -101,8 +101,17 @@ public class RLTickHandler {
         }
 
         // Remove old bot if it exists
-        if (botPlayer != null && !botPlayer.isRemoved()) {
-            botPlayer.discard();
+        if (botPlayer != null) {
+            PlayerManager pm = srv.getPlayerManager();
+            PlayerManagerAccessor accessor = (PlayerManagerAccessor) pm;
+            accessor.getPlayers().remove(botPlayer);
+            accessor.getPlayerMap().remove(botPlayer.getUuid());
+            if (!botPlayer.isRemoved()) {
+                botPlayer.discard();
+            }
+            pm.sendToAll(new net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket(
+                java.util.Collections.singletonList(botPlayer.getUuid())
+            ));
         }
 
         botPlayer = new BotPlayer(srv, endWorld);
@@ -189,7 +198,12 @@ public class RLTickHandler {
         ActionParser.addFreezeTicks(RLConfig.ACTION_REPEAT); // Prevent immediate obs flood
         EnderDragonEntity dragon = ObservationBuilder.getDragon(endWorld);
         double dragonHealth = dragon != null ? dragon.getHealth() : 0;
-        double dragonDistance = dragon != null ? botPlayer.distanceTo(dragon) : 100.0;
+        double dragonDistance = 100.0;
+        if (dragon != null) {
+            double dx = botPlayer.getX() - dragon.getX();
+            double dz = botPlayer.getZ() - dragon.getZ();
+            dragonDistance = Math.sqrt(dx * dx + dz * dz);
+        }
         rewardCalc.reset(dragonHealth, botPlayer.getHealth(), dragonDistance);
         resetStats(dragonHealth);
 
@@ -262,7 +276,12 @@ public class RLTickHandler {
             e -> e.isAngry()
         ).size() > 0;
 
-        double dragonDistance = dragon != null ? botPlayer.distanceTo(dragon) : 100.0;
+        double dragonDistance = 100.0;
+        if (dragon != null) {
+            double dx = botPlayer.getX() - dragon.getX();
+            double dz = botPlayer.getZ() - dragon.getZ();
+            dragonDistance = Math.sqrt(dx * dx + dz * dz);
+        }
 
         // Compute dense reward
         double denseReward = rewardCalc.computeDense(

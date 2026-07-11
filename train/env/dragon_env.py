@@ -86,9 +86,9 @@ class DragonEnv(gym.Env):
         # ── Dragon (13) ──────────────────────────────────────────
         d = data["dragon"]
         dx, dy, dz = d["pos"]
-        vec.append(np.clip(dx / POS_BOUND, -1.0, 1.0))
-        vec.append(np.clip((dy - Y_MID) / Y_MID, -1.0, 1.0))
-        vec.append(np.clip(dz / POS_BOUND, -1.0, 1.0))
+        vec.append(np.clip((dx - px) / POS_BOUND, -1.0, 1.0))
+        vec.append(np.clip((dy - py) / POS_BOUND, -1.0, 1.0))
+        vec.append(np.clip((dz - pz) / POS_BOUND, -1.0, 1.0))
         dvx, dvy, dvz = d["velocity"]
         vec.append(np.clip(dvx / VEL_BOUND, -1.0, 1.0))
         vec.append(np.clip(dvy / VEL_BOUND, -1.0, 1.0))
@@ -99,9 +99,9 @@ class DragonEnv(gym.Env):
         vec.append(d["health"] / DRAGON_HEALTH_MAX)
         vec.append(hash(d["phase"]) % 100 / 100.0)
         tx, ty, tz = d["target"]
-        vec.append(np.clip(tx / POS_BOUND, -1.0, 1.0))
-        vec.append(np.clip((ty - Y_MID) / Y_MID, -1.0, 1.0))
-        vec.append(np.clip(tz / POS_BOUND, -1.0, 1.0))
+        vec.append(np.clip((tx - px) / POS_BOUND, -1.0, 1.0))
+        vec.append(np.clip((ty - py) / POS_BOUND, -1.0, 1.0))
+        vec.append(np.clip((tz - pz) / POS_BOUND, -1.0, 1.0))
 
         # ── Endermen (80 = 8 × 10) ───────────────────────────────
         endermen = data.get("endermen", [])
@@ -109,9 +109,9 @@ class DragonEnv(gym.Env):
             if i < len(endermen):
                 e = endermen[i]
                 ex, ey, ez = e["pos"]
-                vec.append(np.clip(ex / POS_BOUND, -1.0, 1.0))
-                vec.append(np.clip((ey - Y_MID) / Y_MID, -1.0, 1.0))
-                vec.append(np.clip(ez / POS_BOUND, -1.0, 1.0))
+                vec.append(np.clip((ex - px) / POS_BOUND, -1.0, 1.0))
+                vec.append(np.clip((ey - py) / POS_BOUND, -1.0, 1.0))
+                vec.append(np.clip((ez - pz) / POS_BOUND, -1.0, 1.0))
                 evx, evy, evz = e["velocity"]
                 vec.append(np.clip(evx / VEL_BOUND, -1.0, 1.0))
                 vec.append(np.clip(evy / VEL_BOUND, -1.0, 1.0))
@@ -145,9 +145,9 @@ class DragonEnv(gym.Env):
         vec.append(self._item_hash(r.get("hit_entity")))
         vec.append(self._item_hash(r.get("hit_block")))
         vec.append(np.clip(float(r.get("distance", DISTANCE_MAX)) / DISTANCE_MAX, 0.0, 1.0))
-        rpos = r.get("pos", [0, 0, 0])
-        vec.append(np.clip(rpos[0] / POS_BOUND, -1.0, 1.0))
-        vec.append(np.clip(rpos[2] / POS_BOUND, -1.0, 1.0))
+        rpos = r.get("pos", [px, py, pz])
+        vec.append(np.clip((rpos[0] - px) / POS_BOUND, -1.0, 1.0))
+        vec.append(np.clip((rpos[2] - pz) / POS_BOUND, -1.0, 1.0))
         vec.append(0.0)  # block_pos placeholder
         vec.append(0.0)  # block_side placeholder
         vec.append(0.0)  # block_id placeholder
