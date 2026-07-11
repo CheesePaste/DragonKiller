@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp -r \"C:\\\\Users\\\\huhai\\\\Desktop\\\\Java-mcmod\\\\wandscape\\\\.claude\\\\skills\\\\grill-me\" \"C:\\\\Users\\\\huhai\\\\Desktop\\\\Java-mcmod\\\\dragonkiller-template-1.20.1\\\\.claude\\\\skills\\\\grill-me\")",
+      "Bash(cp -r \"C:\\\\Users\\\\huhai\\\\Desktop\\\\Java-mcmod\\\\wandscape\\\\.claude\\\\skills\\\\minecraft-source\" \"C:\\\\Users\\\\huhai\\\\Desktop\\\\Java-mcmod\\\\dragonkiller-template-1.20.1\\\\.claude\\\\skills\\\\minecraft-source\")",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:modrinth.com)",
+      "Read(//c/Users/huhai/Desktop/**)",
+      "Bash(jar tf *)",
+      "Bash(unzip -l \"C:\\\\Users\\\\huhai\\\\Desktop\\\\Java-mcmod\\\\dragonkiller-template-1.20.1\\\\reinforcemc-2.0-beta.jar\")",
+      "Bash(bash *)",
+      "Bash(unzip -l \".gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-clientOnly-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-clientOnly-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2.jar\")",
+      "Bash(./gradlew genSources)",
+      "Bash(./gradlew build *)"
+    ]
+  }
+}
