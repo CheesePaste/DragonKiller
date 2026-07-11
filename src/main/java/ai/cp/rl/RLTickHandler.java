@@ -113,14 +113,27 @@ public class RLTickHandler {
         accessor.getPlayers().add(botPlayer);
         accessor.getPlayerMap().put(botPlayer.getUuid(), botPlayer);
 
+        // Force survival mode BEFORE broadcasting the player
+        botPlayer.changeGameMode(GameMode.SURVIVAL);
+
+        // Tell all connected clients about this fake player so they render its skin/body
+        pm.sendToAll(new net.minecraft.network.packet.s2c.play.PlayerListS2CPacket(
+            java.util.EnumSet.of(
+                net.minecraft.network.packet.s2c.play.PlayerListS2CPacket.Action.ADD_PLAYER,
+                net.minecraft.network.packet.s2c.play.PlayerListS2CPacket.Action.UPDATE_LISTED,
+                net.minecraft.network.packet.s2c.play.PlayerListS2CPacket.Action.UPDATE_GAME_MODE
+            ),
+            java.util.Collections.singletonList(botPlayer)
+        ));
+
+        // Give equipment before world tracking so clients receive it via spawn packet
+        giveBotEquipment();
+
         // Register with world for chunk loading and entity tracking
         endWorld.onPlayerConnected(botPlayer);
 
         // Register with boss bar manager
         srv.getBossBarManager().onPlayerConnect(botPlayer);
-
-        // Force survival mode (fresh bot should never be spectator)
-        botPlayer.changeGameMode(GameMode.SURVIVAL);
 
         // Give the bot a unique spawn angle for each creation
         botPlayer.teleport(endWorld, 30.5, 70.0, 30.5, 0.0F, 0.0F);
@@ -166,9 +179,6 @@ public class RLTickHandler {
         botPlayer.teleport(endWorld, 30.5, 70.0, 30.5, 0.0F, 0.0F);
 
         episodeManager.resetPlayer(botPlayer);
-
-        // Give equipment
-        giveBotEquipment();
 
         // Re-teleport after equipment (clear any state)
         botPlayer.teleport(endWorld, 30.5, 70.0, 30.5, 0.0F, 0.0F);
