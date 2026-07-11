@@ -23,6 +23,27 @@ loom {
 			sourceSet sourceSets.client
 		}
 	}
+
+	runs {
+		client {
+			vmArg "-Drlport=${System.getProperty('rlport', '5670')}"
+		}
+
+		def numEnvs = project.hasProperty('numEnvs') ? project.property('numEnvs').toInteger() : 4
+		def ports = (0..<numEnvs).collect { 5670 + it }
+
+		ports.each { port ->
+			"server${port}" {
+				server()
+				name = "Headless Server ${port}"
+				runDir = "run/server_${port}"
+				vmArg "-Drlport=${port}"
+				vmArg "-Xmx1024M"
+				vmArg "-Xms512M"
+				programArg "nogui"
+			}
+		}
+	}
 }
 
 fabricApi {
@@ -89,3 +110,44 @@ publishing {
 		// retrieving dependencies.
 	}
 }
+
+task runMultiEnv {
+	group = "dragonkiller"
+	description = "Runs 4 Minecraft instances for vectorized RL training."
+	
+	doLast {
+		def numEnvs = project.hasProperty('numEnvs') ? project.property('numEnvs').toInteger() : 4
+		def ports = (0..<numEnvs).collect { 5670 + it }
+		def processes = []
+		
+		println "Starting ${ports.size()} Minecraft instances on ports: ${ports}..."
+		println "Log files will be written to run_client_<port>.log"
+		
+		def isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
+		def gradlew = isWindows ? "gradlew.bat" : "./gradlew"
+		
+		ports.each { port ->
+			// Create run dir, eula.txt, and server.properties automatically
+			def runDir = new File(project.projectDir, "run/server_${port}")
+			runDir.mkdirs()
+			new File(runDir, "eula.txt").text = "eula=true\n"
+			new File(runDir, "server.properties").text = "server-port=${port + 20000}\n"
+			
+			def pb = new ProcessBuilder(gradlew, "runServer${port}", "-PnumEnvs=${numEnvs}")
+			pb.directory(project.projectDir)
+			pb.redirectOutput(new File(project.projectDir, "run_server_${port}.log"))
+			pb.redirectErrorStream(true)
+			processes << pb.start()
+			println "Started dedicated server on port ${port}"
+			// Give a little delay between starts to prevent disk/CPU choking
+			Thread.sleep(2000)
+		}
+		
+		println "All instances started! They are running in the background."
+		println "To kill them later, you may need to close the java processes or close the Minecraft windows."
+		
+		// Keep the gradle task alive
+		processes.each { it.waitFor() }
+	}
+}
+

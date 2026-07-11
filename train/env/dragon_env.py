@@ -19,7 +19,7 @@ COUNT_MAX = 1000.0
 
 class DragonEnv(gym.Env):
     def __init__(self, host="127.0.0.1", port=5670,
-                 connect_retries=30, connect_retry_delay=2.0):
+                 connect_retries=300, connect_retry_delay=2.0):
         super().__init__()
         self.conn = None
         self.host = host
