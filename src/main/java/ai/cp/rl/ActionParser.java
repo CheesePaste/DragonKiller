@@ -13,8 +13,6 @@ import net.minecraft.util.math.Vec3d;
 
 public class ActionParser {
     private static int freezeCounter;
-    private static int stickyAttackCounter;
-    private static boolean stickyAttackActive;
     private static boolean observationSent;
 
     // Continuous movement state
@@ -37,8 +35,6 @@ public class ActionParser {
 
     public static void reset() {
         freezeCounter = 0;
-        stickyAttackCounter = 0;
-        stickyAttackActive = false;
         observationSent = true;
         moveForward = false;
         moveBackward = false;
@@ -53,7 +49,6 @@ public class ActionParser {
     public static void execute(int actionIndex, ServerPlayerEntity player, ServerWorld world) {
         moveForward = false;
         moveBackward = false;
-        sprinting = false;
         attackHappenedThisCycle = false;
         wasFullCharge = false;
         wasAirborne = false;
@@ -66,12 +61,8 @@ public class ActionParser {
             case 4: player.setYaw(player.getYaw() + TURN_SPEED); break;
             case 5: player.setPitch(MathHelper.clamp(player.getPitch() - TURN_SPEED, -90.0F, 90.0F)); break;
             case 6: player.setPitch(MathHelper.clamp(player.getPitch() + TURN_SPEED, -90.0F, 90.0F)); break;
-            case 7:
-                performAttack(player, world);
-                stickyAttackActive = true;
-                stickyAttackCounter = RLConfig.STICKY_ATTACK;
-                break;
-            case 8: sprinting = true; break;
+            case 7: performAttack(player, world); break;
+            case 8: sprinting = !sprinting; break;
         }
 
         freezeCounter = RLConfig.ACTION_REPEAT;
@@ -95,21 +86,13 @@ public class ActionParser {
 
         player.setSprinting(sprinting);
 
-        if (stickyAttackActive && stickyAttackCounter > 0) {
-            performAttack(player, world);
-            stickyAttackCounter--;
-            if (stickyAttackCounter == 0) {
-                stickyAttackActive = false;
-            }
-        }
-
         if (freezeCounter > 0) {
             freezeCounter--;
         }
     }
 
     public static boolean needsNewAction() {
-        return freezeCounter <= 0 && !stickyAttackActive && !observationSent;
+        return freezeCounter <= 0 && !observationSent;
     }
 
     public static void markObservationSent() {
@@ -192,7 +175,4 @@ public class ActionParser {
         return null;
     }
 
-    public static boolean isStickyAttackActive() {
-        return stickyAttackActive;
-    }
 }

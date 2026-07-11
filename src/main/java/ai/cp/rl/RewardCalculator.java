@@ -57,7 +57,7 @@ public class RewardCalculator {
 
         // Sprint reward
         if (isSprinting) {
-            reward += 0.005;
+            reward += RLConfig.REWARD_SPRINT;
         }
 
         // Distance-based reward: smooth gradient encouraging closeness

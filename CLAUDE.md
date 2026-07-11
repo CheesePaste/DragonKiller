@@ -171,10 +171,10 @@ REWARD_PLAYER_DAMAGE = -10.0 // 每点受伤（Phase 2 提高惩罚）
 REWARD_DEATH        = -20.0  // 死亡（单次）
 REWARD_VOID_PENALTY = -5.0   // 每 tick 在虚空上方
 
-// 移动奖励（Phase 2 降低近身奖励，避免死贴龙巢）
-REWARD_APPROACH    = 0.1    // 每靠近龙 1 格（原 0.2）
-REWARD_DISTANCE    = 0.01   // 距离指数奖励: 0.01 * exp(-dist/30)
-REWARD_PROXIMITY   = 0.05   // 每 tick 在 10 格内（原 0.1）
+// 移动奖励（折中: Phase 1 有靠近动力 + Phase 2 不贴龙巢）
+REWARD_APPROACH    = 0.1    // 每靠近龙 1 格 — 一次性奖励
+REWARD_DISTANCE    = 0.03   // 距离指数奖励: 0.03 * exp(-dist/30) — 持续梯度
+REWARD_PROXIMITY   = 0.05   // 每 tick 在 10 格内
 REWARD_FACE_DRAGON = 0.01   // 每 tick 龙在视野内
 
 // 龙息惩罚

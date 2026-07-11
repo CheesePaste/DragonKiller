@@ -39,7 +39,17 @@ public class RLTickHandler {
         Text text = Text.literal(msg);
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             if (player != botPlayer) {
-                player.sendMessage(text, true);
+                player.sendMessage(text, true);  // action bar
+            }
+        }
+    }
+
+    private static void broadcastChat(String msg) {
+        if (server == null) return;
+        Text text = Text.literal(msg);
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            if (player != botPlayer) {
+                player.sendMessage(text, false); // chat
             }
         }
     }
@@ -220,6 +230,9 @@ public class RLTickHandler {
         broadcastActionBar(String.format(
             "§a[EP%d] §fBot spawned  §cDragon §f❤%.0f",
             episodeManager.getEpisodeCount() + 1, dragonHealth));
+        broadcastChat(String.format("§a[EP%d] Bot spawned at (%.1f, %.1f, %.1f) §cDragon ❤%.0f",
+            episodeManager.getEpisodeCount() + 1,
+            botPlayer.getX(), botPlayer.getY(), botPlayer.getZ(), dragonHealth));
 
         // Send initial observation
         JsonObject obs = ObservationBuilder.build(botPlayer, endWorld, 0, 0, 0, 0.0f);
@@ -331,6 +344,8 @@ public class RLTickHandler {
             double hitReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE + RLConfig.REWARD_DRAGON_HURT;
             broadcastActionBar(String.format(
                 "§cDragon §f❤%.0f §7(-%.1f) §e+%.1f", dragonHealth, dragonDelta, hitReward));
+            broadcastChat(String.format("§cDragon ❤%.0f §7(-%.1f) §eReward: +%.1f",
+                dragonHealth, dragonDelta, hitReward));
         }
         prevDragonHealth = dragonHealth;
 
@@ -348,8 +363,11 @@ public class RLTickHandler {
             double endReward = 0.0;
             if (doneInfo.reason().equals("dragon_killed")) {
                 endReward = rewardCalc.onDragonDeath();
+                DragonKiller.LOGGER.info("[DEATH] Dragon killed! +{} reward", endReward);
             } else if (doneInfo.reason().equals("player_died")) {
                 endReward = rewardCalc.onPlayerDeath();
+                DragonKiller.LOGGER.info("[DEATH] Bot died! hp={} reason=player_died reward={}",
+                    botPlayer.getHealth(), endReward);
             }
             totalReward += endReward;
             episodeManager.addReward(endReward);
@@ -357,6 +375,9 @@ public class RLTickHandler {
             broadcastActionBar(String.format(
                 "§6[EP%d] %s%s §7| §eReward: %+.1f",
                 episodeManager.getEpisodeCount() + 1, epColor, doneInfo.reason(), endReward));
+            broadcastChat(String.format("§6[EP%d] §f%s §7| §eReward: %+.1f §7| §fTotal: %.1f §7| §fTicks: %d",
+                episodeManager.getEpisodeCount() + 1, doneInfo.reason(), endReward,
+                episodeManager.getTotalReward(), episodeManager.getTickCount()));
             DragonKiller.LOGGER.info("[EPISODE] Done reason={} totalReward={} ticks={}",
                 doneInfo.reason(), String.format("%.2f", episodeManager.getTotalReward()), episodeManager.getTickCount());
         }

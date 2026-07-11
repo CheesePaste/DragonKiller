@@ -31,7 +31,7 @@ class TrainConfig:
     # Reproducibility
     seed: int = 42
     n_envs: int = 1  # Number of environments to run in parallel
-    device: str = "cpu"  # Changed from "cpu" to "cuda" for GPU acceleration
+    device: str = "cuda"  # GPU acceleration
 
     # Checkpointing
     save_dir: str = "models"
