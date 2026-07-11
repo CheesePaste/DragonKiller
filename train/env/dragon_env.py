@@ -9,10 +9,14 @@ PLAYER_HEALTH_MAX = 20.0
 DRAGON_HEALTH_MAX = 200.0
 VEL_BOUND = 10.0
 DISTANCE_MAX = 100.0
-TIME_MAX = 6000.0
+TIME_MAX = 12000.0
 DAMAGE_MAX = 200.0
 GROUND_DIST_MAX = 100.0
 RAYTRACE_MAX = 64.0
+DRAGON_PHASE_MAX = 10.0
+
+# Phase 2: dragon velocity bound (faster than player)
+DRAGON_VEL_BOUND = 20.0
 
 
 class DragonEnv(gym.Env):
@@ -28,8 +32,8 @@ class DragonEnv(gym.Env):
         # 9 discrete actions (Phase 1: noop, forward, backward, turn L/R, look U/D, attack, sprint)
         self.action_space = spaces.Discrete(9)
 
-        # 25-dimensional observation (compact Phase 1 design)
-        obs_dim = 25
+        # 29-dimensional observation (Phase 1 + dragon phase/velocity)
+        obs_dim = 29
         self.observation_space = spaces.Box(
             low=-1.0, high=1.0, shape=(obs_dim,), dtype=np.float32
         )
@@ -82,6 +86,13 @@ class DragonEnv(gym.Env):
         vec.append(1.0 if d.get("in_view", False) else 0.0)
         vec.append(np.clip(float(d.get("health", 0.0)) / DRAGON_HEALTH_MAX, 0.0, 1.0))
         vec.append(1.0 if d.get("alive", True) else 0.0)
+
+        # ── Dragon phase (1) + velocity (3) ──────────────────────────
+        vec.append(np.clip(float(d.get("phase", 0)) / DRAGON_PHASE_MAX, 0.0, 1.0))
+        dvel = d.get("velocity", [0, 0, 0])
+        vec.append(np.clip(float(dvel[0]) / DRAGON_VEL_BOUND, -1.0, 1.0))
+        vec.append(np.clip(float(dvel[1]) / DRAGON_VEL_BOUND, -1.0, 1.0))
+        vec.append(np.clip(float(dvel[2]) / DRAGON_VEL_BOUND, -1.0, 1.0))
 
         # ── Terrain (2) ─────────────────────────────────────────────
         t = data.get("terrain", {})

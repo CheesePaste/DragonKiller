@@ -98,21 +98,29 @@ train/
 
 ### Phase 2 TODO
 
-- [ ] 取消 `StaticDragonMixin`，恢复龙 AI（hover/charge/landing 阶段）
-- [ ] 主手钻石剑 + 副手盾牌
-- [ ] 新增动作：举盾（长按右键）
+- [x] 取消 `StaticDragonMixin` — 通过 `-Drlphase=p2` 运行时解冻龙 AI
+- [x] 超时延长至 12000 tick（Phase 2 龙会飞需要更长时间）
+- [x] 独立 Python 训练脚本 `train_p2.py` / `watch_p2.py`
+- [ ] 新增动作：举盾（长按右键）— 观察 AI 打不过再加
 - [ ] 动作表扩展为 10 动作
-- [ ] 观察空间扩展：重新启用末影人数据、龙 phase、龙 velocity/bbox
+- [ ] 观察空间扩展：龙 phase、龙 velocity/bbox
 - [ ] 调整奖励函数适应防御行为
 
 ### 训练流程
 
-1. **启动 MC 客户端** (`./gradlew runClient`)，确认 TCP 5670 端口监听
-2. **Python 端测试**：`python train/test_env.py` 连接、reset、step 循环验证闭环
-3. **单实例 PPO 训练**：`python train/train.py`，用 SB3 PPO + DragonEnv
-4. **TensorBoard**：`tensorboard --logdir logs` 监控训练曲线
-5. **评估模型**：`python train/watch.py --model models/best/best_model.zip`
-6. **调参**：奖励系数、action_repeat、sticky_attack 根据训练效果调整
+**Phase 1（静态龙）**：
+1. **启动 MC**：`./gradlew runClient`（默认 `rlphase=p1`）
+2. **测试**：`python train/test_env.py`
+3. **训练**：`python train/train.py --total-timesteps 200000`
+4. **TensorBoard**：`tensorboard --logdir logs`
+5. **评估**：`python train/watch.py --model models/best_model.zip`
+
+**Phase 2（移动龙 AI）**：
+1. **启动 MC**：`./gradlew runClient -Drlphase=p2`
+2. **测试**：`python train/test_env.py`
+3. **训练**：`python train/train_p2.py --total-timesteps 200000`
+4. **TensorBoard**：`tensorboard --logdir logs/p2`
+5. **评估**：`python train/watch_p2.py --model models/p2/best_model.zip`
 
 ### Phase 2 已完成
 
@@ -133,16 +141,18 @@ train/
 
 ## 观察空间设计
 
-### 当前 25 维结构
+### 当前 29 维结构
 
 ```
 [0-5]   player:       health, on_ground, sprinting, vel_xyz
 [6-11]  dragon_rel:   yaw_delta, pitch_delta, distance, in_view, health, alive
-[12-13] terrain:      ground_distance, is_over_void
-[14-15] inventory:    has_sword, has_armor
-[16-18] raytrace:     dragon_in_crosshair, distance, hit_type(0=none/1=block/2=dragon)
-[19-22] stats:        time_alive, dragon_damage_dealt, hit_count, attack_cooldown
-[23-24] breath:       nearest_breath(0-1), breath_warning(0/1)
+[12]    dragon_ext:   phase_id(0-10 → normalized /10)
+[13-15] dragon_ext:   dragon_vel_xyz (normalized /20)
+[16-17] terrain:      ground_distance, is_over_void
+[18-19] inventory:    has_sword, has_armor
+[20-22] raytrace:     dragon_in_crosshair, distance, hit_type(0=none/1=block/2=dragon)
+[23-26] stats:        time_alive, dragon_damage_dealt, hit_count, attack_cooldown
+[27-28] breath:       nearest_breath(0-1), breath_warning(0/1)
 ```
 
 ### Phase 2 扩展计划

@@ -25,18 +25,22 @@ public class RewardCalculator {
     public double computeDense(double dragonHealth, double playerHealth,
                                 int hitCount, int swingCount, double dragonDistance,
                                 boolean isSprinting, boolean facingDragon, boolean isOverVoid,
-                                boolean criticalHit, boolean breathNearby) {
+                                boolean criticalHit, boolean isDragonSitting) {
         double reward = 0.0;
 
         // Dragon damage dealt
         double dragonDelta = prevDragonHealth - dragonHealth;
         if (dragonDelta > 0) {
-            reward += dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
+            double dmgReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
+            if (isDragonSitting) dmgReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
+            reward += dmgReward;
         }
 
         // Hit reward
         int hitDelta = hitCount - prevHitCount;
-        reward += hitDelta * RLConfig.REWARD_HIT;
+        double hitReward = hitDelta * RLConfig.REWARD_HIT;
+        if (isDragonSitting) hitReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
+        reward += hitReward;
 
         // Swing miss penalty
         int swingDelta = swingCount - prevSwingCount;
@@ -70,19 +74,14 @@ public class RewardCalculator {
             reward += RLConfig.REWARD_PROXIMITY;
         }
 
-        // Facing dragon reward
-        if (facingDragon) {
+        // Facing dragon reward (only when close enough to matter)
+        if (facingDragon && dragonDistance < RLConfig.REWARD_FACE_DRAGON_RANGE) {
             reward += RLConfig.REWARD_FACE_DRAGON;
         }
 
         // Void penalty
         if (isOverVoid) {
             reward += RLConfig.REWARD_VOID_PENALTY;
-        }
-
-        // Dragon breath penalty
-        if (breathNearby) {
-            reward += RLConfig.REWARD_BREATH_PENALTY;
         }
 
         // Player damage penalty
