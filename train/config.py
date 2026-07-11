@@ -31,7 +31,7 @@ class TrainConfig:
     # Reproducibility
     seed: int = 42
     n_envs: int = 1  # Single instance for baseline training
-    device: str = "cpu"
+    device: str = "cuda"  # Changed from "cpu" to "cuda" for GPU acceleration
 
     # Checkpointing
     save_dir: str = "models"

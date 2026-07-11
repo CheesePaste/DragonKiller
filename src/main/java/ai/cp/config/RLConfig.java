@@ -1,7 +1,7 @@
 package ai.cp.config;
 
 public class RLConfig {
-    public static final int TCP_PORT = 5670;
+    public static final int TCP_PORT = Integer.parseInt(System.getProperty("rlport", "5670"));
     public static final int ACTION_REPEAT = 3;
     public static final int STICKY_ATTACK = 3;
     public static final int EPISODE_TIMEOUT = 6000;

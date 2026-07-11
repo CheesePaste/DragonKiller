@@ -91,11 +91,13 @@ class DragonKillRateCallback(BaseCallback):
         return True
 
 
-def make_env(config: TrainConfig, retry_count: int = 0):
-    """Create a single DragonEnv wrapped in Monitor."""
-    env = DragonEnv(host=config.host, port=config.port)
-    env = Monitor(env)
-    return env
+def make_env(host, port, seed):
+    """Utility to create a vectorized environment."""
+    def _init():
+        env = DragonEnv(host=host, port=port)
+        env = Monitor(env)  # Logs episode rewards and lengths
+        return env
+    return _init
 
 
 def train(config: TrainConfig):
@@ -113,11 +115,14 @@ def train(config: TrainConfig):
     # Set random seed for reproducibility
     set_random_seed(config.seed)
 
-    # Create vectorized environment (single env for baseline)
-    env = DummyVecEnv([lambda: make_env(config)])
+    # Import SubprocVecEnv
+    from stable_baselines3.common.vec_env import SubprocVecEnv
 
-    # Create a separate eval environment
-    eval_env = DummyVecEnv([lambda: make_env(config)])
+    ports = [5670, 5671, 5672, 5673]
+    env = SubprocVecEnv([make_env(config.host, p, config.seed) for p in ports])
+
+    # Create a separate eval environment (single env is fine for eval)
+    eval_env = DummyVecEnv([make_env(config.host, config.port, config.seed)])
 
     # Set up callbacks
     checkpoint_callback = CheckpointCallback(

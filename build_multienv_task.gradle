@@ -1,0 +1,33 @@
+
+task runMultiEnv {
+	group = "dragonkiller"
+	description = "Runs 4 Minecraft instances for vectorized RL training."
+	
+	doLast {
+		def ports = [5670, 5671, 5672, 5673]
+		def processes = []
+		
+		println "Starting ${ports.size()} Minecraft instances on ports: ${ports}..."
+		println "Log files will be written to run_client_<port>.log"
+		
+		def isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
+		def gradlew = isWindows ? "gradlew.bat" : "./gradlew"
+		
+		ports.each { port ->
+			def pb = new ProcessBuilder(gradlew, "runClient", "-Drlport=${port}")
+			pb.directory(project.projectDir)
+			pb.redirectOutput(new File(project.projectDir, "run_client_${port}.log"))
+			pb.redirectErrorStream(true)
+			processes << pb.start()
+			println "Started instance on port ${port}"
+			// Give a little delay between starts to prevent disk/CPU choking
+			Thread.sleep(2000)
+		}
+		
+		println "All instances started! They are running in the background."
+		println "To kill them later, you may need to close the java processes or close the Minecraft windows."
+		
+		// Keep the gradle task alive
+		processes.each { it.waitFor() }
+	}
+}
