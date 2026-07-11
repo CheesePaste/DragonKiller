@@ -13,6 +13,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
@@ -25,27 +26,27 @@ public class RLTickHandler {
     private static ServerWorld endWorld;
     private static boolean initialized;
 
-    // Watchdog: auto-reset if no TYPE_STEP received for this many ticks
-    private static final int WATCHDOG_TIMEOUT = 300; // 15 seconds
-    private static int ticksSinceLastStep;
-
     // Stats tracking
     private static int swingCount;
     private static int hitCount;
     private static double dragonDamageDealt;
     private static double prevDragonHealth;
 
-    // Debug counters
-    private static int totalTickCount;
-    private static int lastLogTick;
+    private static void broadcastActionBar(String msg) {
+        if (server == null) return;
+        Text text = Text.literal(msg);
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            if (player != botPlayer) {
+                player.sendMessage(text, true);
+            }
+        }
+    }
 
     public static void onServerTick(MinecraftServer srv) {
         if (!initialized) {
             server = srv;
             init(server);
         }
-
-        totalTickCount++;
 
         // Always try to accept client
         if (!socketServer.isConnected()) {
@@ -75,48 +76,6 @@ public class RLTickHandler {
 
         // Drain send queue (non-blocking, best-effort per tick)
         socketServer.drainSendQueue();
-
-        // Watchdog: auto-reset if no step received for too long
-        if (initialized && socketServer.isConnected() && botPlayer != null) {
-            if (episodeManager.getState() == EpisodeManager.State.RUNNING) {
-                ticksSinceLastStep++;
-                if (ticksSinceLastStep > WATCHDOG_TIMEOUT) {
-                    DragonKiller.LOGGER.warn("[WATCHDOG] No step for {} ticks ({}s), force-ending episode (state=RUNNING)",
-                        ticksSinceLastStep, ticksSinceLastStep / 20);
-                    forceEndEpisode("watchdog_timeout");
-                }
-            } else if (episodeManager.getState() == EpisodeManager.State.DONE) {
-                ticksSinceLastStep++;
-                if (ticksSinceLastStep > WATCHDOG_TIMEOUT) {
-                    DragonKiller.LOGGER.warn("[WATCHDOG] Stuck in DONE state for {} ticks, auto-resetting",
-                        ticksSinceLastStep);
-                    // Client should have sent reset — force it
-                    forceReset();
-                }
-            }
-        }
-
-        // Periodic debug log (every 5 seconds)
-        if (totalTickCount - lastLogTick >= 100) {
-            lastLogTick = totalTickCount;
-            logDebugState();
-        }
-    }
-
-    private static void logDebugState() {
-        if (botPlayer == null) return;
-        DragonKiller.LOGGER.info("[DEBUG] tick={} state={} epTick={} hp={} pos=({},{},{}) yaw={} connected={} msgAge={} sendQ={}",
-            totalTickCount,
-            episodeManager.getState(),
-            episodeManager.getTickCount(),
-            String.format("%.1f", botPlayer.getHealth()),
-            String.format("%.1f", botPlayer.getX()),
-            String.format("%.1f", botPlayer.getY()),
-            String.format("%.1f", botPlayer.getZ()),
-            String.format("%.1f", botPlayer.getYaw()),
-            socketServer.isConnected(),
-            ticksSinceLastStep,
-            socketServer.getQueuedSendBytes());
     }
 
     private static void init(MinecraftServer srv) {
@@ -172,7 +131,6 @@ public class RLTickHandler {
 
     private static void handleMessage(JsonObject msg) {
         String type = Protocol.getType(msg);
-        DragonKiller.LOGGER.info("[MSG] Received type={}", type);
         switch (type) {
             case Protocol.TYPE_RESET -> handleReset();
             case Protocol.TYPE_STEP -> handleStep(msg);
@@ -186,9 +144,6 @@ public class RLTickHandler {
     }
 
     private static void handleReset() {
-        // Reset watchdog immediately
-        ticksSinceLastStep = 0;
-
         if (botPlayer == null || botPlayer.isRemoved() || botPlayer.isDead()) {
             if (botPlayer != null && !botPlayer.isRemoved()) {
                 botPlayer.discard();
@@ -229,6 +184,10 @@ public class RLTickHandler {
             String.format("%.1f", botPlayer.getHealth()),
             String.format("%.1f", dragonHealth));
 
+        broadcastActionBar(String.format(
+            "§a[EP%d] §fBot spawned  §cDragon §f❤%.0f",
+            episodeManager.getEpisodeCount() + 1, dragonHealth));
+
         // Send initial observation
         JsonObject obs = ObservationBuilder.build(botPlayer, endWorld, 0, 0, 0, 0, 0);
         String message = Protocol.createObsMessage(obs, 0.0, false);
@@ -261,8 +220,6 @@ public class RLTickHandler {
     }
 
     private static void handleStep(JsonObject msg) {
-        ticksSinceLastStep = 0;
-
         if (episodeManager.getState() != EpisodeManager.State.RUNNING) {
             DragonKiller.LOGGER.warn("[STEP] Ignored — episode state is {} (not RUNNING)", episodeManager.getState());
             return;
@@ -270,13 +227,6 @@ public class RLTickHandler {
         if (botPlayer == null) return;
 
         int actionIndex = Protocol.getAction(msg);
-        DragonKiller.LOGGER.info("[STEP] action={} epTick={} pos=({},{},{}) hp={} yaw={}",
-            actionIndex, episodeManager.getTickCount(),
-            String.format("%.2f", botPlayer.getX()),
-            String.format("%.2f", botPlayer.getY()),
-            String.format("%.2f", botPlayer.getZ()),
-            String.format("%.1f", botPlayer.getHealth()),
-            String.format("%.1f", botPlayer.getYaw()));
         ActionParser.execute(actionIndex, botPlayer, endWorld);
     }
 
@@ -316,6 +266,8 @@ public class RLTickHandler {
         double dragonDelta = prevDragonHealth - dragonHealth;
         if (dragonDelta > 0 && dragon != null && !dragon.isDead()) {
             totalReward += rewardCalc.onDragonHurt();
+            broadcastActionBar(String.format(
+                "§cDragon §f❤%.0f §7(-%.1f)", dragonHealth, dragonDelta));
         }
         prevDragonHealth = dragonHealth;
 
@@ -337,6 +289,10 @@ public class RLTickHandler {
             }
             totalReward += endReward;
             episodeManager.addReward(endReward);
+            String epColor = doneInfo.reason().equals("dragon_killed") ? "§a" : "§c";
+            broadcastActionBar(String.format(
+                "§6[EP%d] %s%s §7| §eReward: %+.1f",
+                episodeManager.getEpisodeCount() + 1, epColor, doneInfo.reason(), endReward));
             DragonKiller.LOGGER.info("[EPISODE] Done reason={} totalReward={} ticks={}",
                 doneInfo.reason(), String.format("%.2f", episodeManager.getTotalReward()), episodeManager.getTickCount());
         }
@@ -351,56 +307,6 @@ public class RLTickHandler {
                 episodeManager.getEpisodeCount(), doneInfo.reason(),
                 episodeManager.getTickCount(), String.format("%.2f", episodeManager.getTotalReward()));
         }
-    }
-
-    private static void forceEndEpisode(String reason) {
-        if (episodeManager.getState() != EpisodeManager.State.RUNNING) return;
-        episodeManager.endEpisode(reason);
-        if (botPlayer != null && endWorld != null) {
-            var obs = ObservationBuilder.build(botPlayer, endWorld,
-                episodeManager.getTickCount(), 0, dragonDamageDealt, swingCount, hitCount);
-            String msg = Protocol.createObsMessage(obs, 0.0, true);
-            socketServer.send(msg);
-        }
-        DragonKiller.LOGGER.info("[WATCHDOG] Force-ended episode: {}", reason);
-    }
-
-    private static void forceReset() {
-        if (botPlayer != null) {
-            // Check if bot is in a bad state
-            if (botPlayer.isRemoved() || botPlayer.isDead()) {
-                if (botPlayer.isDead() && !botPlayer.isRemoved()) {
-                    botPlayer.discard();
-                }
-                createBotPlayer(server);
-            }
-        } else {
-            createBotPlayer(server);
-        }
-
-        if (botPlayer == null || endWorld == null) return;
-
-        botPlayer.changeGameMode(GameMode.SURVIVAL);
-        botPlayer.teleport(endWorld, 30.5, 70.0, 30.5, 0.0F, 0.0F);
-        episodeManager.resetPlayer(botPlayer);
-        giveBotEquipment();
-        botPlayer.teleport(endWorld, 30.5, 70.0, 30.5, 0.0F, 0.0F);
-        episodeManager.startEpisode();
-        ActionParser.reset();
-        ActionParser.addFreezeTicks(RLConfig.ACTION_REPEAT);
-
-        EnderDragonEntity dragon = ObservationBuilder.getDragon(endWorld);
-        double dragonHealth = dragon != null ? dragon.getHealth() : 0;
-        double dragonDistance = dragon != null ? botPlayer.distanceTo(dragon) : 100.0;
-        rewardCalc.reset(dragonHealth, botPlayer.getHealth(), dragonDistance);
-        resetStats(dragonHealth);
-
-        ticksSinceLastStep = 0;
-
-        DragonKiller.LOGGER.info("[WATCHDOG] Force-reset episode {}", episodeManager.getEpisodeCount() + 1);
-
-        var obs = ObservationBuilder.build(botPlayer, endWorld, 0, 0, 0, 0, 0);
-        socketServer.send(Protocol.createObsMessage(obs, 0.0, false));
     }
 
     private static void resetStats(double dragonHealth) {
