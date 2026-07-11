@@ -9,12 +9,15 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SocketServer {
     private ServerSocketChannel serverChannel;
     private SocketChannel clientChannel;
     private final ByteBuffer readBuffer = ByteBuffer.allocate(65536);
     private final StringBuilder lineBuffer = new StringBuilder();
+    private final Queue<ByteBuffer> sendQueue = new ConcurrentLinkedQueue<>();
     private volatile boolean running;
 
     public void start() {
@@ -45,18 +48,52 @@ public class SocketServer {
         return false;
     }
 
+    /**
+     * Enqueue a message for sending. Actual write happens in drainSendQueue().
+     * Never blocks the server tick.
+     */
     public void send(String message) {
         if (clientChannel == null || !clientChannel.isConnected()) return;
+        byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+        sendQueue.add(ByteBuffer.wrap(bytes));
+    }
+
+    /**
+     * Called every server tick to drain the send queue.
+     * Writes up to one full message per tick (non-blocking).
+     * If the TCP buffer is full, remaining messages stay queued for next tick.
+     */
+    public void drainSendQueue() {
+        if (clientChannel == null || !clientChannel.isConnected()) {
+            sendQueue.clear();
+            return;
+        }
         try {
-            byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
-            ByteBuffer buf = ByteBuffer.wrap(bytes);
-            while (buf.hasRemaining()) {
-                clientChannel.write(buf);
+            while (!sendQueue.isEmpty()) {
+                ByteBuffer buf = sendQueue.peek();
+                int written = clientChannel.write(buf);
+                if (written == 0) {
+                    // Kernel buffer full — wait for next tick
+                    return;
+                }
+                if (buf.hasRemaining()) {
+                    // Partial write — try finishing it next tick
+                    return;
+                }
+                sendQueue.poll(); // Full message sent
             }
         } catch (IOException e) {
-            DragonKiller.LOGGER.error("Error sending message", e);
+            DragonKiller.LOGGER.error("Error draining send queue", e);
             closeClient();
         }
+    }
+
+    public int getQueuedSendBytes() {
+        int total = 0;
+        for (ByteBuffer buf : sendQueue) {
+            total += buf.remaining();
+        }
+        return total;
     }
 
     public JsonObject tryReceive() {
@@ -73,13 +110,14 @@ public class SocketServer {
                 readBuffer.get(data);
                 readBuffer.clear();
                 lineBuffer.append(new String(data, StandardCharsets.UTF_8));
+            }
 
-                int newlineIdx = lineBuffer.indexOf("\n");
-                if (newlineIdx >= 0) {
-                    String line = lineBuffer.substring(0, newlineIdx);
-                    lineBuffer.delete(0, newlineIdx + 1);
-                    return Protocol.parseMessage(line);
-                }
+            // Always check lineBuffer — there may be queued messages from a previous over-read
+            int newlineIdx = lineBuffer.indexOf("\n");
+            if (newlineIdx >= 0) {
+                String line = lineBuffer.substring(0, newlineIdx);
+                lineBuffer.delete(0, newlineIdx + 1);
+                return Protocol.parseMessage(line);
             }
         } catch (IOException e) {
             DragonKiller.LOGGER.error("Error receiving message", e);
@@ -100,6 +138,7 @@ public class SocketServer {
             }
             clientChannel = null;
         }
+        sendQueue.clear();
         lineBuffer.setLength(0);
         DragonKiller.LOGGER.info("RL client disconnected");
     }

@@ -17,6 +17,7 @@ public class ActionParser {
     private static int freezeCounter;
     private static int stickyAttackCounter;
     private static boolean stickyAttackActive;
+    private static boolean observationSent; // true = obs emitted for current action, wait for next action
 
     // Continuous movement state — persists until next action changes it
     private static boolean moveForward;
@@ -32,6 +33,7 @@ public class ActionParser {
         freezeCounter = 0;
         stickyAttackCounter = 0;
         stickyAttackActive = false;
+        observationSent = true; // no observation needed until first action arrives
         moveForward = false;
         moveBackward = false;
         strafeLeft = false;
@@ -109,6 +111,7 @@ public class ActionParser {
         }
 
         freezeCounter = RLConfig.ACTION_REPEAT;
+        observationSent = false; // new action, need to emit observation
     }
 
     /**
@@ -146,7 +149,12 @@ public class ActionParser {
     }
 
     public static boolean needsNewAction() {
-        return freezeCounter <= 0 && !stickyAttackActive;
+        return freezeCounter <= 0 && !stickyAttackActive && !observationSent;
+    }
+
+    /** Mark the observation as sent for the current action. Prevents re-sending every tick. */
+    public static void markObservationSent() {
+        observationSent = true;
     }
 
     /** Set a minimum freeze duration. Used after reset to prevent observation flood. */

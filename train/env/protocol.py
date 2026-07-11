@@ -7,19 +7,20 @@ class MCProtocol:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.settimeout(30.0)
         self.sock.connect((host, port))
+        self._recv_buf = b""
 
     def send(self, msg: dict):
         data = (json.dumps(msg) + "\n").encode("utf-8")
         self.sock.sendall(data)
 
     def recv(self) -> dict:
-        buf = b""
-        while not buf.endswith(b"\n"):
+        while b"\n" not in self._recv_buf:
             chunk = self.sock.recv(4096)
             if not chunk:
                 raise ConnectionError("Connection closed")
-            buf += chunk
-        return json.loads(buf.rstrip(b"\n"))
+            self._recv_buf += chunk
+        line, self._recv_buf = self._recv_buf.split(b"\n", 1)
+        return json.loads(line.decode("utf-8"))
 
     def reset(self) -> dict:
         self.send({"type": "reset"})

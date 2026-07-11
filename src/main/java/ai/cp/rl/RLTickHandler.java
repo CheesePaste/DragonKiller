@@ -73,6 +73,9 @@ public class RLTickHandler {
             episodeTick();
         }
 
+        // Drain send queue (non-blocking, best-effort per tick)
+        socketServer.drainSendQueue();
+
         // Watchdog: auto-reset if no step received for too long
         if (initialized && socketServer.isConnected() && botPlayer != null) {
             if (episodeManager.getState() == EpisodeManager.State.RUNNING) {
@@ -102,15 +105,18 @@ public class RLTickHandler {
 
     private static void logDebugState() {
         if (botPlayer == null) return;
-        DragonKiller.LOGGER.info("[DEBUG] tick={} state={} epTick={} hp={:.1f} pos=({:.1f},{:.1f},{:.1f}) yaw={:.1f} connected={} msgAge={}",
+        DragonKiller.LOGGER.info("[DEBUG] tick={} state={} epTick={} hp={} pos=({},{},{}) yaw={} connected={} msgAge={} sendQ={}",
             totalTickCount,
             episodeManager.getState(),
             episodeManager.getTickCount(),
-            botPlayer.getHealth(),
-            botPlayer.getX(), botPlayer.getY(), botPlayer.getZ(),
-            botPlayer.getYaw(),
+            String.format("%.1f", botPlayer.getHealth()),
+            String.format("%.1f", botPlayer.getX()),
+            String.format("%.1f", botPlayer.getY()),
+            String.format("%.1f", botPlayer.getZ()),
+            String.format("%.1f", botPlayer.getYaw()),
             socketServer.isConnected(),
-            ticksSinceLastStep);
+            ticksSinceLastStep,
+            socketServer.getQueuedSendBytes());
     }
 
     private static void init(MinecraftServer srv) {
@@ -215,10 +221,13 @@ public class RLTickHandler {
         rewardCalc.reset(dragonHealth, botPlayer.getHealth(), dragonDistance);
         resetStats(dragonHealth);
 
-        DragonKiller.LOGGER.info("[RESET] Episode {} started, bot at ({:.1f},{:.1f},{:.1f}) hp={:.1f} dragonHp={:.1f}",
+        DragonKiller.LOGGER.info("[RESET] Episode {} started, bot at ({},{},{}) hp={} dragonHp={}",
             episodeManager.getEpisodeCount() + 1,
-            botPlayer.getX(), botPlayer.getY(), botPlayer.getZ(),
-            botPlayer.getHealth(), dragonHealth);
+            String.format("%.1f", botPlayer.getX()),
+            String.format("%.1f", botPlayer.getY()),
+            String.format("%.1f", botPlayer.getZ()),
+            String.format("%.1f", botPlayer.getHealth()),
+            String.format("%.1f", dragonHealth));
 
         // Send initial observation
         JsonObject obs = ObservationBuilder.build(botPlayer, endWorld, 0, 0, 0, 0, 0);
@@ -261,10 +270,13 @@ public class RLTickHandler {
         if (botPlayer == null) return;
 
         int actionIndex = Protocol.getAction(msg);
-        DragonKiller.LOGGER.info("[STEP] action={} epTick={} pos=({:.1f},{:.1f},{:.1f}) hp={:.1f}",
+        DragonKiller.LOGGER.info("[STEP] action={} epTick={} pos=({},{},{}) hp={} yaw={}",
             actionIndex, episodeManager.getTickCount(),
-            botPlayer.getX(), botPlayer.getY(), botPlayer.getZ(),
-            botPlayer.getHealth());
+            String.format("%.2f", botPlayer.getX()),
+            String.format("%.2f", botPlayer.getY()),
+            String.format("%.2f", botPlayer.getZ()),
+            String.format("%.1f", botPlayer.getHealth()),
+            String.format("%.1f", botPlayer.getYaw()));
         ActionParser.execute(actionIndex, botPlayer, endWorld);
     }
 
@@ -325,18 +337,19 @@ public class RLTickHandler {
             }
             totalReward += endReward;
             episodeManager.addReward(endReward);
-            DragonKiller.LOGGER.info("[EPISODE] Done reason={} totalReward={:.2f} ticks={}",
-                doneInfo.reason(), episodeManager.getTotalReward(), episodeManager.getTickCount());
+            DragonKiller.LOGGER.info("[EPISODE] Done reason={} totalReward={} ticks={}",
+                doneInfo.reason(), String.format("%.2f", episodeManager.getTotalReward()), episodeManager.getTickCount());
         }
 
         String message = Protocol.createObsMessage(obs, totalReward, doneInfo.done());
         socketServer.send(message);
+        ActionParser.markObservationSent();
 
         if (doneInfo.done()) {
             episodeManager.endEpisode(doneInfo.reason());
-            DragonKiller.LOGGER.info("[EPISODE] Episode {} ended: {} ({} ticks, total reward: {:.2f})",
+            DragonKiller.LOGGER.info("[EPISODE] Episode {} ended: {} ({} ticks, total reward: {})",
                 episodeManager.getEpisodeCount(), doneInfo.reason(),
-                episodeManager.getTickCount(), episodeManager.getTotalReward());
+                episodeManager.getTickCount(), String.format("%.2f", episodeManager.getTotalReward()));
         }
     }
 
