@@ -313,13 +313,12 @@ public class RLTickHandler {
         swingCount = ActionParser.getSwingCount();
 
         // Compute dense reward (11 params — our version)
-        boolean fullChargeHit = ActionParser.didAttackThisCycle() && ActionParser.wasFullCharge();
         boolean critHit = ActionParser.didAttackThisCycle() && ActionParser.wasAirborne();
         double denseReward = rewardCalc.computeDense(
             dragonHealth, playerHealth,
             hitCount, swingCount, dragonDistance,
             botPlayer.isSprinting(), facingDragon, isOverVoid,
-            fullChargeHit, critHit, breathNearby);
+            critHit, breathNearby);
         double totalReward = denseReward;
 
         // Dragon health delta — apply damage/hit tracking + sparse reward

@@ -15,7 +15,7 @@ public class RLConfig {
     public static final double REWARD_PLAYER_DAMAGE = -5.0;
     public static final double REWARD_DRAGON_HURT = 3.0;
     public static final double REWARD_DEATH = -20.0;
-    public static final double REWARD_DRAGON_DEATH = 200.0;
+    public static final double REWARD_DRAGON_DEATH = 0.0;
 
     // Approach & movement rewards
     public static final double REWARD_APPROACH = 0.05;     // per block closer to dragon
@@ -30,6 +30,6 @@ public class RLConfig {
     public static final double REWARD_BREATH_PENALTY = -1.0;    // per tick near dragon breath
 
     // Combat technique rewards
-    public static final double REWARD_FULL_CHARGE_HIT = 3.0;    // hit with full attack cooldown
+    public static final double REWARD_FULL_CHARGE_HIT = 0.0;    // (removed — let AI discover naturally)
     public static final double REWARD_CRITICAL_HIT = 5.0;      // hit while airborne (jump crit)
 }

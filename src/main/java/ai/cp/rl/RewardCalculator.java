@@ -25,7 +25,7 @@ public class RewardCalculator {
     public double computeDense(double dragonHealth, double playerHealth,
                                 int hitCount, int swingCount, double dragonDistance,
                                 boolean isSprinting, boolean facingDragon, boolean isOverVoid,
-                                boolean fullChargeHit, boolean criticalHit, boolean breathNearby) {
+                                boolean criticalHit, boolean breathNearby) {
         double reward = 0.0;
 
         // Dragon damage dealt
@@ -42,11 +42,6 @@ public class RewardCalculator {
         int swingDelta = swingCount - prevSwingCount;
         int missCount = swingDelta - hitDelta;
         reward += missCount * RLConfig.REWARD_SWING_MISS;
-
-        // Full charge hit bonus — reward waiting for cooldown
-        if (fullChargeHit) {
-            reward += RLConfig.REWARD_FULL_CHARGE_HIT;
-        }
 
         // Critical hit bonus — reward jump attacks
         if (criticalHit) {
