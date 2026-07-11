@@ -10,12 +10,12 @@ class TrainConfig:
     port: int = 5670
 
     # Training duration
-    total_timesteps: int = 2_000_000
+    total_timesteps: int = 10_000_000
 
     # PPO hyperparameters (SB3 defaults tuned for this env)
     learning_rate: float = 3e-4
     n_steps: int = 2048
-    batch_size: int = 64
+    batch_size: int = 1024  # Increased from 64 to handle large multi-env batches
     n_epochs: int = 10
     gamma: float = 0.99
     gae_lambda: float = 0.95
@@ -30,7 +30,7 @@ class TrainConfig:
 
     # Reproducibility
     seed: int = 42
-    n_envs: int = 4  # Number of environments to run in parallel
+    n_envs: int = 6  # Number of environments to run in parallel
     device: str = "cpu"  # Changed from "cpu" to "cuda" for GPU acceleration
 
     # Checkpointing

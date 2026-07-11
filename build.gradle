@@ -126,19 +126,28 @@ task runMultiEnv {
 		def isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
 		def gradlew = isWindows ? "gradlew.bat" : "./gradlew"
 		
-		ports.each { port ->
-			// Create run dir, eula.txt, and server.properties automatically
-			def runDir = new File(project.projectDir, "run/server_${port}")
-			runDir.mkdirs()
-			new File(runDir, "eula.txt").text = "eula=true\n"
-			new File(runDir, "server.properties").text = "server-port=${port + 20000}\n"
-			
-			def pb = new ProcessBuilder(gradlew, "runServer${port}", "-PnumEnvs=${numEnvs}")
-			pb.directory(project.projectDir)
-			pb.redirectOutput(new File(project.projectDir, "run_server_${port}.log"))
-			pb.redirectErrorStream(true)
-			processes << pb.start()
-			println "Started dedicated server on port ${port}"
+		ports.eachWithIndex { port, index ->
+			if (index == 0) {
+				def pb = new ProcessBuilder(gradlew, "runClient", "-Drlport=${port}")
+				pb.directory(project.projectDir)
+				pb.redirectOutput(new File(project.projectDir, "run_client_${port}.log"))
+				pb.redirectErrorStream(true)
+				processes << pb.start()
+				println "Started GUI Client on port ${port} (Please manually enter Singleplayer -> Create World)"
+			} else {
+				// Create run dir, eula.txt, and server.properties automatically
+				def runDir = new File(project.projectDir, "run/server_${port}")
+				runDir.mkdirs()
+				new File(runDir, "eula.txt").text = "eula=true\n"
+				new File(runDir, "server.properties").text = "server-port=${port + 20000}\n"
+				
+				def pb = new ProcessBuilder(gradlew, "runServer${port}", "-PnumEnvs=${numEnvs}")
+				pb.directory(project.projectDir)
+				pb.redirectOutput(new File(project.projectDir, "run_server_${port}.log"))
+				pb.redirectErrorStream(true)
+				processes << pb.start()
+				println "Started dedicated server on port ${port}"
+			}
 			// Give a little delay between starts to prevent disk/CPU choking
 			Thread.sleep(2000)
 		}
