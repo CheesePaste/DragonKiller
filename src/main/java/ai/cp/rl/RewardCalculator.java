@@ -3,7 +3,6 @@ package ai.cp.rl;
 import ai.cp.config.RLConfig;
 
 public class RewardCalculator {
-    // Previous tick values for delta calculation
     private double prevDragonHealth = 200.0;
     private double prevPlayerHealth = 20.0;
     private int prevHitCount;
@@ -18,9 +17,15 @@ public class RewardCalculator {
         prevDragonDistance = dragonDistance;
     }
 
-    public double computeDense(double dragonHealth, double playerHealth, boolean endermanAngry,
+    /** Call after healing the dragon to keep health tracking in sync. */
+    public void syncMaxHealth(double maxHealth) {
+        prevDragonHealth = maxHealth;
+    }
+
+    public double computeDense(double dragonHealth, double playerHealth,
                                 int hitCount, int swingCount, double dragonDistance,
-                                boolean isSprinting) {
+                                boolean isSprinting, boolean facingDragon, boolean isOverVoid,
+                                boolean fullChargeHit, boolean criticalHit, boolean breathNearby) {
         double reward = 0.0;
 
         // Dragon damage dealt
@@ -38,29 +43,54 @@ public class RewardCalculator {
         int missCount = swingDelta - hitDelta;
         reward += missCount * RLConfig.REWARD_SWING_MISS;
 
-        // Survival
+        // Full charge hit bonus — reward waiting for cooldown
+        if (fullChargeHit) {
+            reward += RLConfig.REWARD_FULL_CHARGE_HIT;
+        }
+
+        // Critical hit bonus — reward jump attacks
+        if (criticalHit) {
+            reward += RLConfig.REWARD_CRITICAL_HIT;
+        }
+
+        // Survival baseline
         reward += RLConfig.REWARD_SURVIVE_TICK;
 
-        // Approach reward: closer to dragon = positive, farther = negative
+        // Approach reward
         double distanceDelta = prevDragonDistance - dragonDistance;
         reward += distanceDelta * RLConfig.REWARD_APPROACH;
 
-        // Sprint reward: encourage using fast movement
+        // Sprint reward
         if (isSprinting) {
-            reward += RLConfig.REWARD_SPRINT;
+            reward += 0.005;
         }
 
-        // Proximity bonus: close to dragon = good
+        // Distance-based reward: smooth gradient encouraging closeness
+        double distReward = RLConfig.REWARD_DISTANCE *
+            Math.exp(-dragonDistance / RLConfig.REWARD_DISTANCE_DECAY);
+        reward += distReward;
+
+        // Proximity bonus
         if (dragonDistance < 10.0) {
             reward += RLConfig.REWARD_PROXIMITY;
         }
 
-        // Enderman angry penalty
-        if (endermanAngry) {
-            reward += RLConfig.REWARD_ENDERMAN_ANGRY;
+        // Facing dragon reward
+        if (facingDragon) {
+            reward += RLConfig.REWARD_FACE_DRAGON;
         }
 
-        // Player damage
+        // Void penalty
+        if (isOverVoid) {
+            reward += RLConfig.REWARD_VOID_PENALTY;
+        }
+
+        // Dragon breath penalty
+        if (breathNearby) {
+            reward += RLConfig.REWARD_BREATH_PENALTY;
+        }
+
+        // Player damage penalty
         double healthLoss = prevPlayerHealth - playerHealth;
         if (healthLoss > 0) {
             reward += healthLoss * RLConfig.REWARD_PLAYER_DAMAGE;
@@ -76,17 +106,12 @@ public class RewardCalculator {
         return reward;
     }
 
-    // Sparse rewards for events
     public double onDragonHurt() {
         return RLConfig.REWARD_DRAGON_HURT;
     }
 
     public double onPlayerDeath() {
         return RLConfig.REWARD_DEATH;
-    }
-
-    public double onEndermanKill() {
-        return RLConfig.REWARD_ENDERMAN_KILL;
     }
 
     public double onDragonDeath() {

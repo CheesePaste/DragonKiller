@@ -55,7 +55,7 @@ train/
 ├── env/
 │   ├── __init__.py
 │   ├── protocol.py                # Python TCP 客户端
-│   └── dragon_env.py              # Gymnasium Env (9 动作, 583 维观察)
+│   └── dragon_env.py              # Gymnasium Env (9 动作, 22 维观察)
 ├── config.py                      # PPO 超参数配置
 ├── train.py                       # SB3 PPO 训练入口
 ├── watch.py                       # 已训练模型评估
@@ -72,7 +72,8 @@ train/
 - [x] Mixin: 龙回血禁用 (NoDragonHealingMixin → tickWithEndCrystals cancel)
 - [x] Mixin: 饥饿禁用 (HungerManager.update cancel)
 - [x] TCP Socket Server (port 5670, JSON-over-TCP, NIO)
-- [x] 观察收集 (player/dragon/endermen/inventory/terrain/raytrace/stats)
+- [x] 观察空间重构: 583→22 维，使用龙相对位置 (yaw_delta/pitch_delta/distance/in_view)
+- [x] 自动面向龙: reset 时计算 yaw/pitch 让 AI 直接面对末影龙
 - [x] 动作执行 (21→16→9 离散动作, action_repeat=3, sticky_attack=3)
 - [x] 奖励计算 (密集+稀疏, delta 追踪)
 - [x] Episode 管理 (RUNNING/DONE, 超时6000tick)
@@ -97,9 +98,11 @@ train/
 
 ### Phase 2 TODO
 
+- [ ] 取消 `StaticDragonMixin`，恢复龙 AI（hover/charge/landing 阶段）
 - [ ] 主手钻石剑 + 副手盾牌
 - [ ] 新增动作：举盾（长按右键）
 - [ ] 动作表扩展为 10 动作
+- [ ] 观察空间扩展：重新启用末影人数据、龙 phase、龙 velocity/bbox
 - [ ] 调整奖励函数适应防御行为
 
 ### 训练流程
@@ -124,6 +127,59 @@ train/
 - [x] 构建通过 (`./gradlew build` SUCCESS)
 - [x] 动作空间精简（21→16→9），移除潜行/切换物品/跳跃/使用/左右移动/组合攻击
 - [x] 初始装备精简：仅钻石剑 + 钻石盔甲
+- [x] 观察空间重构：583→22 维，龙相对位置(yaw_delta/pitch_delta/distance/in_view)
+- [x] 奖励重构：移除 sprint 主导奖励，新增面向龙/距离指数/虚空惩罚，提高接近奖励权重
+- [x] 出生面向修复：reset 时自动转向龙，解决 pitch 失控看天问题
+
+## 观察空间设计
+
+### 当前 25 维结构
+
+```
+[0-5]   player:       health, on_ground, sprinting, vel_xyz
+[6-11]  dragon_rel:   yaw_delta, pitch_delta, distance, in_view, health, alive
+[12-13] terrain:      ground_distance, is_over_void
+[14-15] inventory:    has_sword, has_armor
+[16-18] raytrace:     dragon_in_crosshair, distance, hit_type(0=none/1=block/2=dragon)
+[19-22] stats:        time_alive, dragon_damage_dealt, hit_count, attack_cooldown
+[23-24] breath:       nearest_breath(0-1), breath_warning(0/1)
+```
+
+### Phase 2 扩展计划
+
+| 特征 | 当前 | Phase 2 | 理由 |
+|------|------|---------|------|
+| 地形 15×15 | 已删除 | 按需加回 5×5 | 末地主岛平坦，当前无用 |
+| 末影人数据 | 已删除 | 重新启用 | Phase 1 无末影人，Phase 2 如启用则需加回 |
+| 龙 AI phase | 已删除 | 重新启用 | 龙解冻后需要 hover/charge/landing 阶段信息 |
+| 龙 velocity | 已删除 | 重新启用 | 龙解冻后需要知道运动方向 |
+| 射线追踪 | 3 维紧凑版 | 保留或扩展 | 当前已够用：dragon_in_crosshair 助攻击决策 |
+
+### 奖励系数一览
+
+```java
+// 战斗奖励
+REWARD_DRAGON_DAMAGE = 2.0   // 每点龙伤害
+REWARD_HIT          = 1.0   // 每次命中
+REWARD_SWING_MISS   = -0.3  // 每次挥空
+REWARD_DRAGON_HURT  = 3.0   // 第一次打中龙（单次）
+REWARD_DRAGON_DEATH = 200.0 // 屠龙（单次）
+
+// 生存惩罚
+REWARD_SURVIVE_TICK = 0.002  // 每 tick 存活
+REWARD_PLAYER_DAMAGE = -10.0 // 每点受伤（Phase 2 提高惩罚）
+REWARD_DEATH        = -20.0  // 死亡（单次）
+REWARD_VOID_PENALTY = -5.0   // 每 tick 在虚空上方
+
+// 移动奖励（Phase 2 降低近身奖励，避免死贴龙巢）
+REWARD_APPROACH    = 0.1    // 每靠近龙 1 格（原 0.2）
+REWARD_DISTANCE    = 0.01   // 距离指数奖励: 0.01 * exp(-dist/30)
+REWARD_PROXIMITY   = 0.05   // 每 tick 在 10 格内（原 0.1）
+REWARD_FACE_DRAGON = 0.01   // 每 tick 龙在视野内
+
+// 龙息惩罚
+REWARD_BREATH_PENALTY = -1.0 // 每 tick 在龙息云/火球 12 格内
+```
 
 ## 关键技术栈
 

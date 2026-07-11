@@ -5,16 +5,14 @@ import numpy as np
 from .protocol import MCProtocol
 
 # Normalization constants
-POS_BOUND = 150.0       # x, z ±150
-Y_MIN, Y_MAX = 0.0, 120.0
-Y_MID = (Y_MIN + Y_MAX) / 2  # 60
-VEL_BOUND = 10.0
 PLAYER_HEALTH_MAX = 20.0
 DRAGON_HEALTH_MAX = 200.0
-DISTANCE_MAX = 64.0
+VEL_BOUND = 10.0
+DISTANCE_MAX = 100.0
 TIME_MAX = 6000.0
 DAMAGE_MAX = 200.0
-COUNT_MAX = 1000.0
+GROUND_DIST_MAX = 100.0
+RAYTRACE_MAX = 64.0
 
 
 class DragonEnv(gym.Env):
@@ -30,8 +28,8 @@ class DragonEnv(gym.Env):
         # 9 discrete actions (Phase 1: noop, forward, backward, turn L/R, look U/D, attack, sprint)
         self.action_space = spaces.Discrete(9)
 
-        # All features normalized to ~[-1, 1], so Box(-1, 1)
-        obs_dim = 583
+        # 25-dimensional observation (compact Phase 1 design)
+        obs_dim = 25
         self.observation_space = spaces.Box(
             low=-1.0, high=1.0, shape=(obs_dim,), dtype=np.float32
         )
@@ -66,108 +64,54 @@ class DragonEnv(gym.Env):
     def _parse_obs(self, data: dict) -> np.ndarray:
         vec = []
 
-        # ── Player (12) ──────────────────────────────────────────
-        p = data["player"]
-        px, py, pz = p["pos"]
-        vec.append(np.clip(px / POS_BOUND, -1.0, 1.0))
-        vec.append(np.clip((py - Y_MID) / Y_MID, -1.0, 1.0))
-        vec.append(np.clip(pz / POS_BOUND, -1.0, 1.0))
-        vec.append(p["rotation"][0] / 180.0)  # yaw [-180, 180] → [-1, 1]
-        vec.append(p["rotation"][1] / 90.0)   # pitch [-90, 90] → [-1, 1]
-        vec.append(p["health"] / PLAYER_HEALTH_MAX)
-        vx, vy, vz = p["velocity"]
-        vec.append(np.clip(vx / VEL_BOUND, -1.0, 1.0))
-        vec.append(np.clip(vy / VEL_BOUND, -1.0, 1.0))
-        vec.append(np.clip(vz / VEL_BOUND, -1.0, 1.0))
-        vec.append(1.0 if p["on_ground"] else 0.0)
-        vec.append(1.0 if p["sprinting"] else 0.0)
-        vec.append(0.0)  # block_below placeholder
+        # ── Player state (6) ────────────────────────────────────────
+        p = data.get("player", {})
+        vec.append(p.get("health", 20.0) / PLAYER_HEALTH_MAX)
+        vec.append(1.0 if p.get("on_ground", True) else 0.0)
+        vec.append(1.0 if p.get("sprinting", False) else 0.0)
+        vel = p.get("velocity", [0, 0, 0])
+        vec.append(np.clip(float(vel[0]) / VEL_BOUND, -1.0, 1.0))
+        vec.append(np.clip(float(vel[1]) / VEL_BOUND, -1.0, 1.0))
+        vec.append(np.clip(float(vel[2]) / VEL_BOUND, -1.0, 1.0))
 
-        # ── Dragon (13) ──────────────────────────────────────────
-        d = data["dragon"]
-        dx, dy, dz = d["pos"]
-        vec.append(np.clip((dx - px) / POS_BOUND, -1.0, 1.0))
-        vec.append(np.clip((dy - py) / POS_BOUND, -1.0, 1.0))
-        vec.append(np.clip((dz - pz) / POS_BOUND, -1.0, 1.0))
-        dvx, dvy, dvz = d["velocity"]
-        vec.append(np.clip(dvx / VEL_BOUND, -1.0, 1.0))
-        vec.append(np.clip(dvy / VEL_BOUND, -1.0, 1.0))
-        vec.append(np.clip(dvz / VEL_BOUND, -1.0, 1.0))
-        bw, bh = d["bbox"]
-        vec.append(np.clip(bw / 10.0, 0.0, 1.0))
-        vec.append(np.clip(bh / 10.0, 0.0, 1.0))
-        vec.append(d["health"] / DRAGON_HEALTH_MAX)
-        vec.append(hash(d["phase"]) % 100 / 100.0)
-        tx, ty, tz = d["target"]
-        vec.append(np.clip((tx - px) / POS_BOUND, -1.0, 1.0))
-        vec.append(np.clip((ty - py) / POS_BOUND, -1.0, 1.0))
-        vec.append(np.clip((tz - pz) / POS_BOUND, -1.0, 1.0))
+        # ── Dragon relative (6) ─────────────────────────────────────
+        d = data.get("dragon_relative", {})
+        vec.append(np.clip(float(d.get("yaw_delta", 0.0)) / 180.0, -1.0, 1.0))
+        vec.append(np.clip(float(d.get("pitch_delta", 0.0)) / 90.0, -1.0, 1.0))
+        vec.append(np.clip(float(d.get("distance", DISTANCE_MAX)) / DISTANCE_MAX, 0.0, 1.0))
+        vec.append(1.0 if d.get("in_view", False) else 0.0)
+        vec.append(np.clip(float(d.get("health", 0.0)) / DRAGON_HEALTH_MAX, 0.0, 1.0))
+        vec.append(1.0 if d.get("alive", True) else 0.0)
 
-        # ── Endermen (80 = 8 × 10) ───────────────────────────────
-        endermen = data.get("endermen", [])
-        for i in range(8):
-            if i < len(endermen):
-                e = endermen[i]
-                ex, ey, ez = e["pos"]
-                vec.append(np.clip((ex - px) / POS_BOUND, -1.0, 1.0))
-                vec.append(np.clip((ey - py) / POS_BOUND, -1.0, 1.0))
-                vec.append(np.clip((ez - pz) / POS_BOUND, -1.0, 1.0))
-                evx, evy, evz = e["velocity"]
-                vec.append(np.clip(evx / VEL_BOUND, -1.0, 1.0))
-                vec.append(np.clip(evy / VEL_BOUND, -1.0, 1.0))
-                vec.append(np.clip(evz / VEL_BOUND, -1.0, 1.0))
-                ebw, ebh = e["bbox"]
-                vec.append(np.clip(ebw / 10.0, 0.0, 1.0))
-                vec.append(np.clip(ebh / 10.0, 0.0, 1.0))
-                vec.append(e["health"] / 40.0)
-                vec.append(1.0 if e["angry"] else 0.0)
-            else:
-                vec.extend([0.0] * 10)
+        # ── Terrain (2) ─────────────────────────────────────────────
+        t = data.get("terrain", {})
+        vec.append(np.clip(float(t.get("ground_distance", 0.0)) / GROUND_DIST_MAX, 0.0, 1.0))
+        vec.append(1.0 if t.get("is_over_void", False) else 0.0)
 
-        # ── Inventory (14) ───────────────────────────────────────
-        inv = data["inventory"]
-        for i in range(9):
-            vec.append(self._item_hash(inv["hotbar"][i]))  # already [-1, 1]
-        vec.append(inv["selected_slot"] / 8.0)  # [0, 1]
-        for i in range(4):
-            item = inv["armor"][i] if i < len(inv["armor"]) else None
-            vec.append(self._item_hash(item))
+        # ── Inventory (2) ───────────────────────────────────────────
+        inv = data.get("inventory", {})
+        vec.append(1.0 if inv.get("has_sword", True) else 0.0)
+        vec.append(1.0 if inv.get("has_armor", True) else 0.0)
 
-        # ── Terrain (450) ────────────────────────────────────────
-        t = data["terrain"]
-        for h in t["heightmap"]:
-            vec.append(np.clip(h / 120.0, -1.0, 1.0))
-        for s in t["surface"]:
-            vec.append(s / 4.0)
-
-        # ── Raytrace (8) ─────────────────────────────────────────
+        # ── Raytrace (3) ────────────────────────────────────────────
         r = data.get("raytrace", {})
-        vec.append(self._item_hash(r.get("hit_entity")))
-        vec.append(self._item_hash(r.get("hit_block")))
-        vec.append(np.clip(float(r.get("distance", DISTANCE_MAX)) / DISTANCE_MAX, 0.0, 1.0))
-        rpos = r.get("pos", [px, py, pz])
-        vec.append(np.clip((rpos[0] - px) / POS_BOUND, -1.0, 1.0))
-        vec.append(np.clip((rpos[2] - pz) / POS_BOUND, -1.0, 1.0))
-        vec.append(0.0)  # block_pos placeholder
-        vec.append(0.0)  # block_side placeholder
-        vec.append(0.0)  # block_id placeholder
+        vec.append(1.0 if r.get("dragon_in_crosshair", False) else 0.0)
+        vec.append(np.clip(float(r.get("distance", RAYTRACE_MAX)) / RAYTRACE_MAX, 0.0, 1.0))
+        vec.append(float(r.get("hit_type", 0)) / 2.0)
 
-        # ── Stats (6) ────────────────────────────────────────────
+        # ── Stats (4: time, dmg, hits, attack_cooldown) ──────────────
         s = data.get("stats", {})
-        vec.append(np.clip(s.get("time_alive", 0.0) / TIME_MAX, 0.0, 1.0))
-        vec.append(np.clip(s.get("damage_dealt", 0.0) / DAMAGE_MAX, 0.0, 1.0))
-        vec.append(np.clip(s.get("damage_taken", 0.0) / PLAYER_HEALTH_MAX, 0.0, 1.0))
-        vec.append(np.clip(s.get("dragon_damage_dealt", 0.0) / DAMAGE_MAX, 0.0, 1.0))
-        vec.append(np.clip(s.get("swing_count", 0.0) / COUNT_MAX, 0.0, 1.0))
-        vec.append(np.clip(s.get("hit_count", 0.0) / COUNT_MAX, 0.0, 1.0))
+        vec.append(np.clip(float(s.get("time_alive", 0.0)) / TIME_MAX, 0.0, 1.0))
+        vec.append(np.clip(float(s.get("dragon_damage_dealt", 0.0)) / DAMAGE_MAX, 0.0, 1.0))
+        vec.append(np.clip(float(s.get("hit_count", 0.0)) / 100.0, 0.0, 1.0))
+        vec.append(np.clip(float(s.get("attack_cooldown", 1.0)), 0.0, 1.0))
+
+        # ── Breath (2: distance, warning) ────────────────────────────
+        b = data.get("breath", {})
+        vec.append(np.clip(float(b.get("nearest_breath", 1.0)), 0.0, 1.0))
+        vec.append(1.0 if b.get("breath_warning", False) else 0.0)
 
         return np.array(vec, dtype=np.float32)
-
-    @staticmethod
-    def _item_hash(name) -> float:
-        if name is None:
-            return -1.0
-        return float(hash(name) % 1000) / 1000.0
 
     def close(self):
         if self.conn:

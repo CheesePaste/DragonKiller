@@ -46,15 +46,15 @@ public class EpisodeManager {
     public DoneInfo checkDone(ServerPlayerEntity player, ServerWorld world) {
         if (state != State.RUNNING) return new DoneInfo(false, "");
 
-        // Check dragon death
-        EnderDragonEntity dragon = ObservationBuilder.getDragon(world);
-        if (dragon != null && dragon.isDead()) {
-            return new DoneInfo(true, "dragon_killed");
-        }
-
         // Check player death
         if (player.isDead()) {
             return new DoneInfo(true, "player_died");
+        }
+
+        // Check dragon death
+        EnderDragonEntity dragon = ObservationBuilder.getDragon(world);
+        if (dragon == null || dragon.isDead()) {
+            return new DoneInfo(true, "dragon_killed");
         }
 
         // Check timeout

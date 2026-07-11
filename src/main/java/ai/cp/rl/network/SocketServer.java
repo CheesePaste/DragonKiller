@@ -5,6 +5,7 @@ import ai.cp.config.RLConfig;
 import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -39,6 +40,7 @@ public class SocketServer {
             clientChannel = serverChannel.accept();
             if (clientChannel != null) {
                 clientChannel.configureBlocking(false);
+                clientChannel.setOption(StandardSocketOptions.TCP_NODELAY, true);
                 DragonKiller.LOGGER.info("RL client connected: {}", clientChannel.getRemoteAddress());
                 return true;
             }

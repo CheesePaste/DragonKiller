@@ -14,6 +14,8 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
@@ -220,7 +222,7 @@ public class RLTickHandler {
             episodeManager.getEpisodeCount() + 1, dragonHealth));
 
         // Send initial observation
-        JsonObject obs = ObservationBuilder.build(botPlayer, endWorld, 0, 0, 0, 0, 0);
+        JsonObject obs = ObservationBuilder.build(botPlayer, endWorld, 0, 0, 0, 0.0f);
         String message = Protocol.createObsMessage(obs, 0.0, false);
         socketServer.send(message);
     }
@@ -269,41 +271,76 @@ public class RLTickHandler {
         double dragonHealth = dragon != null ? dragon.getHealth() : 0;
         double playerHealth = botPlayer.getHealth();
 
-        // Check if any enderman is angry nearby
-        boolean endermanAngry = endWorld.getEntitiesByClass(
-            net.minecraft.entity.mob.EndermanEntity.class,
-            botPlayer.getBoundingBox().expand(32.0),
-            e -> e.isAngry()
-        ).size() > 0;
-
-        double dragonDistance = 100.0;
-        if (dragon != null) {
-            double dx = botPlayer.getX() - dragon.getX();
-            double dz = botPlayer.getZ() - dragon.getZ();
-            dragonDistance = Math.sqrt(dx * dx + dz * dz);
+        // Sync if dragon healed (e.g., StaticDragonMixin re-init)
+        if (dragon != null && dragonHealth > prevDragonHealth + 10) {
+            rewardCalc.syncMaxHealth(dragonHealth);
+            prevDragonHealth = dragonHealth;
         }
 
-        // Compute dense reward
+        // Calculate facing-dragon flag and distance
+        boolean facingDragon = false;
+        double dragonDistance = 100.0;
+        if (dragon != null && !dragon.isDead()) {
+            Vec3d playerPos = botPlayer.getEyePos();
+            Vec3d dragonPos = dragon.getPos();
+            Vec3d toDragon = dragonPos.subtract(playerPos);
+            double dx = toDragon.x;
+            double dy = toDragon.y;
+            double dz = toDragon.z;
+            double horizDist = Math.sqrt(dx * dx + dz * dz);
+            dragonDistance = playerPos.distanceTo(dragonPos);
+
+            float yawToDragon = (float) MathHelper.atan2(-dx, dz) * MathHelper.DEGREES_PER_RADIAN;
+            float pitchToDragon = -(float) MathHelper.atan2(dy, horizDist) * MathHelper.DEGREES_PER_RADIAN;
+            float yawDelta = yawToDragon - botPlayer.getYaw();
+            while (yawDelta > 180F) yawDelta -= 360F;
+            while (yawDelta < -180F) yawDelta += 360F;
+            float pitchDelta = pitchToDragon - botPlayer.getPitch();
+            while (pitchDelta > 180F) pitchDelta -= 360F;
+            while (pitchDelta < -180F) pitchDelta += 360F;
+
+            facingDragon = Math.abs(yawDelta) < 45 && Math.abs(pitchDelta) < 30;
+        }
+
+        // Check if over void
+        boolean isOverVoid = botPlayer.getBlockPos().getY() < 0;
+
+        // Check breath nearby
+        JsonObject breathObs = ObservationBuilder.buildBreath(botPlayer, endWorld);
+        boolean breathNearby = breathObs.get("breath_warning").getAsBoolean();
+
+        // Sync swing count from ActionParser
+        swingCount = ActionParser.getSwingCount();
+
+        // Compute dense reward (11 params — our version)
+        boolean fullChargeHit = ActionParser.didAttackThisCycle() && ActionParser.wasFullCharge();
+        boolean critHit = ActionParser.didAttackThisCycle() && ActionParser.wasAirborne();
         double denseReward = rewardCalc.computeDense(
-            dragonHealth, playerHealth, endermanAngry,
+            dragonHealth, playerHealth,
             hitCount, swingCount, dragonDistance,
-            botPlayer.isSprinting());
+            botPlayer.isSprinting(), facingDragon, isOverVoid,
+            fullChargeHit, critHit, breathNearby);
         double totalReward = denseReward;
 
-        // Dragon health delta (sparse reward)
+        // Dragon health delta — apply damage/hit tracking + sparse reward
         double dragonDelta = prevDragonHealth - dragonHealth;
         if (dragonDelta > 0 && dragon != null && !dragon.isDead()) {
             totalReward += rewardCalc.onDragonHurt();
+            dragonDamageDealt += dragonDelta;
+            hitCount++;
+
+            double hitReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE + RLConfig.REWARD_DRAGON_HURT;
             broadcastActionBar(String.format(
-                "§cDragon §f❤%.0f §7(-%.1f)", dragonHealth, dragonDelta));
+                "§cDragon §f❤%.0f §7(-%.1f) §e+%.1f", dragonHealth, dragonDelta, hitReward));
         }
         prevDragonHealth = dragonHealth;
 
         episodeManager.addReward(totalReward);
 
-        // Build observation
+        // Build observation (6 params — our version)
+        float cooldownProgress = ActionParser.getCooldownProgress();
         JsonObject obs = ObservationBuilder.build(botPlayer, endWorld,
-            episodeManager.getTickCount(), 0, dragonDamageDealt, swingCount, hitCount);
+            episodeManager.getTickCount(), dragonDamageDealt, hitCount, cooldownProgress);
 
         // Check done
         EpisodeManager.DoneInfo doneInfo = episodeManager.checkDone(botPlayer, endWorld);

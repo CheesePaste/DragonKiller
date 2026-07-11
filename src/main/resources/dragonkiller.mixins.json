@@ -12,7 +12,9 @@
 		"StaticDragonMixin",
 		"RLTickMixin",
 		"PlayerManagerAccessor",
-		"TickRateMixin"
+		"TickRateMixin",
+		"ImmortalDragonMixin",
+		"LivingEntityAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

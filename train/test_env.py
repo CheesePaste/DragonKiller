@@ -34,7 +34,7 @@ def test_env(host="127.0.0.1", port=5670, retries=30):
         raise RuntimeError("No MC connection")
 
     # Check observation
-    expected_dim = 583
+    expected_dim = 25
     print(f"\nObservation shape: {obs.shape}")
     assert obs.shape == (expected_dim,), f"Expected ({expected_dim},), got {obs.shape}"
     print(f"[OK] Observation dimension = {expected_dim}")
@@ -64,14 +64,13 @@ def test_env(host="127.0.0.1", port=5670, retries=30):
     # Print observation structure breakdown (normalized)
     print("\nObservation breakdown (all normalized to [-1, 1]):")
     sections = {
-        "player": (0, 12),
-        "dragon": (12, 25),
-        "endermen": (25, 105),
-        "inventory": (105, 119),
-        "terrain_height": (119, 344),
-        "terrain_surface": (344, 569),
-        "raytrace": (569, 577),
-        "stats": (577, 583),
+        "player":        (0, 6),
+        "dragon_rel":    (6, 12),
+        "terrain":       (12, 14),
+        "inventory":     (14, 16),
+        "raytrace":      (16, 19),
+        "stats":         (19, 23),
+        "breath":        (23, 25),
     }
     for name, (start, end) in sections.items():
         vals = obs[start:end]

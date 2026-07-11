@@ -1,8 +1,10 @@
 package ai.cp.mixin;
 
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.boss.dragon.EnderDragonFight;
 import net.minecraft.entity.boss.dragon.phase.PhaseType;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -10,6 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EnderDragonEntity.class)
 public class StaticDragonMixin {
+    @Shadow private EnderDragonFight fight;
+
     @Unique
     private boolean dragonInitialized = false;
 
@@ -23,6 +27,10 @@ public class StaticDragonMixin {
             dragon.getPhaseManager().setPhase(PhaseType.SITTING_SCANNING);
             dragonInitialized = true;
             return; // Let first tick run to position body parts correctly
+        }
+        // Still update boss bar and fight state before freezing AI
+        if (this.fight != null) {
+            this.fight.updateFight(dragon);
         }
         ci.cancel(); // Freeze dragon after initialization
     }
