@@ -209,6 +209,15 @@ public class RLTickHandler {
         ActionParser.reset();
         ActionParser.addFreezeTicks(RLConfig.ACTION_REPEAT); // Prevent immediate obs flood
         EnderDragonEntity dragon = ObservationBuilder.getDragon(endWorld);
+        if (dragon != null) {
+            dragon.discard();
+        }
+        dragon = net.minecraft.entity.EntityType.ENDER_DRAGON.create(endWorld);
+        if (dragon != null) {
+            dragon.getPhaseManager().setPhase(net.minecraft.entity.boss.dragon.phase.PhaseType.HOLDING_PATTERN);
+            dragon.setPosition(0.0, 80.0, 0.0);
+            endWorld.spawnEntity(dragon);
+        }
         double dragonHealth = dragon != null ? dragon.getHealth() : 0;
         double dragonDistance = 100.0;
         if (dragon != null) {

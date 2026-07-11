@@ -3,7 +3,7 @@ package ai.cp.config;
 public class RLConfig {
     public static final int TCP_PORT = Integer.parseInt(System.getProperty("rlport", "5670"));
     public static final int ACTION_REPEAT = 3;
-    public static final int EPISODE_TIMEOUT = 6000;
+    public static final int EPISODE_TIMEOUT = 36000;
     public static final long WORLD_SEED = 12345L;
 
     // Reward coefficients
