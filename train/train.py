@@ -138,7 +138,7 @@ def train(config: TrainConfig):
 
     callbacks = CallbackList([
         checkpoint_callback,
-        eval_callback,
+        # eval_callback, # Disabled: causes TCP port conflict with the training env on a single MC client
         EpisodeInfoLogger(),
         DragonKillRateCallback(),
     ])
