@@ -1,6 +1,7 @@
 package ai.cp.rl;
 
 import ai.cp.DragonKiller;
+import ai.cp.config.RLConfig;
 import ai.cp.mixin.PlayerManagerAccessor;
 import ai.cp.rl.network.Protocol;
 import ai.cp.rl.network.SocketServer;
@@ -207,6 +208,7 @@ public class RLTickHandler {
         episodeManager.startEpisode();
 
         ActionParser.reset();
+        ActionParser.addFreezeTicks(RLConfig.ACTION_REPEAT); // Prevent immediate obs flood
         EnderDragonEntity dragon = ObservationBuilder.getDragon(endWorld);
         double dragonHealth = dragon != null ? dragon.getHealth() : 0;
         double dragonDistance = dragon != null ? botPlayer.distanceTo(dragon) : 100.0;
@@ -372,6 +374,7 @@ public class RLTickHandler {
         botPlayer.teleport(endWorld, 30.5, 70.0, 30.5, 0.0F, 0.0F);
         episodeManager.startEpisode();
         ActionParser.reset();
+        ActionParser.addFreezeTicks(RLConfig.ACTION_REPEAT);
 
         EnderDragonEntity dragon = ObservationBuilder.getDragon(endWorld);
         double dragonHealth = dragon != null ? dragon.getHealth() : 0;

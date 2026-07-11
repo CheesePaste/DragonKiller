@@ -149,6 +149,13 @@ public class ActionParser {
         return freezeCounter <= 0 && !stickyAttackActive;
     }
 
+    /** Set a minimum freeze duration. Used after reset to prevent observation flood. */
+    public static void addFreezeTicks(int ticks) {
+        if (freezeCounter < ticks) {
+            freezeCounter = ticks;
+        }
+    }
+
     private static void applyForwardVelocity(ServerPlayerEntity player, int direction) {
         float yawRad = player.getYaw() * MathHelper.RADIANS_PER_DEGREE;
         double dx = -MathHelper.sin(yawRad) * MOVE_SPEED * direction;
