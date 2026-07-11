@@ -27,8 +27,8 @@ class DragonEnv(gym.Env):
         self.connect_retries = connect_retries
         self.connect_retry_delay = connect_retry_delay
 
-        # 21 discrete actions
-        self.action_space = spaces.Discrete(21)
+        # 9 discrete actions (Phase 1: noop, forward, backward, turn L/R, look U/D, attack, sprint)
+        self.action_space = spaces.Discrete(9)
 
         # All features normalized to ~[-1, 1], so Box(-1, 1)
         obs_dim = 583

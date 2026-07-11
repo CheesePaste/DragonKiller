@@ -46,12 +46,12 @@ def test_env(host="127.0.0.1", port=5670, retries=30):
 
     # Check action space
     print(f"Action space: {env.action_space}")
-    assert env.action_space.n == 21
-    print(f"[OK] Action space = 21 discrete")
+    assert env.action_space.n == 9
+    print(f"[OK] Action space = 9 discrete")
 
     # Run a few steps with different actions
     print("\nStepping through actions...")
-    for action in [0, 1, 9, 17, 5, 11, 4, 10]:
+    for action in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
         obs, reward, done, truncated, info = env.step(action)
         print(f"  action={action:2d}: reward={reward:+7.3f}, done={done}, obs_range=[{obs.min():.2f}, {obs.max():.2f}]")
         if done:

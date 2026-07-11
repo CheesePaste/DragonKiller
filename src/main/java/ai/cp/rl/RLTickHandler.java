@@ -72,6 +72,11 @@ public class RLTickHandler {
         // Run episode logic
         if (episodeManager.getState() == EpisodeManager.State.RUNNING && botPlayer != null) {
             episodeTick();
+
+            // Safety net: force survival mode every tick to override MC death→spectator
+            if (botPlayer.interactionManager.getGameMode() != GameMode.SURVIVAL) {
+                botPlayer.changeGameMode(GameMode.SURVIVAL);
+            }
         }
 
         // Drain send queue (non-blocking, best-effort per tick)
@@ -114,6 +119,9 @@ public class RLTickHandler {
         // Register with boss bar manager
         srv.getBossBarManager().onPlayerConnect(botPlayer);
 
+        // Force survival mode (fresh bot should never be spectator)
+        botPlayer.changeGameMode(GameMode.SURVIVAL);
+
         // Give the bot a unique spawn angle for each creation
         botPlayer.teleport(endWorld, 30.5, 70.0, 30.5, 0.0F, 0.0F);
 
@@ -144,15 +152,14 @@ public class RLTickHandler {
     }
 
     private static void handleReset() {
-        if (botPlayer == null || botPlayer.isRemoved() || botPlayer.isDead()) {
-            if (botPlayer != null && !botPlayer.isRemoved()) {
-                botPlayer.discard();
-            }
-            createBotPlayer(server);
+        // Always discard old bot and create fresh one (avoid state leakage from death)
+        if (botPlayer != null && !botPlayer.isRemoved()) {
+            botPlayer.discard();
         }
+        createBotPlayer(server);
         if (botPlayer == null) return;
 
-        // Force survival mode (dead players may be in spectator)
+        // Force survival mode
         botPlayer.changeGameMode(GameMode.SURVIVAL);
 
         // Teleport to spawn
@@ -198,25 +205,11 @@ public class RLTickHandler {
         // Diamond sword
         botPlayer.getInventory().setStack(0, new ItemStack(Items.DIAMOND_SWORD));
 
-        // Infinite blocks
-        botPlayer.getInventory().setStack(1, new ItemStack(Items.END_STONE, 64));
-
-        // Water bucket
-        botPlayer.getInventory().setStack(2, new ItemStack(Items.WATER_BUCKET));
-
-        // Shield
-        botPlayer.getInventory().setStack(3, new ItemStack(Items.SHIELD));
-
         // Diamond armor
         botPlayer.getInventory().armor.set(3, new ItemStack(Items.DIAMOND_HELMET));
         botPlayer.getInventory().armor.set(2, new ItemStack(Items.DIAMOND_CHESTPLATE));
         botPlayer.getInventory().armor.set(1, new ItemStack(Items.DIAMOND_LEGGINGS));
         botPlayer.getInventory().armor.set(0, new ItemStack(Items.DIAMOND_BOOTS));
-
-        // Extra blocks
-        for (int i = 4; i < 9; i++) {
-            botPlayer.getInventory().setStack(i, new ItemStack(Items.END_STONE, 64));
-        }
     }
 
     private static void handleStep(JsonObject msg) {
@@ -233,6 +226,12 @@ public class RLTickHandler {
     private static void episodeTick() {
         episodeManager.tick();
         ActionParser.tickExecute(botPlayer, endWorld);
+
+        // If player died, immediately send observation (don't wait for freeze to expire)
+        if (botPlayer.isDead() && episodeManager.getState() == EpisodeManager.State.RUNNING) {
+            sendObservation();
+            return;
+        }
 
         if (ActionParser.needsNewAction()) {
             sendObservation();
