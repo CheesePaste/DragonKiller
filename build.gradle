@@ -29,6 +29,12 @@ loom {
 			vmArg "-Drlport=${System.getProperty('rlport', '5670')}"
 		}
 
+		clientP2 {
+			client()
+			vmArg "-Drlport=${System.getProperty('rlport', '5670')}"
+			vmArg "-Drlphase=p2"
+		}
+
 		def numEnvs = project.hasProperty('numEnvs') ? project.property('numEnvs').toInteger() : 4
 		def ports = (0..<numEnvs).collect { 5670 + it }
 

@@ -1,5 +1,6 @@
 package ai.cp.mixin;
 
+import ai.cp.config.RLConfig;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonFight;
 import net.minecraft.entity.boss.dragon.phase.PhaseType;
@@ -19,6 +20,8 @@ public class StaticDragonMixin {
 
     @Inject(method = "tickMovement", at = @At("HEAD"), cancellable = true)
     private void cancelDragonAI(CallbackInfo ci) {
+        if (RLConfig.IS_PHASE_2) return; // Phase 2: let dragon AI run freely
+
         EnderDragonEntity dragon = (EnderDragonEntity) (Object) this;
         if (!dragonInitialized) {
             // Teleport to perch above exit portal

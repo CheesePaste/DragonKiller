@@ -1,5 +1,6 @@
 package ai.cp;
 
+import ai.cp.config.RLConfig;
 import ai.cp.config.TickRateHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -16,6 +17,10 @@ public class DragonKiller implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info("DragonKiller RL Environment initializing...");
+		LOGGER.info("Phase: {} (IS_PHASE_2={}, rlphase={})",
+			RLConfig.IS_PHASE_2 ? "PHASE 2" : "PHASE 1",
+			RLConfig.IS_PHASE_2,
+			System.getProperty("rlphase", "default_p1"));
 		registerCommands();
 	}
 

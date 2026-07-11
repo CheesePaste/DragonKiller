@@ -6,7 +6,11 @@ import ai.cp.mixin.PlayerManagerAccessor;
 import ai.cp.rl.network.Protocol;
 import ai.cp.rl.network.SocketServer;
 import com.google.gson.JsonObject;
+import net.minecraft.entity.AreaEffectCloudEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.projectile.DragonFireballEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
@@ -14,6 +18,8 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.Box;
+import net.minecraft.world.GameRules;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
@@ -33,6 +39,7 @@ public class RLTickHandler {
     private static int hitCount;
     private static double dragonDamageDealt;
     private static double prevDragonHealth;
+    private static int invincibilityTicks;
 
     private static void broadcastActionBar(String msg) {
         if (server == null) return;
@@ -98,6 +105,9 @@ public class RLTickHandler {
     private static void init(MinecraftServer srv) {
         endWorld = srv.getWorld(World.END);
         socketServer.start();
+
+        // Disable natural health regeneration (prevents double-penalty on health)
+        srv.getGameRules().get(GameRules.NATURAL_REGENERATION).set(false, srv);
 
         // Create and register the bot player
         createBotPlayer(srv);
@@ -185,16 +195,39 @@ public class RLTickHandler {
         }
     }
 
+    private static void clearDragonBreath() {
+        if (endWorld == null) return;
+        // Remove all lingering breath clouds
+        var clouds = endWorld.getEntitiesByClass(AreaEffectCloudEntity.class,
+            new Box(-200, 0, -200, 200, 256, 200), c -> true);
+        for (var cloud : clouds) cloud.discard();
+        // Remove all fireballs
+        var fireballs = endWorld.getEntitiesByClass(DragonFireballEntity.class,
+            new Box(-200, 0, -200, 200, 256, 200), fb -> true);
+        for (var fb : fireballs) fb.discard();
+    }
+
     private static void handleReset() {
         // Always discard old bot and create fresh one (avoid state leakage from death)
         if (botPlayer != null && !botPlayer.isRemoved()) {
             botPlayer.discard();
         }
+        clearDragonBreath();
         createBotPlayer(server);
         if (botPlayer == null) return;
 
         // Force survival mode
         botPlayer.changeGameMode(GameMode.SURVIVAL);
+
+        // Phase 2: give fire resistance so the bot survives dragon breath
+        if (RLConfig.IS_PHASE_2) {
+            botPlayer.addStatusEffect(new StatusEffectInstance(
+                StatusEffects.FIRE_RESISTANCE, StatusEffectInstance.INFINITE, 0, false, false));
+        }
+
+        // 5 seconds of invulnerability to survive loading / initial breath
+        invincibilityTicks = 100;
+        botPlayer.setInvulnerable(true);
 
         // Teleport to spawn
         botPlayer.teleport(endWorld, 30.5, 70.0, 30.5, 0.0F, 0.0F);
@@ -266,6 +299,20 @@ public class RLTickHandler {
         episodeManager.tick();
         ActionParser.tickExecute(botPlayer, endWorld);
 
+        // Invincibility countdown
+        if (invincibilityTicks > 0) {
+            invincibilityTicks--;
+            if (invincibilityTicks <= 0) {
+                botPlayer.setInvulnerable(false);
+            }
+        }
+
+        // Phase 2: refresh fire resistance every tick (survives death/respawn)
+        if (RLConfig.IS_PHASE_2 && !botPlayer.hasStatusEffect(StatusEffects.FIRE_RESISTANCE)) {
+            botPlayer.addStatusEffect(new StatusEffectInstance(
+                StatusEffects.FIRE_RESISTANCE, StatusEffectInstance.INFINITE, 0, false, false));
+        }
+
         // If player died, immediately send observation (don't wait for freeze to expire)
         if (botPlayer.isDead() && episodeManager.getState() == EpisodeManager.State.RUNNING) {
             sendObservation();
@@ -318,20 +365,21 @@ public class RLTickHandler {
         // Check if over void
         boolean isOverVoid = botPlayer.getBlockPos().getY() < 0;
 
-        // Check breath nearby
-        JsonObject breathObs = ObservationBuilder.buildBreath(botPlayer, endWorld);
-        boolean breathNearby = breathObs.get("breath_warning").getAsBoolean();
-
         // Sync swing count from ActionParser
         swingCount = ActionParser.getSwingCount();
 
         // Compute dense reward (11 params — our version)
         boolean critHit = ActionParser.didAttackThisCycle() && ActionParser.wasAirborne();
+        boolean isDragonSitting = false;
+        if (dragon != null) {
+            int phase = dragon.getPhaseManager().getCurrent().getType().getTypeId();
+            isDragonSitting = phase == 3 || phase == 5 || phase == 6 || phase == 7;
+        }
         double denseReward = rewardCalc.computeDense(
             dragonHealth, playerHealth,
             hitCount, swingCount, dragonDistance,
             botPlayer.isSprinting(), facingDragon, isOverVoid,
-            critHit, breathNearby);
+            critHit, isDragonSitting);
         double totalReward = denseReward;
 
         // Dragon health delta — apply damage/hit tracking + sparse reward
@@ -387,6 +435,7 @@ public class RLTickHandler {
         ActionParser.markObservationSent();
 
         if (doneInfo.done()) {
+            clearDragonBreath();
             episodeManager.endEpisode(doneInfo.reason());
             DragonKiller.LOGGER.info("[EPISODE] Episode {} ended: {} ({} ticks, total reward: {})",
                 episodeManager.getEpisodeCount(), doneInfo.reason(),

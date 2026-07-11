@@ -22,7 +22,13 @@
       "Bash(unzip -p .gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-common-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-common-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2-sources.jar net/minecraft/entity/LivingEntity.java)",
       "Bash(unzip -p .gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-common-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-common-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2-sources.jar net/minecraft/entity/player/PlayerEntity.java)",
       "Bash(unzip -p .gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-common-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-common-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2-sources.jar net/minecraft/entity/Entity.java)",
-      "Bash(xxd)"
+      "Bash(xxd)",
+      "Bash(python *)",
+      "Bash(./gradlew tasks *)",
+      "Bash(./gradlew help *)",
+      "Bash(./gradlew properties *)",
+      "Bash(./gradlew clean *)",
+      "Bash(javap -c build/classes/java/main/ai/cp/DragonKiller.class)"
     ]
   }
 }

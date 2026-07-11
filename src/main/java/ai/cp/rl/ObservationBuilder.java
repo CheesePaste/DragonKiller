@@ -81,6 +81,15 @@ public class ObservationBuilder {
             obj.addProperty("in_view", inView);
             obj.addProperty("health", dragon.getHealth());
             obj.addProperty("alive", true);
+
+            // Dragon AI phase (Phase 2: 0=HOLDING_PATTERN … 10=HOVER)
+            obj.addProperty("phase", dragon.getPhaseManager().getCurrent().getType().getTypeId());
+
+            // Dragon velocity
+            Vec3d dragonVel = dragon.getVelocity();
+            JsonArray dv = new JsonArray();
+            dv.add(dragonVel.x); dv.add(dragonVel.y); dv.add(dragonVel.z);
+            obj.add("velocity", dv);
         } else {
             obj.addProperty("yaw", 0.0);
             obj.addProperty("pitch", 0.0);
@@ -90,6 +99,10 @@ public class ObservationBuilder {
             obj.addProperty("in_view", false);
             obj.addProperty("health", 0.0);
             obj.addProperty("alive", false);
+            obj.addProperty("phase", 0);
+            JsonArray dv = new JsonArray();
+            dv.add(0.0); dv.add(0.0); dv.add(0.0);
+            obj.add("velocity", dv);
         }
         return obj;
     }
