@@ -30,8 +30,8 @@ class TrainConfig:
 
     # Reproducibility
     seed: int = 42
-    n_envs: int = 1  # Single instance for baseline training
-    device: str = "cuda"  # Changed from "cpu" to "cuda" for GPU acceleration
+    n_envs: int = 4  # Number of environments to run in parallel
+    device: str = "cpu"  # Changed from "cpu" to "cuda" for GPU acceleration
 
     # Checkpointing
     save_dir: str = "models"
@@ -47,7 +47,7 @@ class TrainConfig:
     log_interval: int = 1  # Log every N episodes
 
     # Connection
-    connect_retries: int = 30  # Number of times to retry connecting to MC
+    connect_retries: int = 300  # Number of times to retry connecting to MC
     connect_retry_delay: float = 2.0  # Seconds between retries
 
 

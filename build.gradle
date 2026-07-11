@@ -28,6 +28,21 @@ loom {
 		client {
 			vmArg "-Drlport=${System.getProperty('rlport', '5670')}"
 		}
+
+		def numEnvs = project.hasProperty('numEnvs') ? project.property('numEnvs').toInteger() : 4
+		def ports = (0..<numEnvs).collect { 5670 + it }
+
+		ports.each { port ->
+			"server${port}" {
+				server()
+				name = "Headless Server ${port}"
+				runDir = "run/server_${port}"
+				vmArg "-Drlport=${port}"
+				vmArg "-Xmx1024M"
+				vmArg "-Xms512M"
+				programArg "nogui"
+			}
+		}
 	}
 }
 
@@ -101,7 +116,8 @@ task runMultiEnv {
 	description = "Runs 4 Minecraft instances for vectorized RL training."
 	
 	doLast {
-		def ports = [5670, 5671, 5672, 5673]
+		def numEnvs = project.hasProperty('numEnvs') ? project.property('numEnvs').toInteger() : 4
+		def ports = (0..<numEnvs).collect { 5670 + it }
 		def processes = []
 		
 		println "Starting ${ports.size()} Minecraft instances on ports: ${ports}..."
@@ -111,12 +127,18 @@ task runMultiEnv {
 		def gradlew = isWindows ? "gradlew.bat" : "./gradlew"
 		
 		ports.each { port ->
-			def pb = new ProcessBuilder(gradlew, "runClient", "-Drlport=${port}")
+			// Create run dir, eula.txt, and server.properties automatically
+			def runDir = new File(project.projectDir, "run/server_${port}")
+			runDir.mkdirs()
+			new File(runDir, "eula.txt").text = "eula=true\n"
+			new File(runDir, "server.properties").text = "server-port=${port + 20000}\n"
+			
+			def pb = new ProcessBuilder(gradlew, "runServer${port}", "-PnumEnvs=${numEnvs}")
 			pb.directory(project.projectDir)
-			pb.redirectOutput(new File(project.projectDir, "run_client_${port}.log"))
+			pb.redirectOutput(new File(project.projectDir, "run_server_${port}.log"))
 			pb.redirectErrorStream(true)
 			processes << pb.start()
-			println "Started instance on port ${port}"
+			println "Started dedicated server on port ${port}"
 			// Give a little delay between starts to prevent disk/CPU choking
 			Thread.sleep(2000)
 		}

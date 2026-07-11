@@ -118,7 +118,7 @@ def train(config: TrainConfig):
     # Import SubprocVecEnv
     from stable_baselines3.common.vec_env import SubprocVecEnv
 
-    ports = [5670, 5671, 5672, 5673]
+    ports = [config.port + i for i in range(config.n_envs)]
     env = SubprocVecEnv([make_env(config.host, p, config.seed) for p in ports])
 
     # Create a separate eval environment (single env is fine for eval)
