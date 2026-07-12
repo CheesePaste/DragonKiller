@@ -77,7 +77,6 @@ public class ObservationBuilder {
             obj.addProperty("pitch", pitchToDragon);
             obj.addProperty("yaw_delta", yawDelta);
             obj.addProperty("pitch_delta", pitchDelta);
-            obj.addProperty("distance", distance);
             obj.addProperty("in_view", inView);
             obj.addProperty("alive", true);
 
@@ -138,7 +137,6 @@ public class ObservationBuilder {
             obj.addProperty("pitch", 0.0);
             obj.addProperty("yaw_delta", 0.0);
             obj.addProperty("pitch_delta", 0.0);
-            obj.addProperty("distance", 100.0);
             obj.addProperty("in_view", false);
             obj.addProperty("alive", false);
             obj.addProperty("dy", 0.0);
@@ -170,26 +168,13 @@ public class ObservationBuilder {
         double reach = 64.0;
         HitResult hit = player.raycast(reach, 0.0F, false);
         boolean dragonInCrosshair = false;
-        int hitType = 0; // 0=none, 1=block, 2=dragon
-        double distance = reach;
 
         if (hit.getType() == HitResult.Type.ENTITY) {
             Entity entity = ((EntityHitResult) hit).getEntity();
-            distance = entity.getPos().distanceTo(player.getEyePos());
-            if (entity instanceof EnderDragonEntity || entity instanceof EnderDragonPart) {
-                dragonInCrosshair = true;
-                hitType = 2;
-            } else {
-                hitType = 2; // non-dragon entity (unlikely in the End)
-            }
-        } else if (hit.getType() == HitResult.Type.BLOCK) {
-            hitType = 1;
-            distance = hit.getPos().distanceTo(player.getEyePos());
+            dragonInCrosshair = entity instanceof EnderDragonEntity || entity instanceof EnderDragonPart;
         }
 
         obj.addProperty("dragon_in_crosshair", dragonInCrosshair);
-        obj.addProperty("distance", distance);
-        obj.addProperty("hit_type", hitType);
         return obj;
     }
 
@@ -197,6 +182,7 @@ public class ObservationBuilder {
         JsonObject obj = new JsonObject();
         double nearestBreath = 64.0;
         boolean breathWarning = false;
+        Entity nearestEntity = null;
 
         Box searchBox = player.getBoundingBox().expand(32.0, 16.0, 32.0);
 
@@ -206,6 +192,7 @@ public class ObservationBuilder {
             double dist = cloud.distanceTo(player);
             if (dist < nearestBreath) {
                 nearestBreath = dist;
+                nearestEntity = cloud;
             }
             if (dist < 12.0) {
                 breathWarning = true;
@@ -218,14 +205,27 @@ public class ObservationBuilder {
             double dist = fb.distanceTo(player);
             if (dist < nearestBreath) {
                 nearestBreath = dist;
+                nearestEntity = fb;
             }
             if (dist < 12.0) {
                 breathWarning = true;
             }
         }
 
+        // Direction to nearest breath entity (helps AI learn to escape)
+        double yawDelta = 0.0;
+        if (nearestEntity != null && nearestBreath < 32.0) {
+            Vec3d toBreath = nearestEntity.getPos().subtract(player.getPos());
+            float yawToBreath = (float) MathHelper.atan2(-toBreath.x, toBreath.z) * MathHelper.DEGREES_PER_RADIAN;
+            float delta = yawToBreath - player.getYaw();
+            while (delta > 180F) delta -= 360F;
+            while (delta < -180F) delta += 360F;
+            yawDelta = delta / 180.0;
+        }
+
         obj.addProperty("nearest_breath", Math.min(nearestBreath / 64.0, 1.0));
         obj.addProperty("breath_warning", breathWarning);
+        obj.addProperty("breath_yaw_delta", yawDelta);
         return obj;
     }
 

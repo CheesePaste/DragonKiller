@@ -9,7 +9,6 @@ PLAYER_HEALTH_MAX = 20.0
 VEL_BOUND = 10.0
 DISTANCE_MAX = 100.0
 GROUND_DIST_MAX = 100.0
-RAYTRACE_MAX = 64.0
 DRAGON_PHASE_MAX = 10.0
 DRAGON_DY_BOUND = 50.0
 
@@ -30,8 +29,8 @@ class DragonEnv(gym.Env):
         # 10 discrete actions (Phase 1: noop, forward, backward, turn L/R, look U/D, attack, sprint, jump)
         self.action_space = spaces.Discrete(10)
 
-        # 31-dimensional observation
-        obs_dim = 31
+        # 29-dimensional observation
+        obs_dim = 29
         self.observation_space = spaces.Box(
             low=-1.0, high=1.0, shape=(obs_dim,), dtype=np.float32
         )
@@ -78,11 +77,10 @@ class DragonEnv(gym.Env):
         vec.append(np.clip(float(p.get("center_dx", 0.0)), -1.0, 1.0))
         vec.append(np.clip(float(p.get("center_dz", 0.0)), -1.0, 1.0))
 
-        # ── Dragon relative (11: dir, dist, alive, dy, hit_dist, hit_yaw/pitch, head_yaw/pitch) ─
+        # ── Dragon relative (10: dir, alive, dy, hit_dist, hit_yaw/pitch, head_yaw/pitch) ─
         d = data.get("dragon_relative", {})
         vec.append(np.clip(float(d.get("yaw_delta", 0.0)) / 180.0, -1.0, 1.0))
         vec.append(np.clip(float(d.get("pitch_delta", 0.0)) / 90.0, -1.0, 1.0))
-        vec.append(np.clip(float(d.get("distance", DISTANCE_MAX)) / DISTANCE_MAX, 0.0, 1.0))
         vec.append(1.0 if d.get("in_view", False) else 0.0)
         vec.append(1.0 if d.get("alive", True) else 0.0)
         vec.append(np.clip(float(d.get("dy", 0.0)) / DRAGON_DY_BOUND, -1.0, 1.0))
@@ -103,21 +101,20 @@ class DragonEnv(gym.Env):
         t = data.get("terrain", {})
         vec.append(np.clip(float(t.get("ground_distance", 0.0)) / GROUND_DIST_MAX, 0.0, 1.0))
 
-        # ── Raytrace (3) ────────────────────────────────────────────
+        # ── Raytrace (1) ────────────────────────────────────────────
         r = data.get("raytrace", {})
         vec.append(1.0 if r.get("dragon_in_crosshair", False) else 0.0)
-        vec.append(np.clip(float(r.get("distance", RAYTRACE_MAX)) / RAYTRACE_MAX, 0.0, 1.0))
-        vec.append(float(r.get("hit_type", 0)) / 2.0)
 
         # ── Stats (2: attack_cooldown, last_hit_type) ─────────────────
         s = data.get("stats", {})
         vec.append(np.clip(float(s.get("attack_cooldown", 1.0)), 0.0, 1.0))
         vec.append(float(s.get("last_hit_type", 0)) / 2.0)
 
-        # ── Breath (2: distance, warning) ────────────────────────────
+        # ── Breath (3: distance, warning, yaw_delta) ─────────────────
         b = data.get("breath", {})
         vec.append(np.clip(float(b.get("nearest_breath", 1.0)), 0.0, 1.0))
         vec.append(1.0 if b.get("breath_warning", False) else 0.0)
+        vec.append(np.clip(float(b.get("breath_yaw_delta", 0.0)), -1.0, 1.0))
 
         return np.array(vec, dtype=np.float32)
 
