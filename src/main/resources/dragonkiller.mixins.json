@@ -14,7 +14,8 @@
 		"PlayerManagerAccessor",
 		"TickRateMixin",
 		"ImmortalDragonMixin",
-		"LivingEntityAccessor"
+		"LivingEntityAccessor",
+		"EnderDragonFightAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

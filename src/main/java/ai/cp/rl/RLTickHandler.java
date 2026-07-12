@@ -2,12 +2,16 @@ package ai.cp.rl;
 
 import ai.cp.DragonKiller;
 import ai.cp.config.RLConfig;
+import ai.cp.mixin.EnderDragonFightAccessor;
 import ai.cp.mixin.PlayerManagerAccessor;
 import ai.cp.rl.network.Protocol;
 import ai.cp.rl.network.SocketServer;
 import com.google.gson.JsonObject;
 import net.minecraft.entity.AreaEffectCloudEntity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.boss.dragon.EnderDragonFight;
+import net.minecraft.entity.boss.dragon.phase.PhaseType;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.projectile.DragonFireballEntity;
@@ -18,6 +22,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.GameRules;
 import net.minecraft.util.math.MathHelper;
@@ -83,19 +88,22 @@ public class RLTickHandler {
         // Ensure real players are in spectator mode
         ensureRealPlayersSpectate();
 
-        // Tick bot physics every server tick
+        // Bot physics is NOT ticked by ServerWorld — we must call playerTick explicitly.
+        // Order: first apply action velocity (from episodeTick), then tick physics,
+        // so velocity takes effect immediately (no 1-tick delay).
         if (botPlayer != null) {
-            botPlayer.playerTick();
-        }
+            // Run episode logic (applies movement/jump velocity via ActionParser.tickExecute)
+            if (episodeManager.getState() == EpisodeManager.State.RUNNING) {
+                episodeTick();
 
-        // Run episode logic
-        if (episodeManager.getState() == EpisodeManager.State.RUNNING && botPlayer != null) {
-            episodeTick();
-
-            // Safety net: force survival mode every tick to override MC death→spectator
-            if (botPlayer.interactionManager.getGameMode() != GameMode.SURVIVAL) {
-                botPlayer.changeGameMode(GameMode.SURVIVAL);
+                // Safety net: force survival mode every tick to override MC death→spectator
+                if (botPlayer.interactionManager.getGameMode() != GameMode.SURVIVAL) {
+                    botPlayer.changeGameMode(GameMode.SURVIVAL);
+                }
             }
+
+            // Tick physics AFTER action execution so jump/velocity applies same tick
+            botPlayer.playerTick();
         }
 
         // Drain send queue (non-blocking, best-effort per tick)
@@ -167,7 +175,7 @@ public class RLTickHandler {
         srv.getBossBarManager().onPlayerConnect(botPlayer);
 
         // Give the bot a unique spawn angle for each creation
-        botPlayer.teleport(endWorld, 30.5, 70.0, 30.5, 0.0F, 0.0F);
+        botPlayer.teleport(endWorld, 0.0, 65.0, 43.0, 0.0F, 0.0F);
 
         DragonKiller.LOGGER.info("BotPlayer created: {} (UUID: {})", botPlayer.getName().getString(), botPlayer.getUuid());
     }
@@ -219,10 +227,29 @@ public class RLTickHandler {
         // Force survival mode
         botPlayer.changeGameMode(GameMode.SURVIVAL);
 
-        // Phase 2: give fire resistance so the bot survives dragon breath
+
+        // Phase 2: kill existing dragon and spawn a fresh one, linked to EnderDragonFight
         if (RLConfig.IS_PHASE_2) {
-            botPlayer.addStatusEffect(new StatusEffectInstance(
-                StatusEffects.FIRE_RESISTANCE, StatusEffectInstance.INFINITE, 0, false, false));
+            EnderDragonEntity oldDragon = ObservationBuilder.getDragon(endWorld);
+            if (oldDragon != null && !oldDragon.isRemoved()) {
+                oldDragon.discard();
+            }
+
+            EnderDragonEntity newDragon = EntityType.ENDER_DRAGON.create(endWorld);
+            if (newDragon != null) {
+                newDragon.getPhaseManager().setPhase(PhaseType.HOLDING_PATTERN);
+                newDragon.setPosition(0.0, 128.0, 0.0);
+                endWorld.spawnEntity(newDragon);
+
+                // Sync fight manager so it tracks this dragon immediately
+                EnderDragonFight fight = endWorld.getEnderDragonFight();
+                if (fight != null) {
+                    newDragon.setFight(fight);
+                    newDragon.setFightOrigin(BlockPos.ORIGIN);
+                    ((EnderDragonFightAccessor) fight).setDragonUuid(newDragon.getUuid());
+                }
+                DragonKiller.LOGGER.info("[RESET] Phase 2 dragon spawned at (0, 128, 0) in HOLDING_PATTERN");
+            }
         }
 
         // 5 seconds of invulnerability to survive loading / initial breath
@@ -230,35 +257,21 @@ public class RLTickHandler {
         botPlayer.setInvulnerable(true);
 
         // Teleport to spawn
-        botPlayer.teleport(endWorld, 30.5, 70.0, 30.5, 0.0F, 0.0F);
+        botPlayer.teleport(endWorld, 0.0, 65.0, 43.0, 0.0F, 0.0F);
 
         episodeManager.resetPlayer(botPlayer);
 
         // Re-teleport after equipment (clear any state)
-        botPlayer.teleport(endWorld, 30.5, 70.0, 30.5, 0.0F, 0.0F);
+        botPlayer.teleport(endWorld, 0.0, 65.0, 43.0, 0.0F, 0.0F);
 
         episodeManager.startEpisode();
 
         ActionParser.reset();
         ActionParser.addFreezeTicks(RLConfig.ACTION_REPEAT); // Prevent immediate obs flood
         EnderDragonEntity dragon = ObservationBuilder.getDragon(endWorld);
-        if (dragon != null) {
-            dragon.discard();
-        }
-        dragon = net.minecraft.entity.EntityType.ENDER_DRAGON.create(endWorld);
-        if (dragon != null) {
-            dragon.getPhaseManager().setPhase(net.minecraft.entity.boss.dragon.phase.PhaseType.HOLDING_PATTERN);
-            dragon.setPosition(0.0, 80.0, 0.0);
-            endWorld.spawnEntity(dragon);
-        }
         double dragonHealth = dragon != null ? dragon.getHealth() : 0;
-        double dragonDistance = 100.0;
-        if (dragon != null) {
-            double dx = botPlayer.getX() - dragon.getX();
-            double dz = botPlayer.getZ() - dragon.getZ();
-            dragonDistance = Math.sqrt(dx * dx + dz * dz);
-        }
-        rewardCalc.reset(dragonHealth, botPlayer.getHealth(), dragonDistance);
+        double centerDistance = botPlayer.getPos().distanceTo(new Vec3d(0.0, 64.0, 0.0));
+        rewardCalc.reset(dragonHealth, botPlayer.getHealth(), centerDistance);
         resetStats(dragonHealth);
 
         DragonKiller.LOGGER.info("[RESET] Episode {} started, bot at ({},{},{}) hp={} dragonHp={}",
@@ -277,7 +290,7 @@ public class RLTickHandler {
             botPlayer.getX(), botPlayer.getY(), botPlayer.getZ(), dragonHealth));
 
         // Send initial observation
-        JsonObject obs = ObservationBuilder.build(botPlayer, endWorld, 0, 0, 0, 0.0f);
+        JsonObject obs = ObservationBuilder.build(botPlayer, endWorld, 0.0f);
         String message = Protocol.createObsMessage(obs, 0.0, false);
         socketServer.send(message);
     }
@@ -316,11 +329,6 @@ public class RLTickHandler {
             }
         }
 
-        // Phase 2: refresh fire resistance every tick (survives death/respawn)
-        if (RLConfig.IS_PHASE_2 && !botPlayer.hasStatusEffect(StatusEffects.FIRE_RESISTANCE)) {
-            botPlayer.addStatusEffect(new StatusEffectInstance(
-                StatusEffects.FIRE_RESISTANCE, StatusEffectInstance.INFINITE, 0, false, false));
-        }
 
         // If player died, immediately send observation (don't wait for freeze to expire)
         if (botPlayer.isDead() && episodeManager.getState() == EpisodeManager.State.RUNNING) {
@@ -377,7 +385,11 @@ public class RLTickHandler {
         // Sync swing count from ActionParser
         swingCount = ActionParser.getSwingCount();
 
-        // Compute dense reward (11 params — our version)
+        // Distance from center of End island (strategic position for dragon landing)
+        Vec3d center = new Vec3d(0.0, 64.0, 0.0);
+        double centerDistance = botPlayer.getPos().distanceTo(center);
+
+        // Compute dense reward
         boolean critHit = ActionParser.didAttackThisCycle() && ActionParser.wasAirborne();
         boolean isDragonSitting = false;
         if (dragon != null) {
@@ -386,7 +398,7 @@ public class RLTickHandler {
         }
         double denseReward = rewardCalc.computeDense(
             dragonHealth, playerHealth,
-            hitCount, swingCount, dragonDistance,
+            hitCount, swingCount, dragonDistance, centerDistance,
             botPlayer.isSprinting(), facingDragon, isOverVoid,
             critHit, isDragonSitting);
         double totalReward = denseReward;
@@ -394,11 +406,10 @@ public class RLTickHandler {
         // Dragon health delta — apply damage/hit tracking + sparse reward
         double dragonDelta = prevDragonHealth - dragonHealth;
         if (dragonDelta > 0 && dragon != null && !dragon.isDead()) {
-            totalReward += rewardCalc.onDragonHurt();
             dragonDamageDealt += dragonDelta;
             hitCount++;
 
-            double hitReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE + RLConfig.REWARD_DRAGON_HURT;
+            double hitReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
             broadcastActionBar(String.format(
                 "§cDragon §f❤%.0f §7(-%.1f) §e+%.1f", dragonHealth, dragonDelta, hitReward));
             broadcastChat(String.format("§cDragon ❤%.0f §7(-%.1f) §eReward: +%.1f",
@@ -410,8 +421,7 @@ public class RLTickHandler {
 
         // Build observation (6 params — our version)
         float cooldownProgress = ActionParser.getCooldownProgress();
-        JsonObject obs = ObservationBuilder.build(botPlayer, endWorld,
-            episodeManager.getTickCount(), dragonDamageDealt, hitCount, cooldownProgress);
+        JsonObject obs = ObservationBuilder.build(botPlayer, endWorld, cooldownProgress);
 
         // Check done
         EpisodeManager.DoneInfo doneInfo = episodeManager.checkDone(botPlayer, endWorld);

@@ -19,16 +19,14 @@ import net.minecraft.world.Heightmap;
 
 public class ObservationBuilder {
 
-    public static JsonObject build(ServerPlayerEntity player, ServerWorld world, int timeAlive,
-                                    double dragonDamageDealt, int hitCount, float attackCooldown) {
+    public static JsonObject build(ServerPlayerEntity player, ServerWorld world, float attackCooldown) {
         JsonObject data = new JsonObject();
         data.add("player", buildPlayer(player));
         data.add("dragon_relative", buildDragonRelative(player, world));
         data.add("terrain", buildTerrain(player, world));
-        data.add("inventory", buildInventory(player));
         data.add("raytrace", buildRaytrace(player, world));
         data.add("breath", buildBreath(player, world));
-        data.add("stats", buildStats(timeAlive, dragonDamageDealt, hitCount, attackCooldown));
+        data.add("stats", buildStats(attackCooldown));
         return data;
     }
 
@@ -41,6 +39,8 @@ public class ObservationBuilder {
         JsonArray v = new JsonArray();
         v.add(vel.x); v.add(vel.y); v.add(vel.z);
         obj.add("velocity", v);
+        obj.addProperty("center_dx", MathHelper.clamp(player.getX() / 150.0, -1.0, 1.0));
+        obj.addProperty("center_dz", MathHelper.clamp(player.getZ() / 150.0, -1.0, 1.0));
         return obj;
     }
 
@@ -79,8 +79,51 @@ public class ObservationBuilder {
             obj.addProperty("pitch_delta", pitchDelta);
             obj.addProperty("distance", distance);
             obj.addProperty("in_view", inView);
-            obj.addProperty("health", dragon.getHealth());
             obj.addProperty("alive", true);
+
+            // Vertical height difference (+ = dragon above player)
+            obj.addProperty("dy", dragonPos.y - playerPos.y);
+
+            // Min distance from player eye to any dragon part's bounding box
+            obj.addProperty("hit_dist", minDistanceToDragon(playerPos, dragon));
+
+            // Direction to the closest dragon part's hitbox center
+            Vec3d hitCenter = findClosestPartCenter(playerPos, dragon);
+            Vec3d toHit = hitCenter.subtract(playerPos);
+            double hitDx = toHit.x, hitDy = toHit.y, hitDz = toHit.z;
+            double hitHoriz = Math.sqrt(hitDx * hitDx + hitDz * hitDz);
+
+            float yawToHit = (float) MathHelper.atan2(-hitDx, hitDz) * MathHelper.DEGREES_PER_RADIAN;
+            float hitYawDelta = yawToHit - player.getYaw();
+            while (hitYawDelta > 180F) hitYawDelta -= 360F;
+            while (hitYawDelta < -180F) hitYawDelta += 360F;
+
+            float pitchToHit = -(float) MathHelper.atan2(hitDy, hitHoriz) * MathHelper.DEGREES_PER_RADIAN;
+            float hitPitchDelta = pitchToHit - player.getPitch();
+            while (hitPitchDelta > 180F) hitPitchDelta -= 360F;
+            while (hitPitchDelta < -180F) hitPitchDelta += 360F;
+
+            obj.addProperty("hit_yaw_delta", hitYawDelta);
+            obj.addProperty("hit_pitch_delta", hitPitchDelta);
+
+            // Direction to the dragon's head specifically (high-value target)
+            Vec3d headCenter = dragon.head.getBoundingBox().getCenter();
+            Vec3d toHead = headCenter.subtract(playerPos);
+            double headDx = toHead.x, headDy = toHead.y, headDz = toHead.z;
+            double headHoriz = Math.sqrt(headDx * headDx + headDz * headDz);
+
+            float yawToHead = (float) MathHelper.atan2(-headDx, headDz) * MathHelper.DEGREES_PER_RADIAN;
+            float headYawDelta = yawToHead - player.getYaw();
+            while (headYawDelta > 180F) headYawDelta -= 360F;
+            while (headYawDelta < -180F) headYawDelta += 360F;
+
+            float pitchToHead = -(float) MathHelper.atan2(headDy, headHoriz) * MathHelper.DEGREES_PER_RADIAN;
+            float headPitchDelta = pitchToHead - player.getPitch();
+            while (headPitchDelta > 180F) headPitchDelta -= 360F;
+            while (headPitchDelta < -180F) headPitchDelta += 360F;
+
+            obj.addProperty("head_yaw_delta", headYawDelta);
+            obj.addProperty("head_pitch_delta", headPitchDelta);
 
             // Dragon AI phase (Phase 2: 0=HOLDING_PATTERN … 10=HOVER)
             obj.addProperty("phase", dragon.getPhaseManager().getCurrent().getType().getTypeId());
@@ -97,8 +140,13 @@ public class ObservationBuilder {
             obj.addProperty("pitch_delta", 0.0);
             obj.addProperty("distance", 100.0);
             obj.addProperty("in_view", false);
-            obj.addProperty("health", 0.0);
             obj.addProperty("alive", false);
+            obj.addProperty("dy", 0.0);
+            obj.addProperty("hit_dist", 100.0);
+            obj.addProperty("hit_yaw_delta", 0.0);
+            obj.addProperty("hit_pitch_delta", 0.0);
+            obj.addProperty("head_yaw_delta", 0.0);
+            obj.addProperty("head_pitch_delta", 0.0);
             obj.addProperty("phase", 0);
             JsonArray dv = new JsonArray();
             dv.add(0.0); dv.add(0.0); dv.add(0.0);
@@ -114,16 +162,6 @@ public class ObservationBuilder {
         boolean overVoid = topY <= world.getBottomY();
         double groundDist = overVoid ? 100.0 : playerPos.getY() - topY;
         obj.addProperty("ground_distance", groundDist);
-        obj.addProperty("is_over_void", overVoid);
-        return obj;
-    }
-
-    private static JsonObject buildInventory(ServerPlayerEntity player) {
-        JsonObject obj = new JsonObject();
-        boolean hasSword = player.getInventory().getStack(0).getTranslationKey().contains("diamond_sword");
-        boolean hasArmor = !player.getInventory().armor.get(3).isEmpty();
-        obj.addProperty("has_sword", hasSword);
-        obj.addProperty("has_armor", hasArmor);
         return obj;
     }
 
@@ -191,13 +229,45 @@ public class ObservationBuilder {
         return obj;
     }
 
-    private static JsonObject buildStats(int timeAlive, double dragonDamageDealt, int hitCount, float attackCooldown) {
+    private static JsonObject buildStats(float attackCooldown) {
         JsonObject obj = new JsonObject();
-        obj.addProperty("time_alive", timeAlive);
-        obj.addProperty("dragon_damage_dealt", dragonDamageDealt);
-        obj.addProperty("hit_count", hitCount);
         obj.addProperty("attack_cooldown", attackCooldown);
+        obj.addProperty("last_hit_type", ActionParser.getLastHitType());
         return obj;
+    }
+
+    /** Euclidean distance from eye to the closest point on a bounding box. */
+    private static double distanceToBox(Vec3d eye, Box box) {
+        double cx = Math.max(box.minX, Math.min(eye.x, box.maxX));
+        double cy = Math.max(box.minY, Math.min(eye.y, box.maxY));
+        double cz = Math.max(box.minZ, Math.min(eye.z, box.maxZ));
+        double dx = eye.x - cx, dy = eye.y - cy, dz = eye.z - cz;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    /** Minimum distance from player eyes to any part of the dragon's collision body. */
+    private static double minDistanceToDragon(Vec3d eyePos, EnderDragonEntity dragon) {
+        double minDist = distanceToBox(eyePos, dragon.getBoundingBox());
+        for (EnderDragonPart part : dragon.getBodyParts()) {
+            double d = distanceToBox(eyePos, part.getBoundingBox());
+            if (d < minDist) minDist = d;
+        }
+        return minDist;
+    }
+
+    /** Center of the closest dragon part's bounding box. Used to compute direction toward the nearest hitbox. */
+    private static Vec3d findClosestPartCenter(Vec3d eyePos, EnderDragonEntity dragon) {
+        Vec3d closestCenter = dragon.getBoundingBox().getCenter();
+        double minDistSq = eyePos.squaredDistanceTo(closestCenter);
+        for (EnderDragonPart part : dragon.getBodyParts()) {
+            Vec3d center = part.getBoundingBox().getCenter();
+            double dSq = eyePos.squaredDistanceTo(center);
+            if (dSq < minDistSq) {
+                minDistSq = dSq;
+                closestCenter = center;
+            }
+        }
+        return closestCenter;
     }
 
     public static EnderDragonEntity getDragon(ServerWorld world) {

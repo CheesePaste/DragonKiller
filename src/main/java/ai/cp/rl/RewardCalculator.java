@@ -7,14 +7,14 @@ public class RewardCalculator {
     private double prevPlayerHealth = 20.0;
     private int prevHitCount;
     private int prevSwingCount;
-    private double prevDragonDistance;
+    private double prevCenterDistance;
 
-    public void reset(double dragonHealth, double playerHealth, double dragonDistance) {
+    public void reset(double dragonHealth, double playerHealth, double centerDistance) {
         prevDragonHealth = dragonHealth;
         prevPlayerHealth = playerHealth;
         prevHitCount = 0;
         prevSwingCount = 0;
-        prevDragonDistance = dragonDistance;
+        prevCenterDistance = centerDistance;
     }
 
     /** Call after healing the dragon to keep health tracking in sync. */
@@ -24,6 +24,7 @@ public class RewardCalculator {
 
     public double computeDense(double dragonHealth, double playerHealth,
                                 int hitCount, int swingCount, double dragonDistance,
+                                double centerDistance,
                                 boolean isSprinting, boolean facingDragon, boolean isOverVoid,
                                 boolean criticalHit, boolean isDragonSitting) {
         double reward = 0.0;
@@ -42,47 +43,41 @@ public class RewardCalculator {
         if (isDragonSitting) hitReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
         reward += hitReward;
 
-        // Swing miss penalty
+        // Swing miss penalty (currently 0)
         int swingDelta = swingCount - prevSwingCount;
         int missCount = swingDelta - hitDelta;
         reward += missCount * RLConfig.REWARD_SWING_MISS;
 
         // Critical hit bonus — reward jump attacks
-        if (criticalHit) {
-            reward += RLConfig.REWARD_CRITICAL_HIT;
-        }
+        if (criticalHit) reward += RLConfig.REWARD_CRITICAL_HIT;
 
         // Survival baseline
         reward += RLConfig.REWARD_SURVIVE_TICK;
 
-        // Approach reward
-        double distanceDelta = prevDragonDistance - dragonDistance;
-        reward += distanceDelta * RLConfig.REWARD_APPROACH;
+        // Center approach reward: immediate feedback for moving toward (0, 64, 0)
+        double centerDelta = prevCenterDistance - centerDistance;
+        reward += centerDelta * RLConfig.REWARD_APPROACH;
 
         // Sprint reward
-        if (isSprinting) {
-            reward += RLConfig.REWARD_SPRINT;
-        }
+        if (isSprinting) reward += RLConfig.REWARD_SPRINT;
 
-        // Distance-based reward: smooth gradient encouraging closeness
+        // Distance-to-center reward: encourages holding strategic position near (0, 64, 0)
         double distReward = RLConfig.REWARD_DISTANCE *
-            Math.exp(-dragonDistance / RLConfig.REWARD_DISTANCE_DECAY);
+            Math.exp(-centerDistance / RLConfig.REWARD_DISTANCE_DECAY);
         reward += distReward;
 
-        // Proximity bonus
-        if (dragonDistance < 10.0) {
+        // Proximity bonus: reward approaching the dragon when it's sitting/vulnerable
+        if (isDragonSitting && dragonDistance < 10.0) {
             reward += RLConfig.REWARD_PROXIMITY;
         }
 
-        // Facing dragon reward (only when close enough to matter)
-        if (facingDragon && dragonDistance < RLConfig.REWARD_FACE_DRAGON_RANGE) {
+        // Facing dragon reward: only when dragon is sitting/vulnerable
+        if (isDragonSitting && facingDragon && dragonDistance < RLConfig.REWARD_FACE_DRAGON_RANGE) {
             reward += RLConfig.REWARD_FACE_DRAGON;
         }
 
         // Void penalty
-        if (isOverVoid) {
-            reward += RLConfig.REWARD_VOID_PENALTY;
-        }
+        if (isOverVoid) reward += RLConfig.REWARD_VOID_PENALTY;
 
         // Player damage penalty
         double healthLoss = prevPlayerHealth - playerHealth;
@@ -95,13 +90,9 @@ public class RewardCalculator {
         prevPlayerHealth = playerHealth;
         prevHitCount = hitCount;
         prevSwingCount = swingCount;
-        prevDragonDistance = dragonDistance;
+        prevCenterDistance = centerDistance;
 
         return reward;
-    }
-
-    public double onDragonHurt() {
-        return RLConfig.REWARD_DRAGON_HURT;
     }
 
     public double onPlayerDeath() {

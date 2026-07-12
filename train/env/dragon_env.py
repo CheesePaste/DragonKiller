@@ -6,14 +6,12 @@ from .protocol import MCProtocol
 
 # Normalization constants
 PLAYER_HEALTH_MAX = 20.0
-DRAGON_HEALTH_MAX = 200.0
 VEL_BOUND = 10.0
 DISTANCE_MAX = 100.0
-TIME_MAX = 12000.0
-DAMAGE_MAX = 200.0
 GROUND_DIST_MAX = 100.0
 RAYTRACE_MAX = 64.0
 DRAGON_PHASE_MAX = 10.0
+DRAGON_DY_BOUND = 50.0
 
 # Phase 2: dragon velocity bound (faster than player)
 DRAGON_VEL_BOUND = 20.0
@@ -29,11 +27,11 @@ class DragonEnv(gym.Env):
         self.connect_retries = connect_retries
         self.connect_retry_delay = connect_retry_delay
 
-        # 9 discrete actions (Phase 1: noop, forward, backward, turn L/R, look U/D, attack, sprint)
-        self.action_space = spaces.Discrete(9)
+        # 10 discrete actions (Phase 1: noop, forward, backward, turn L/R, look U/D, attack, sprint, jump)
+        self.action_space = spaces.Discrete(10)
 
-        # 29-dimensional observation (Phase 1 + dragon phase/velocity)
-        obs_dim = 29
+        # 31-dimensional observation
+        obs_dim = 31
         self.observation_space = spaces.Box(
             low=-1.0, high=1.0, shape=(obs_dim,), dtype=np.float32
         )
@@ -68,7 +66,7 @@ class DragonEnv(gym.Env):
     def _parse_obs(self, data: dict) -> np.ndarray:
         vec = []
 
-        # ── Player state (6) ────────────────────────────────────────
+        # ── Player state (8) ────────────────────────────────────────
         p = data.get("player", {})
         vec.append(p.get("health", 20.0) / PLAYER_HEALTH_MAX)
         vec.append(1.0 if p.get("on_ground", True) else 0.0)
@@ -77,15 +75,22 @@ class DragonEnv(gym.Env):
         vec.append(np.clip(float(vel[0]) / VEL_BOUND, -1.0, 1.0))
         vec.append(np.clip(float(vel[1]) / VEL_BOUND, -1.0, 1.0))
         vec.append(np.clip(float(vel[2]) / VEL_BOUND, -1.0, 1.0))
+        vec.append(np.clip(float(p.get("center_dx", 0.0)), -1.0, 1.0))
+        vec.append(np.clip(float(p.get("center_dz", 0.0)), -1.0, 1.0))
 
-        # ── Dragon relative (6) ─────────────────────────────────────
+        # ── Dragon relative (11: dir, dist, alive, dy, hit_dist, hit_yaw/pitch, head_yaw/pitch) ─
         d = data.get("dragon_relative", {})
         vec.append(np.clip(float(d.get("yaw_delta", 0.0)) / 180.0, -1.0, 1.0))
         vec.append(np.clip(float(d.get("pitch_delta", 0.0)) / 90.0, -1.0, 1.0))
         vec.append(np.clip(float(d.get("distance", DISTANCE_MAX)) / DISTANCE_MAX, 0.0, 1.0))
         vec.append(1.0 if d.get("in_view", False) else 0.0)
-        vec.append(np.clip(float(d.get("health", 0.0)) / DRAGON_HEALTH_MAX, 0.0, 1.0))
         vec.append(1.0 if d.get("alive", True) else 0.0)
+        vec.append(np.clip(float(d.get("dy", 0.0)) / DRAGON_DY_BOUND, -1.0, 1.0))
+        vec.append(np.clip(float(d.get("hit_dist", DISTANCE_MAX)) / DISTANCE_MAX, 0.0, 1.0))
+        vec.append(np.clip(float(d.get("hit_yaw_delta", 0.0)) / 180.0, -1.0, 1.0))
+        vec.append(np.clip(float(d.get("hit_pitch_delta", 0.0)) / 90.0, -1.0, 1.0))
+        vec.append(np.clip(float(d.get("head_yaw_delta", 0.0)) / 180.0, -1.0, 1.0))
+        vec.append(np.clip(float(d.get("head_pitch_delta", 0.0)) / 90.0, -1.0, 1.0))
 
         # ── Dragon phase (1) + velocity (3) ──────────────────────────
         vec.append(np.clip(float(d.get("phase", 0)) / DRAGON_PHASE_MAX, 0.0, 1.0))
@@ -94,15 +99,9 @@ class DragonEnv(gym.Env):
         vec.append(np.clip(float(dvel[1]) / DRAGON_VEL_BOUND, -1.0, 1.0))
         vec.append(np.clip(float(dvel[2]) / DRAGON_VEL_BOUND, -1.0, 1.0))
 
-        # ── Terrain (2) ─────────────────────────────────────────────
+        # ── Terrain (1: ground_distance) ─────────────────────────────
         t = data.get("terrain", {})
         vec.append(np.clip(float(t.get("ground_distance", 0.0)) / GROUND_DIST_MAX, 0.0, 1.0))
-        vec.append(1.0 if t.get("is_over_void", False) else 0.0)
-
-        # ── Inventory (2) ───────────────────────────────────────────
-        inv = data.get("inventory", {})
-        vec.append(1.0 if inv.get("has_sword", True) else 0.0)
-        vec.append(1.0 if inv.get("has_armor", True) else 0.0)
 
         # ── Raytrace (3) ────────────────────────────────────────────
         r = data.get("raytrace", {})
@@ -110,12 +109,10 @@ class DragonEnv(gym.Env):
         vec.append(np.clip(float(r.get("distance", RAYTRACE_MAX)) / RAYTRACE_MAX, 0.0, 1.0))
         vec.append(float(r.get("hit_type", 0)) / 2.0)
 
-        # ── Stats (4: time, dmg, hits, attack_cooldown) ──────────────
+        # ── Stats (2: attack_cooldown, last_hit_type) ─────────────────
         s = data.get("stats", {})
-        vec.append(np.clip(float(s.get("time_alive", 0.0)) / TIME_MAX, 0.0, 1.0))
-        vec.append(np.clip(float(s.get("dragon_damage_dealt", 0.0)) / DAMAGE_MAX, 0.0, 1.0))
-        vec.append(np.clip(float(s.get("hit_count", 0.0)) / 100.0, 0.0, 1.0))
         vec.append(np.clip(float(s.get("attack_cooldown", 1.0)), 0.0, 1.0))
+        vec.append(float(s.get("last_hit_type", 0)) / 2.0)
 
         # ── Breath (2: distance, warning) ────────────────────────────
         b = data.get("breath", {})

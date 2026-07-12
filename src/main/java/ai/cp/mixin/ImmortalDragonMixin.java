@@ -1,5 +1,6 @@
 package ai.cp.mixin;
 
+import ai.cp.config.RLConfig;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.entity.boss.dragon.phase.PhaseManager;
@@ -17,6 +18,8 @@ public class ImmortalDragonMixin {
 
     @Inject(method = "damagePart", at = @At("TAIL"))
     private void preventDragonDeath(EnderDragonPart part, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        if (RLConfig.IS_PHASE_2) return; // Phase 2: dragon can die
+
         EnderDragonEntity self = (EnderDragonEntity) (Object) this;
 
         // Undo death state: heal and reset dead flag so the dragon stays alive

@@ -28,7 +28,11 @@
       "Bash(./gradlew help *)",
       "Bash(./gradlew properties *)",
       "Bash(./gradlew clean *)",
-      "Bash(javap -c build/classes/java/main/ai/cp/DragonKiller.class)"
+      "Bash(javap -c build/classes/java/main/ai/cp/DragonKiller.class)",
+      "Bash(python3)",
+      "Bash(timeout 60 ./gradlew compileJava)",
+      "Bash(./gradlew --stop)",
+      "Bash(./gradlew compileJava)"
     ]
   }
 }

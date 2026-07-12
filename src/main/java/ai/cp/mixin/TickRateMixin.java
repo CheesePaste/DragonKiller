@@ -1,6 +1,7 @@
 package ai.cp.mixin;
 
 import ai.cp.DragonKiller;
+import ai.cp.config.RLConfig;
 import ai.cp.config.TickRateHelper;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Dynamically adjusts the server tick rate based on MSPT (smoothed tick duration).
  * Ticks as fast as the CPU can handle, keeping ~30% headroom to avoid overload.
+ * Phase 2: locked at 100 TPS (10ms) for faster RL training.
  */
 @Mixin(MinecraftServer.class)
 public class TickRateMixin {
@@ -22,10 +24,10 @@ public class TickRateMixin {
     @Shadow private float tickTime;  // Smoothed MSPT in milliseconds
 
     @Unique
-    private long currentIntervalMs = 50;  // Start at 20 TPS, ramps up quickly
+    private long currentIntervalMs = RLConfig.IS_PHASE_2 ? 10 : 50;  // P2: 100 TPS, P1: 20 TPS
 
     @Unique
-    private boolean adaptiveEnabled = true;
+    private boolean adaptiveEnabled = !RLConfig.IS_PHASE_2;
 
     @Unique
     private int tickCounter;
@@ -49,21 +51,22 @@ public class TickRateMixin {
             target = "Lnet/minecraft/server/MinecraftServer;endTickMetrics()V",
             shift = At.Shift.AFTER))
     private void onPostTick(CallbackInfo ci) {
-        if (!adaptiveEnabled) return;
-        if (tickTime <= 0.0f) return;
+        if (adaptiveEnabled) {
+            if (tickTime <= 0.0f) return;
 
-        long targetMs = (long) Math.ceil(tickTime * 1.43f);
+            long targetMs = (long) Math.ceil(tickTime * 1.43f);
 
-        if (targetMs < 2) targetMs = 2;
-        if (targetMs > 50) targetMs = 50;
+            if (targetMs < 2) targetMs = 2;
+            if (targetMs > 50) targetMs = 50;
 
-        long diff = targetMs - currentIntervalMs;
-        if (diff > 1) diff = 1;
-        if (diff < -1) diff = -1;
-        currentIntervalMs += diff;
+            long diff = targetMs - currentIntervalMs;
+            if (diff > 1) diff = 1;
+            if (diff < -1) diff = -1;
+            currentIntervalMs += diff;
 
-        // Publish to helper for /tps command
-        TickRateHelper.update(currentIntervalMs, tickTime);
+            // Publish to helper for /tps command
+            TickRateHelper.update(currentIntervalMs, tickTime);
+        }
 
         tickCounter++;
         if (tickCounter % 200 == 0) {

@@ -1,15 +1,18 @@
 package ai.cp.rl;
 
 import ai.cp.config.RLConfig;
+import java.util.Optional;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 
 public class ActionParser {
     private static int freezeCounter;
@@ -19,6 +22,7 @@ public class ActionParser {
     private static boolean moveForward;
     private static boolean moveBackward;
     private static boolean sprinting;
+    private static boolean jumping;
 
     // Attack cooldown (diamond sword: 1.6 speed → 12 ticks)
     private static int attackCooldown;
@@ -29,9 +33,12 @@ public class ActionParser {
     private static boolean attackHappenedThisCycle;
     private static boolean wasFullCharge;
     private static boolean wasAirborne;
+    private static boolean wasHeadshot;
+    private static int lastHitType; // 0=none, 1=body, 2=head
+
 
     private static final double MOVE_SPEED = 0.2;
-    private static final float TURN_SPEED = 15.0F;
+    private static final float TURN_SPEED = 5.0F;
 
     public static void reset() {
         freezeCounter = 0;
@@ -39,11 +46,14 @@ public class ActionParser {
         moveForward = false;
         moveBackward = false;
         sprinting = false;
+        jumping = false;
         attackCooldown = 0;
         swingCount = 0;
         attackHappenedThisCycle = false;
         wasFullCharge = false;
         wasAirborne = false;
+        wasHeadshot = false;
+        lastHitType = 0;
     }
 
     public static void execute(int actionIndex, ServerPlayerEntity player, ServerWorld world) {
@@ -52,6 +62,8 @@ public class ActionParser {
         attackHappenedThisCycle = false;
         wasFullCharge = false;
         wasAirborne = false;
+        wasHeadshot = false;
+        lastHitType = 0;
 
         switch (actionIndex) {
             case 0: break; // noop
@@ -63,6 +75,7 @@ public class ActionParser {
             case 6: player.setPitch(MathHelper.clamp(player.getPitch() + TURN_SPEED, -90.0F, 90.0F)); break;
             case 7: performAttack(player, world); break;
             case 8: sprinting = !sprinting; break;
+            case 9: jumping = true; break;
         }
 
         freezeCounter = RLConfig.ACTION_REPEAT;
@@ -82,6 +95,13 @@ public class ActionParser {
             applyForwardVelocity(player, 1);
         } else if (moveBackward) {
             applyForwardVelocity(player, -1);
+        }
+
+        if (jumping) {
+            if (player.isOnGround()) {
+                player.jump();
+            }
+            jumping = false;
         }
 
         player.setSprinting(sprinting);
@@ -124,6 +144,16 @@ public class ActionParser {
         return attackHappenedThisCycle;
     }
 
+    /** Whether the most recent attack was a headshot (hit dragon.head). */
+    public static boolean wasHeadshot() {
+        return wasHeadshot;
+    }
+
+    /** Last attack result: 0=none/miss, 1=body hit, 2=headshot. */
+    public static int getLastHitType() {
+        return lastHitType;
+    }
+
     /** Normalized cooldown [0, 1] for observation. 1.0 = fully charged. */
     public static float getCooldownProgress() {
         return 1.0f - (float) attackCooldown / ATTACK_COOLDOWN_TICKS;
@@ -147,9 +177,10 @@ public class ActionParser {
         Entity target = findClosestDragonPart(player, dragon);
         if (target != null) {
             attackHappenedThisCycle = true;
-            // Use MC's actual cooldown progress — our custom counter may desync
             wasFullCharge = (player.getAttackCooldownProgress(0.5f) >= 0.99f);
             wasAirborne = !player.isOnGround() && player.getVelocity().y < 0;
+            wasHeadshot = (target == dragon.head);
+            lastHitType = wasHeadshot ? 2 : 1;
 
             player.attack(target);
             attackCooldown = ATTACK_COOLDOWN_TICKS;
@@ -158,21 +189,36 @@ public class ActionParser {
     }
 
     private static Entity findClosestDragonPart(ServerPlayerEntity player, EnderDragonEntity dragon) {
-        double reachDistance = 6.0;
-        EnderDragonPart head = dragon.head;
-        if (head != null && head.squaredDistanceTo(player) < reachDistance * reachDistance) {
-            Vec3d from = player.getCameraPosVec(0.0F);
-            Vec3d to = head.getBoundingBox().getCenter();
-            HitResult hit = player.getWorld().raycast(
-                new net.minecraft.world.RaycastContext(from, to,
-                    net.minecraft.world.RaycastContext.ShapeType.COLLIDER,
-                    net.minecraft.world.RaycastContext.FluidHandling.NONE, player));
-            if (hit.getType() == HitResult.Type.ENTITY) {
-                return ((EntityHitResult) hit).getEntity();
+        // Vanilla player attack: raycast from camera along look direction, max 3 blocks
+        Vec3d from = player.getCameraPosVec(0.0F);
+        Vec3d lookVec = player.getRotationVec(0.0F);
+        double maxDist = 3.0;
+        Vec3d to = from.add(lookVec.x * maxDist, lookVec.y * maxDist, lookVec.z * maxDist);
+
+        // Block raycast — entity must be in front of any block (vanilla compares block vs entity distance)
+        BlockHitResult blockHit = player.getWorld().raycast(
+            new RaycastContext(from, to,
+                RaycastContext.ShapeType.COLLIDER,
+                RaycastContext.FluidHandling.NONE, player));
+        double blockDistSq = blockHit.getType() == HitResult.Type.MISS
+            ? Double.MAX_VALUE : from.squaredDistanceTo(blockHit.getPos());
+
+        // Entity raycast — check all 8 dragon parts (head, neck, body, 3×tail, 2×wing)
+        Entity closest = null;
+        double closestDistSq = maxDist * maxDist;
+
+        for (EnderDragonPart part : dragon.getBodyParts()) {
+            Optional<Vec3d> hitPoint = part.getBoundingBox().raycast(from, to);
+            if (hitPoint.isPresent()) {
+                double distSq = from.squaredDistanceTo(hitPoint.get());
+                if (distSq < closestDistSq && distSq < blockDistSq) {
+                    closestDistSq = distSq;
+                    closest = part;
+                }
             }
-            return head;
         }
-        return null;
+
+        return closest;
     }
 
 }

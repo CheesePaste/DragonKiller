@@ -27,6 +27,7 @@ loom {
 	runs {
 		client {
 			vmArg "-Drlport=${System.getProperty('rlport', '5670')}"
+			vmArg "-Drlphase=${System.getProperty('rlphase', 'p1')}"
 		}
 
 		clientP2 {
@@ -44,6 +45,7 @@ loom {
 				name = "Headless Server ${port}"
 				runDir = "run/server_${port}"
 				vmArg "-Drlport=${port}"
+				vmArg "-Drlphase=${System.getProperty('rlphase', 'p1')}"
 				vmArg "-Xmx1024M"
 				vmArg "-Xms512M"
 				programArg "nogui"
@@ -117,52 +119,73 @@ publishing {
 	}
 }
 
-task runMultiEnv {
+tasks.register('runMultiEnv') {
 	group = "dragonkiller"
-	description = "Runs 4 Minecraft instances for vectorized RL training."
-	
+	description = "Runs multiple Minecraft instances for vectorized RL training."
+	description += " Usage: -PnumEnvs=4 -Pphase=p2"
+
 	doLast {
 		def numEnvs = project.hasProperty('numEnvs') ? project.property('numEnvs').toInteger() : 4
+		def phase = project.hasProperty('phase') ? project.property('phase') : System.getProperty('rlphase', 'p1')
 		def ports = (0..<numEnvs).collect { 5670 + it }
 		def processes = []
-		
-		println "Starting ${ports.size()} Minecraft instances on ports: ${ports}..."
-		println "Log files will be written to run_client_<port>.log"
-		
+
+		println "Starting ${ports.size()} Minecraft instances (phase=${phase}) on ports: ${ports}..."
+		println "Log files: run_client_*.log / run_server_*.log"
+
 		def isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
 		def gradlew = isWindows ? "gradlew.bat" : "./gradlew"
-		
+
 		ports.eachWithIndex { port, index ->
 			if (index == 0) {
-				def pb = new ProcessBuilder(gradlew, "runClient", "-Drlport=${port}")
+				// First instance: GUI client
+				List<String> cmd = new ArrayList<>()
+				cmd.add(gradlew)
+				cmd.add("runClient")
+				cmd.add("-Drlport=" + port.toString())
+				if (phase == 'p2') cmd.add("-Drlphase=p2")
+				def pb = new ProcessBuilder(cmd)
 				pb.directory(project.projectDir)
 				pb.redirectOutput(new File(project.projectDir, "run_client_${port}.log"))
 				pb.redirectErrorStream(true)
 				processes << pb.start()
-				println "Started GUI Client on port ${port} (Please manually enter Singleplayer -> Create World)"
+				println "[${index + 1}/${numEnvs}] Started GUI Client (${phase}) on port ${port}"
 			} else {
-				// Create run dir, eula.txt, and server.properties automatically
+				// Headless server instances
 				def runDir = new File(project.projectDir, "run/server_${port}")
 				runDir.mkdirs()
-				new File(runDir, "eula.txt").text = "eula=true\n"
-				new File(runDir, "server.properties").text = "server-port=${port + 20000}\n"
-				
-				def pb = new ProcessBuilder(gradlew, "runServer${port}", "-PnumEnvs=${numEnvs}")
+				new File(runDir, "eula.txt").text = "eula=true"
+				def props = new Properties()
+				props.setProperty("server-port", "${port + 20000}")
+				props.setProperty("level-seed", "12345")
+				props.setProperty("allow-flight", "true")
+				props.setProperty("online-mode", "false")
+				props.setProperty("difficulty", "peaceful")
+				props.setProperty("gamemode", "survival")
+				props.setProperty("generate-structures", "true")
+				props.setProperty("spawn-animals", "true")
+				props.setProperty("spawn-monsters", "true")
+				props.store(new FileWriter(new File(runDir, "server.properties")), null)
+
+				List<String> cmd = new ArrayList<>()
+				cmd.add(gradlew)
+				cmd.add("runServer" + port.toString())
+				cmd.add("-PnumEnvs=" + numEnvs.toString())
+				cmd.add("-Drlphase=" + phase.toString())
+				def pb = new ProcessBuilder(cmd)
 				pb.directory(project.projectDir)
 				pb.redirectOutput(new File(project.projectDir, "run_server_${port}.log"))
 				pb.redirectErrorStream(true)
 				processes << pb.start()
-				println "Started dedicated server on port ${port}"
+				println "[${index + 1}/${numEnvs}] Started Headless Server (${phase}) on port ${port}"
 			}
-			// Give a little delay between starts to prevent disk/CPU choking
 			Thread.sleep(2000)
 		}
-		
-		println "All instances started! They are running in the background."
-		println "To kill them later, you may need to close the java processes or close the Minecraft windows."
-		
-		// Keep the gradle task alive
+
+		println ""
+		println "All instances started! Press Ctrl+C to stop."
+		println ""
+
 		processes.each { it.waitFor() }
 	}
 }
-
