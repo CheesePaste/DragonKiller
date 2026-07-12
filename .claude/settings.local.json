@@ -32,7 +32,8 @@
       "Bash(python3)",
       "Bash(timeout 60 ./gradlew compileJava)",
       "Bash(./gradlew --stop)",
-      "Bash(./gradlew compileJava)"
+      "Bash(./gradlew compileJava)",
+      "Bash(pip3 list *)"
     ]
   }
 }

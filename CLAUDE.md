@@ -146,14 +146,13 @@ train/
 ### 当前 29 维结构
 
 ```
-[0-5]   player:       health, on_ground, sprinting, vel_xyz
-[6-16]  dragon_rel:   yaw_delta, pitch_delta, distance, in_view, alive, dy, hit_dist, hit_yaw_delta, hit_pitch_delta, head_yaw_delta, head_pitch_delta
-[17]    dragon_ext:   phase_id(0-10 → normalized /10)
-[18-20] dragon_ext:   dragon_vel_xyz (normalized /20)
-[21]    terrain:      ground_distance
-[22-24] raytrace:     dragon_in_crosshair, distance, hit_type(0=none/1=block/2=dragon)
-[25-26] stats:        attack_cooldown, last_hit_type(0=none/1=body/2=head)
-[27-28] breath:       nearest_breath(0-1), breath_warning(0/1)
+[0-7]   player:       health, on_ground, sprinting, vel_xyz(3), center_dx, center_dz
+[8-17]  dragon_rel:   yaw_delta, pitch_delta, in_view, alive, dy, hit_dist, hit_yaw_delta, hit_pitch_delta, head_yaw_delta, head_pitch_delta
+[18-21] dragon_ext:   phase_id(0-10 → /10), dragon_vel_xyz(3, /20)
+[22]    terrain:      ground_distance
+[23]    raytrace:     dragon_in_crosshair
+[24-25] stats:        attack_cooldown, last_hit_type(0=none/1=body/2=head)
+[26-28] breath:       nearest_breath(/64), breath_warning(0/1), breath_yaw_delta(/180)
 ```
 
 ### Phase 2 扩展计划
@@ -183,10 +182,11 @@ REWARD_DEATH        = -20.0  // 死亡（单次）
 REWARD_VOID_PENALTY = -5.0   // 每 tick 在虚空上方
 
 // 移动奖励（折中: Phase 1 有靠近动力 + Phase 2 不贴龙巢）
-REWARD_APPROACH    = 0.1    // 每靠近龙 1 格 — 一次性奖励
-REWARD_DISTANCE    = 0.03   // 距离指数奖励: 0.03 * exp(-dist/30) — 持续梯度
-REWARD_PROXIMITY   = 0.05   // 每 tick 在 10 格内
-REWARD_FACE_DRAGON = 0.01   // 每 tick 龙在视野内
+REWARD_APPROACH    = 0.2    // 每靠近中心 1 格 — 一次性奖励
+REWARD_DISTANCE    = 0.08   // 距离指数奖励: 0.08 * exp(-dist/12) — 持续梯度
+REWARD_PROXIMITY   = 0.05   // 每 tick 在 10 格内（仅龙坐着时）
+REWARD_FACE_DRAGON = 0.05   // 每 tick 龙在视野内 <10 格（仅龙坐着时）
+REWARD_FACE_CENTER = 0.003  // 每 tick 面向龙栖息位置(0,69,0) — 防止低头看地
 
 // 爆头奖励（AI 用离散动作难以瞄准 1×1 头部，高倍率激励）
 REWARD_HEADSHOT_MULTIPLIER = 3.0 // 打中 dragon.head 时所有龙伤奖励 ×3

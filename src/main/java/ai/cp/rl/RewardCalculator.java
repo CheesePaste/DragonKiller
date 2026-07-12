@@ -26,7 +26,8 @@ public class RewardCalculator {
                                 int hitCount, int swingCount, double dragonDistance,
                                 double centerDistance,
                                 boolean isSprinting, boolean facingDragon, boolean isOverVoid,
-                                boolean criticalHit, boolean isDragonSitting) {
+                                boolean criticalHit, boolean isDragonSitting,
+                                boolean facingCenter) {
         double reward = 0.0;
 
         // Dragon damage dealt
@@ -83,6 +84,11 @@ public class RewardCalculator {
         double healthLoss = prevPlayerHealth - playerHealth;
         if (healthLoss > 0) {
             reward += healthLoss * RLConfig.REWARD_PLAYER_DAMAGE;
+        }
+
+        // Center-facing reward: gentle nudge to look toward dragon perch
+        if (facingCenter) {
+            reward += RLConfig.REWARD_FACE_CENTER;
         }
 
         // Update previous values

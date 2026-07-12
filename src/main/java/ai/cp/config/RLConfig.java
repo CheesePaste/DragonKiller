@@ -25,6 +25,7 @@ public class RLConfig {
     public static final double REWARD_DISTANCE_DECAY = 12.0; // faster falloff (was 30)
     public static final double REWARD_FACE_DRAGON = 0.05;  // per tick when facing dragon while it's sitting
     public static final double REWARD_FACE_DRAGON_RANGE = 10.0;
+    public static final double REWARD_FACE_CENTER = 0.003; // per tick when facing dragon perch (0,69,0)
     public static final double REWARD_VOID_PENALTY = -1.0; // per tick over void
 
     // Combat technique rewards

@@ -389,6 +389,21 @@ public class RLTickHandler {
         Vec3d center = new Vec3d(0.0, 64.0, 0.0);
         double centerDistance = botPlayer.getPos().distanceTo(center);
 
+        // Check if player is facing the dragon perch (0, 69, 0) — gentle orientation nudge
+        Vec3d perchPos = new Vec3d(0.0, 69.0, 0.0);
+        Vec3d toPerch = perchPos.subtract(botPlayer.getEyePos());
+        double perchDx = toPerch.x, perchDz = toPerch.z;
+        double perchHoriz = Math.sqrt(perchDx * perchDx + perchDz * perchDz);
+        float yawToPerch = (float) MathHelper.atan2(-perchDx, perchDz) * MathHelper.DEGREES_PER_RADIAN;
+        float pitchToPerch = -(float) MathHelper.atan2(toPerch.y, perchHoriz) * MathHelper.DEGREES_PER_RADIAN;
+        float perchYawDelta = yawToPerch - botPlayer.getYaw();
+        while (perchYawDelta > 180F) perchYawDelta -= 360F;
+        while (perchYawDelta < -180F) perchYawDelta += 360F;
+        float perchPitchDelta = pitchToPerch - botPlayer.getPitch();
+        while (perchPitchDelta > 180F) perchPitchDelta -= 360F;
+        while (perchPitchDelta < -180F) perchPitchDelta += 360F;
+        boolean facingCenter = Math.abs(perchYawDelta) < 60 && Math.abs(perchPitchDelta) < 45;
+
         // Compute dense reward
         boolean critHit = ActionParser.didAttackThisCycle() && ActionParser.wasAirborne();
         boolean isDragonSitting = false;
@@ -400,7 +415,7 @@ public class RLTickHandler {
             dragonHealth, playerHealth,
             hitCount, swingCount, dragonDistance, centerDistance,
             botPlayer.isSprinting(), facingDragon, isOverVoid,
-            critHit, isDragonSitting);
+            critHit, isDragonSitting, facingCenter);
         double totalReward = denseReward;
 
         // Dragon health delta — apply damage/hit tracking + sparse reward

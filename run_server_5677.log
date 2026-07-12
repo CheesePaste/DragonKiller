@@ -1,26 +1,47 @@
-Starting a Gradle Daemon, 7 busy and 54 stopped Daemons could not be reused, use --status for details
+Starting a Gradle Daemon, 7 busy and 37 stopped Daemons could not be reused, use --status for details
 
 > Configure project :
 Fabric Loom: 1.17.14
-"Lock for cache='C:\Users\huhai\.gradle\caches\fabric-loom', project=':'" is currently held by pid '12396'.
+"Lock for cache='C:\Users\huhai\.gradle\caches\fabric-loom', project=':'" is currently held by pid '24036'.
 Run with --info or --debug to show arguments, may reveal sensitive info
-- pid: 12396
+- pid: 24036
 - command: C:\Program Files\BellSoft\LibericaJDK-17\bin\java.exe
-- started at: 2026-07-12T07:11:15.300Z
+- started at: 2026-07-12T07:34:44.971Z
 - user: HSZ2006\huhai
 - parent:
-	- pid: 25960
+	- pid: 38144
 	- command: C:\Program Files\BellSoft\LibericaJDK-17\bin\java.exe
-	- started at: 2026-07-12T07:11:14.444Z
+	- started at: 2026-07-12T07:34:43.393Z
 	- user: HSZ2006\huhai
 	- parent:
-		- pid: 48264
+		- pid: 47132
 		- command: C:\Windows\System32\cmd.exe
-		- started at: 2026-07-12T07:11:14.403Z
+		- started at: 2026-07-12T07:34:43.305Z
 		- user: HSZ2006\huhai
 		- parent:
-			- pid: 45180
+			- pid: 32984
 			- command: C:\Program Files\BellSoft\LibericaJDK-17\bin\java.exe
-			- started at: 2026-07-12T07:01:09.372Z
+			- started at: 2026-07-12T07:34:24.937Z
 			- user: HSZ2006\huhai
+			- parent:
+				- pid: 35424
+				- command: C:\Program Files\BellSoft\LibericaJDK-17\bin\java.exe
+				- started at: 2026-07-12T07:34:24.280Z
+				- user: HSZ2006\huhai
+				- parent:
+					- pid: 14248
+					- command: C:\Windows\System32\cmd.exe
+					- started at: 2026-07-12T00:47:16.525Z
+					- user: HSZ2006\huhai
+					- parent:
+						- title: 'dragonkiller – run_server_5675.log [dragonkiller]'
+						- pid: 17060
+						- command: D:\IntelliJ IDEA Community Edition 2025.1.3\bin\idea64.exe
+						- started at: 2026-07-12T00:42:14.715Z
+						- user: HSZ2006\huhai
+						- parent:
+							- pid: 15332
+							- command: C:\Windows\explorer.exe
+							- started at: 2026-07-12T00:42:02.150Z
+							- user: HSZ2006\huhai
 Waiting for lock to be released...
