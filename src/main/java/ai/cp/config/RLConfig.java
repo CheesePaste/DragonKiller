@@ -8,9 +8,9 @@ public class RLConfig {
     public static final long WORLD_SEED = 12345L;
 
     // Reward coefficients
-    public static final double REWARD_DRAGON_DAMAGE = 2.5;
-    public static final double REWARD_HIT = 5.0;              // per successful hit (was 1.0)
-    public static final double REWARD_SITTING_MULTIPLIER = 2.0; // ×multiplier on damage+hit when dragon sitting
+    public static final double REWARD_DRAGON_DAMAGE = 5.0;    // pure damage reward: 5 * damage dealt
+    public static final double REWARD_SITTING_MULTIPLIER = 2.0; // ×multiplier when dragon sitting
+    public static final double REWARD_HIT = 0.0;
     public static final double REWARD_SWING_MISS = 0.0;
     public static final double REWARD_SURVIVE_TICK = 0.005;
     public static final double REWARD_PLAYER_DAMAGE = -0.5;

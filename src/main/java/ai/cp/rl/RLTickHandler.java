@@ -40,8 +40,6 @@ public class RLTickHandler {
     private static boolean initialized;
 
     // Stats tracking
-    private static int swingCount;
-    private static int hitCount;
     private static double dragonDamageDealt;
     private static double prevDragonHealth;
     private static int invincibilityTicks;
@@ -174,8 +172,8 @@ public class RLTickHandler {
         // Register with boss bar manager
         srv.getBossBarManager().onPlayerConnect(botPlayer);
 
-        // Give the bot a unique spawn angle for each creation
-        botPlayer.teleport(endWorld, 0.0, 65.0, 43.0, 0.0F, 0.0F);
+        // Face the bot toward center (0, 0) so it doesn't need a 180° turn
+        botPlayer.teleport(endWorld, 0.0, 65.0, 43.0, 180.0F, 0.0F);
 
         DragonKiller.LOGGER.info("BotPlayer created: {} (UUID: {})", botPlayer.getName().getString(), botPlayer.getUuid());
     }
@@ -256,13 +254,13 @@ public class RLTickHandler {
         invincibilityTicks = 100;
         botPlayer.setInvulnerable(true);
 
-        // Teleport to spawn
-        botPlayer.teleport(endWorld, 0.0, 65.0, 43.0, 0.0F, 0.0F);
+        // Teleport to spawn (facing center — yaw=180 = North toward (0,0))
+        botPlayer.teleport(endWorld, 0.0, 65.0, 43.0, 180.0F, 0.0F);
 
         episodeManager.resetPlayer(botPlayer);
 
         // Re-teleport after equipment (clear any state)
-        botPlayer.teleport(endWorld, 0.0, 65.0, 43.0, 0.0F, 0.0F);
+        botPlayer.teleport(endWorld, 0.0, 65.0, 43.0, 180.0F, 0.0F);
 
         episodeManager.startEpisode();
 
@@ -382,14 +380,12 @@ public class RLTickHandler {
         // Check if over void
         boolean isOverVoid = botPlayer.getBlockPos().getY() < 0;
 
-        // Sync swing count from ActionParser
-        swingCount = ActionParser.getSwingCount();
-
         // Distance from center of End island (strategic position for dragon landing)
         Vec3d center = new Vec3d(0.0, 64.0, 0.0);
         double centerDistance = botPlayer.getPos().distanceTo(center);
 
-        // Check if player is facing the dragon perch (0, 69, 0) — gentle orientation nudge
+        // Continuous center-facing factor: cos(yaw_delta) × cos(pitch_delta)
+        // Gives smooth gradient instead of binary on/off
         Vec3d perchPos = new Vec3d(0.0, 69.0, 0.0);
         Vec3d toPerch = perchPos.subtract(botPlayer.getEyePos());
         double perchDx = toPerch.x, perchDz = toPerch.z;
@@ -402,33 +398,34 @@ public class RLTickHandler {
         float perchPitchDelta = pitchToPerch - botPlayer.getPitch();
         while (perchPitchDelta > 180F) perchPitchDelta -= 360F;
         while (perchPitchDelta < -180F) perchPitchDelta += 360F;
-        boolean facingCenter = Math.abs(perchYawDelta) < 60 && Math.abs(perchPitchDelta) < 45;
+        double facingCenterFactor = Math.max(0, Math.cos(Math.abs(perchYawDelta) * MathHelper.RADIANS_PER_DEGREE))
+                                  * Math.max(0, Math.cos(Math.abs(perchPitchDelta) * MathHelper.RADIANS_PER_DEGREE));
 
         // Compute dense reward
-        boolean critHit = ActionParser.didAttackThisCycle() && ActionParser.wasAirborne();
         boolean isDragonSitting = false;
         if (dragon != null) {
             int phase = dragon.getPhaseManager().getCurrent().getType().getTypeId();
             isDragonSitting = phase == 3 || phase == 5 || phase == 6 || phase == 7;
         }
+
+        // Compute dragon delta before rewardCalc (it updates prev values internally)
+        double dragonDelta = prevDragonHealth - dragonHealth;
+
         double denseReward = rewardCalc.computeDense(
-            dragonHealth, playerHealth,
-            hitCount, swingCount, dragonDistance, centerDistance,
-            botPlayer.isSprinting(), facingDragon, isOverVoid,
-            critHit, isDragonSitting, facingCenter);
+            dragonHealth, playerHealth, centerDistance,
+            botPlayer.isSprinting(), isOverVoid,
+            isDragonSitting, facingCenterFactor);
         double totalReward = denseReward;
 
-        // Dragon health delta — apply damage/hit tracking + sparse reward
-        double dragonDelta = prevDragonHealth - dragonHealth;
+        // Track total damage dealt + show action bar on hit
         if (dragonDelta > 0 && dragon != null && !dragon.isDead()) {
             dragonDamageDealt += dragonDelta;
-            hitCount++;
-
-            double hitReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
+            double dmgReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
+            if (isDragonSitting) dmgReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
             broadcastActionBar(String.format(
-                "§cDragon §f❤%.0f §7(-%.1f) §e+%.1f", dragonHealth, dragonDelta, hitReward));
+                "§cDragon §f❤%.0f §7(-%.1f) §e+%.1f", dragonHealth, dragonDelta, dmgReward));
             broadcastChat(String.format("§cDragon ❤%.0f §7(-%.1f) §eReward: +%.1f",
-                dragonHealth, dragonDelta, hitReward));
+                dragonHealth, dragonDelta, dmgReward));
         }
         prevDragonHealth = dragonHealth;
 
@@ -478,8 +475,6 @@ public class RLTickHandler {
     }
 
     private static void resetStats(double dragonHealth) {
-        swingCount = 0;
-        hitCount = 0;
         dragonDamageDealt = 0;
         prevDragonHealth = dragonHealth;
     }
