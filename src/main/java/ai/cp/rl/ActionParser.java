@@ -21,6 +21,8 @@ public class ActionParser {
     // Continuous movement state
     private static boolean moveForward;
     private static boolean moveBackward;
+    private static boolean moveLeft;
+    private static boolean moveRight;
     private static boolean sprinting;
     private static boolean jumping;
 
@@ -45,6 +47,8 @@ public class ActionParser {
         observationSent = true;
         moveForward = false;
         moveBackward = false;
+        moveLeft = false;
+        moveRight = false;
         sprinting = false;
         jumping = false;
         attackCooldown = 0;
@@ -59,6 +63,8 @@ public class ActionParser {
     public static void execute(int actionIndex, ServerPlayerEntity player, ServerWorld world) {
         moveForward = false;
         moveBackward = false;
+        moveLeft = false;
+        moveRight = false;
         attackHappenedThisCycle = false;
         wasFullCharge = false;
         wasAirborne = false;
@@ -76,6 +82,8 @@ public class ActionParser {
             case 7: performAttack(player, world); break;
             case 8: sprinting = !sprinting; break;
             case 9: jumping = true; break;
+            case 10: moveLeft = true; break;
+            case 11: moveRight = true; break;
         }
 
         freezeCounter = RLConfig.ACTION_REPEAT;
@@ -91,11 +99,7 @@ public class ActionParser {
             attackCooldown--;
         }
 
-        if (moveForward) {
-            applyForwardVelocity(player, 1);
-        } else if (moveBackward) {
-            applyForwardVelocity(player, -1);
-        }
+        applyMovement(player);
 
         if (jumping) {
             if (player.isOnGround()) {
@@ -159,12 +163,39 @@ public class ActionParser {
         return 1.0f - (float) attackCooldown / ATTACK_COOLDOWN_TICKS;
     }
 
-    private static void applyForwardVelocity(ServerPlayerEntity player, int direction) {
+    private static void applyMovement(ServerPlayerEntity player) {
         float yawRad = player.getYaw() * MathHelper.RADIANS_PER_DEGREE;
-        double dx = -MathHelper.sin(yawRad) * MOVE_SPEED * direction;
-        double dz = MathHelper.cos(yawRad) * MOVE_SPEED * direction;
-        player.setVelocity(dx, player.getVelocity().y, dz);
-        player.velocityModified = true;
+        double vx = 0, vz = 0;
+
+        // Forward/backward along look direction
+        if (moveForward) {
+            vx -= MathHelper.sin(yawRad) * MOVE_SPEED;
+            vz += MathHelper.cos(yawRad) * MOVE_SPEED;
+        } else if (moveBackward) {
+            vx += MathHelper.sin(yawRad) * MOVE_SPEED;
+            vz -= MathHelper.cos(yawRad) * MOVE_SPEED;
+        }
+
+        // Strafe perpendicular to look direction
+        if (moveLeft) {
+            vx += MathHelper.cos(yawRad) * MOVE_SPEED;
+            vz += MathHelper.sin(yawRad) * MOVE_SPEED;
+        } else if (moveRight) {
+            vx -= MathHelper.cos(yawRad) * MOVE_SPEED;
+            vz -= MathHelper.sin(yawRad) * MOVE_SPEED;
+        }
+
+        // Normalize to prevent faster diagonal movement
+        double len = Math.sqrt(vx * vx + vz * vz);
+        if (len > MOVE_SPEED) {
+            vx = vx / len * MOVE_SPEED;
+            vz = vz / len * MOVE_SPEED;
+        }
+
+        if (vx != 0 || vz != 0) {
+            player.setVelocity(vx, player.getVelocity().y, vz);
+            player.velocityModified = true;
+        }
     }
 
     private static void performAttack(ServerPlayerEntity player, ServerWorld world) {

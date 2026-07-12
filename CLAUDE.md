@@ -90,13 +90,15 @@ train/
 | 0 | noop | - |
 | 1 | moveForward | continuous |
 | 2 | moveBackward | continuous |
-| 3 | turnLeft (-7.5° yaw) | one-shot |
-| 4 | turnRight (+7.5° yaw) | one-shot |
-| 5 | lookUp (-7.5° pitch) | one-shot |
-| 6 | lookDown (+7.5° pitch) | one-shot |
+| 3 | turnLeft (-5° yaw) | one-shot |
+| 4 | turnRight (+5° yaw) | one-shot |
+| 5 | lookUp (-5° pitch) | one-shot |
+| 6 | lookDown (+5° pitch) | one-shot |
 | 7 | attack | sticky (3 ticks) |
-| 8 | sprint | continuous |
+| 8 | sprint | toggle |
 | 9 | jump | one-shot |
+| 10 | strafeLeft | continuous (可叠前/后) |
+| 11 | strafeRight | continuous (可叠前/后) |
 
 ### Phase 2 TODO
 
