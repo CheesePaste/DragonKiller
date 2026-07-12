@@ -180,53 +180,74 @@ public class ObservationBuilder {
 
     public static JsonObject buildBreath(ServerPlayerEntity player, ServerWorld world) {
         JsonObject obj = new JsonObject();
-        double nearestBreath = 64.0;
+        double nearestDist = 64.0;
+        Vec3d nearestPos = null;
         boolean breathWarning = false;
-        Entity nearestEntity = null;
 
         Box searchBox = player.getBoundingBox().expand(32.0, 16.0, 32.0);
 
-        // Scan for lingering dragon breath clouds
+        // 1. Actual breath clouds
         var clouds = world.getEntitiesByClass(AreaEffectCloudEntity.class, searchBox, c -> true);
         for (AreaEffectCloudEntity cloud : clouds) {
             double dist = cloud.distanceTo(player);
-            if (dist < nearestBreath) {
-                nearestBreath = dist;
-                nearestEntity = cloud;
+            if (dist < nearestDist) {
+                nearestDist = dist;
+                nearestPos = cloud.getPos();
             }
             if (dist < 12.0) {
                 breathWarning = true;
             }
         }
 
-        // Scan for incoming dragon fireballs
+        // 2. Predict where each fireball will land, treat as future cloud
         var fireballs = world.getEntitiesByClass(DragonFireballEntity.class, searchBox, fb -> true);
         for (DragonFireballEntity fb : fireballs) {
-            double dist = fb.distanceTo(player);
-            if (dist < nearestBreath) {
-                nearestBreath = dist;
-                nearestEntity = fb;
-            }
-            if (dist < 12.0) {
-                breathWarning = true;
+            Vec3d impact = predictImpact(fb, world);
+            if (impact != null) {
+                double dist = player.getPos().distanceTo(impact);
+                if (dist < nearestDist) {
+                    nearestDist = dist;
+                    nearestPos = impact;
+                }
+                if (dist < 12.0) {
+                    breathWarning = true;
+                }
             }
         }
 
-        // Direction to nearest breath entity (helps AI learn to escape)
+        // Direction to nearest threat
         double yawDelta = 0.0;
-        if (nearestEntity != null && nearestBreath < 32.0) {
-            Vec3d toBreath = nearestEntity.getPos().subtract(player.getPos());
-            float yawToBreath = (float) MathHelper.atan2(-toBreath.x, toBreath.z) * MathHelper.DEGREES_PER_RADIAN;
-            float delta = yawToBreath - player.getYaw();
+        if (nearestPos != null && nearestDist < 32.0) {
+            Vec3d toThreat = nearestPos.subtract(player.getPos());
+            float yawToThreat = (float) MathHelper.atan2(-toThreat.x, toThreat.z) * MathHelper.DEGREES_PER_RADIAN;
+            float delta = yawToThreat - player.getYaw();
             while (delta > 180F) delta -= 360F;
             while (delta < -180F) delta += 360F;
             yawDelta = delta / 180.0;
         }
 
-        obj.addProperty("nearest_breath", Math.min(nearestBreath / 64.0, 1.0));
+        obj.addProperty("nearest_breath", Math.min(nearestDist / 64.0, 1.0));
         obj.addProperty("breath_warning", breathWarning);
         obj.addProperty("breath_yaw_delta", yawDelta);
         return obj;
+    }
+
+    /** Predict where a fireball will hit the ground, treating it as a future breath cloud. */
+    private static Vec3d predictImpact(DragonFireballEntity fb, ServerWorld world) {
+        Vec3d pos = fb.getPos();
+        Vec3d vel = fb.getVelocity();
+
+        // Trace fireball trajectory linearly (fireballs have negligible gravity)
+        for (int i = 0; i < 200; i++) {
+            pos = pos.add(vel);
+            if (pos.y < world.getBottomY()) return null; // lost to void
+            BlockPos bp = BlockPos.ofFloored(pos.x, pos.y, pos.z);
+            if (world.getBlockState(bp).isSolid()) {
+                return pos; // predicted impact point
+            }
+        }
+
+        return null; // no obstruction in trace range
     }
 
     private static JsonObject buildStats(float attackCooldown) {
