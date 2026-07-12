@@ -31,8 +31,8 @@ class DragonEnv(gym.Env):
         # 12 discrete actions: noop, forward, backward, turn L/R, look U/D, attack, sprint, jump, strafe L/R
         self.action_space = spaces.Discrete(12)
 
-        # 29-dimensional observation
-        obs_dim = 29
+        # 26-dimensional observation
+        obs_dim = 26
         self.observation_space = spaces.Box(
             low=-1.0, high=1.0, shape=(obs_dim,), dtype=np.float32
         )
@@ -84,10 +84,8 @@ class DragonEnv(gym.Env):
         vec.append(np.clip(float(p.get("center_dx", 0.0)), -1.0, 1.0))
         vec.append(np.clip(float(p.get("center_dz", 0.0)), -1.0, 1.0))
 
-        # ── Dragon relative (10: dir, alive, dy, hit_dist, hit_yaw/pitch, head_yaw/pitch) ─
+        # ── Dragon relative (8: in_view, alive, dy, hit_dist, hit_yaw/pitch, head_yaw/pitch) ─
         d = data.get("dragon_relative", {})
-        vec.append(np.clip(float(d.get("yaw_delta", 0.0)) / 180.0, -1.0, 1.0))
-        vec.append(np.clip(float(d.get("pitch_delta", 0.0)) / 90.0, -1.0, 1.0))
         vec.append(1.0 if d.get("in_view", False) else 0.0)
         vec.append(1.0 if d.get("alive", True) else 0.0)
         vec.append(np.clip(float(d.get("dy", 0.0)) / DRAGON_DY_BOUND, -1.0, 1.0))
@@ -97,12 +95,10 @@ class DragonEnv(gym.Env):
         vec.append(np.clip(float(d.get("head_yaw_delta", 0.0)) / 180.0, -1.0, 1.0))
         vec.append(np.clip(float(d.get("head_pitch_delta", 0.0)) / 90.0, -1.0, 1.0))
 
-        # ── Dragon phase (1) + velocity (3) ──────────────────────────
+        # ── Dragon phase (1) + relative velocity (2: toward_vel, lateral_vel) ─
         vec.append(np.clip(float(d.get("phase", 0)) / DRAGON_PHASE_MAX, 0.0, 1.0))
-        dvel = d.get("velocity", [0, 0, 0])
-        vec.append(np.clip(float(dvel[0]) / DRAGON_VEL_BOUND, -1.0, 1.0))
-        vec.append(np.clip(float(dvel[1]) / DRAGON_VEL_BOUND, -1.0, 1.0))
-        vec.append(np.clip(float(dvel[2]) / DRAGON_VEL_BOUND, -1.0, 1.0))
+        vec.append(np.clip(float(d.get("toward_vel", 0.0)) / DRAGON_VEL_BOUND, -1.0, 1.0))
+        vec.append(np.clip(float(d.get("lateral_vel", 0.0)) / DRAGON_VEL_BOUND, -1.0, 1.0))
 
         # ── Terrain (1: ground_distance) ─────────────────────────────
         t = data.get("terrain", {})

@@ -4,12 +4,10 @@ import ai.cp.config.RLConfig;
 
 public class RewardCalculator {
     private double prevDragonHealth = 200.0;
-    private double prevPlayerHealth = 20.0;
     private double prevCenterDistance;
 
-    public void reset(double dragonHealth, double playerHealth, double centerDistance) {
+    public void reset(double dragonHealth, double centerDistance) {
         prevDragonHealth = dragonHealth;
-        prevPlayerHealth = playerHealth;
         prevCenterDistance = centerDistance;
     }
 
@@ -18,33 +16,39 @@ public class RewardCalculator {
         prevDragonHealth = maxHealth;
     }
 
-    public double computeDense(double dragonHealth, double playerHealth,
+    public double computeDense(double dragonHealth, double playerHealth, double playerMaxHealth,
                                 double centerDistance,
                                 boolean isSprinting, boolean isOverVoid,
                                 boolean isDragonSitting,
-                                double facingCenterFactor) {
+                                double facingCenterFactor,
+                                boolean didAttack) {
         double reward = 0.0;
 
-        // Pure damage reward: REWARD_DRAGON_DAMAGE × damage
-        // Multiplied by sitting (2×) and headshot (2×) — multipliers stack
-        double dragonDelta = prevDragonHealth - dragonHealth;
-        if (dragonDelta > 0) {
-            double dmgReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
-            if (isDragonSitting) dmgReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
-            reward += dmgReward;
+        // Pure damage reward: ONLY when bot actually attacked this cycle
+        // This excludes environmental damage (void, collision) from generating reward
+        if (didAttack) {
+            double dragonDelta = prevDragonHealth - dragonHealth;
+            if (dragonDelta > 0) {
+                double dmgReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
+                if (isDragonSitting) dmgReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
+                reward += dmgReward;
+            }
         }
 
         // Survival baseline
         reward += RLConfig.REWARD_SURVIVE_TICK;
 
-        // Center approach reward: immediate feedback for moving toward (0, 64, 0)
+        // Health reward: proportional to current HP
+        reward += (playerHealth / playerMaxHealth) * RLConfig.REWARD_HEALTH;
+
+        // Center approach reward
         double centerDelta = prevCenterDistance - centerDistance;
         reward += centerDelta * RLConfig.REWARD_APPROACH;
 
         // Sprint reward
         if (isSprinting) reward += RLConfig.REWARD_SPRINT;
 
-        // Distance-to-center reward: encourages holding strategic position near (0, 64, 0)
+        // Distance-to-center reward
         double distReward = RLConfig.REWARD_DISTANCE *
             Math.exp(-centerDistance / RLConfig.REWARD_DISTANCE_DECAY);
         reward += distReward;
@@ -52,18 +56,11 @@ public class RewardCalculator {
         // Void penalty
         if (isOverVoid) reward += RLConfig.REWARD_VOID_PENALTY;
 
-        // Player damage penalty
-        double healthLoss = prevPlayerHealth - playerHealth;
-        if (healthLoss > 0) {
-            reward += healthLoss * RLConfig.REWARD_PLAYER_DAMAGE;
-        }
-
-        // Center-facing reward: cos(angle) × base — smooth gradient, not binary
+        // Center-facing reward
         reward += facingCenterFactor * RLConfig.REWARD_FACE_CENTER;
 
         // Update previous values
         prevDragonHealth = dragonHealth;
-        prevPlayerHealth = playerHealth;
         prevCenterDistance = centerDistance;
 
         return reward;

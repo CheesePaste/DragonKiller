@@ -41,8 +41,15 @@ public class ActionParser {
     private static int totalAttackAttempts; // per-episode count of action 7 selections
 
 
-    private static final double MOVE_SPEED = 0.2;
-    private static final float TURN_SPEED = 15.0F;
+    /** Base walk speed (vanilla ≈0.215 blocks/tick = 4.317 blocks/sec). */
+    private static final double WALK_SPEED = 0.215;
+    /** Sprint multiplier (vanilla: +30%). */
+    private static final double SPRINT_MULTIPLIER = 1.3;
+    /** Backward speed fraction of forward (vanilla: ~0.7). */
+    private static final double BACKWARD_MULTIPLIER = 0.7;
+    /** Strafe speed fraction of forward (vanilla: ~0.85). */
+    private static final double STRAFE_MULTIPLIER = 0.85;
+    private static final float TURN_SPEED = 5.0F;
 
     public static void reset() {
         freezeCounter = 0;
@@ -180,37 +187,37 @@ public class ActionParser {
 
     private static void applyMovement(ServerPlayerEntity player) {
         float yawRad = player.getYaw() * MathHelper.RADIANS_PER_DEGREE;
-        double vx = 0, vz = 0;
+        double forward = 0, strafe = 0;
 
-        // Forward/backward along look direction
-        if (moveForward) {
-            vx -= MathHelper.sin(yawRad) * MOVE_SPEED;
-            vz += MathHelper.cos(yawRad) * MOVE_SPEED;
-        } else if (moveBackward) {
-            vx += MathHelper.sin(yawRad) * MOVE_SPEED;
-            vz -= MathHelper.cos(yawRad) * MOVE_SPEED;
-        }
+        if (moveForward) forward = 1.0;
+        else if (moveBackward) forward = -BACKWARD_MULTIPLIER;
 
-        // Strafe perpendicular to look direction
-        if (moveLeft) {
-            vx += MathHelper.cos(yawRad) * MOVE_SPEED;
-            vz += MathHelper.sin(yawRad) * MOVE_SPEED;
-        } else if (moveRight) {
-            vx -= MathHelper.cos(yawRad) * MOVE_SPEED;
-            vz -= MathHelper.sin(yawRad) * MOVE_SPEED;
-        }
+        if (moveLeft) strafe = 1.0;
+        else if (moveRight) strafe = -1.0;
 
-        // Normalize to prevent faster diagonal movement
-        double len = Math.sqrt(vx * vx + vz * vz);
-        if (len > MOVE_SPEED) {
-            vx = vx / len * MOVE_SPEED;
-            vz = vz / len * MOVE_SPEED;
-        }
+        if (forward == 0 && strafe == 0) return;
 
-        if (vx != 0 || vz != 0) {
-            player.setVelocity(vx, player.getVelocity().y, vz);
-            player.velocityModified = true;
-        }
+        double speed = WALK_SPEED;
+        if (sprinting) speed *= SPRINT_MULTIPLIER;
+
+        // Normalize input vector so diagonal isn't faster than cardinal
+        double inputLen = Math.sqrt(forward * forward + strafe * strafe);
+        forward /= inputLen;
+        strafe /= inputLen;
+
+        // Apply strafe multiplier to perpendicular component
+        strafe *= STRAFE_MULTIPLIER;
+
+        // Compute velocity from yaw
+        double vx = forward * -MathHelper.sin(yawRad) + strafe * MathHelper.cos(yawRad);
+        double vz = forward * MathHelper.cos(yawRad) + strafe * MathHelper.sin(yawRad);
+
+        // Scale to desired speed
+        vx *= speed;
+        vz *= speed;
+
+        player.setVelocity(vx, player.getVelocity().y, vz);
+        player.velocityModified = true;
     }
 
     private static void performAttack(ServerPlayerEntity player, ServerWorld world) {

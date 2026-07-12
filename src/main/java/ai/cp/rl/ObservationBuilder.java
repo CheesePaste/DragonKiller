@@ -73,10 +73,6 @@ public class ObservationBuilder {
 
             boolean inView = Math.abs(yawDelta) < 45 && Math.abs(pitchDelta) < 30;
 
-            obj.addProperty("yaw", yawToDragon);
-            obj.addProperty("pitch", pitchToDragon);
-            obj.addProperty("yaw_delta", yawDelta);
-            obj.addProperty("pitch_delta", pitchDelta);
             obj.addProperty("in_view", inView);
             obj.addProperty("alive", true);
 
@@ -127,16 +123,27 @@ public class ObservationBuilder {
             // Dragon AI phase (Phase 2: 0=HOLDING_PATTERN … 10=HOVER)
             obj.addProperty("phase", dragon.getPhaseManager().getCurrent().getType().getTypeId());
 
-            // Dragon velocity
+            // Relative dragon velocity (player-centric frame)
             Vec3d dragonVel = dragon.getVelocity();
-            JsonArray dv = new JsonArray();
-            dv.add(dragonVel.x); dv.add(dragonVel.y); dv.add(dragonVel.z);
-            obj.add("velocity", dv);
+            if (distance > 0.01) {
+                Vec3d toDragonNorm = toDragon.multiply(1.0 / distance);
+                double towardVel = dragonVel.dotProduct(toDragonNorm);
+                // Horizontal perpendicular to player→dragon line (positive = right in player's view)
+                double hMag = Math.sqrt(toDragonNorm.x * toDragonNorm.x + toDragonNorm.z * toDragonNorm.z);
+                if (hMag > 0.001) {
+                    double nx = toDragonNorm.x / hMag, nz = toDragonNorm.z / hMag;
+                    double lateralVel = dragonVel.x * (-nz) + dragonVel.z * nx;
+                    obj.addProperty("toward_vel", towardVel);
+                    obj.addProperty("lateral_vel", lateralVel);
+                } else {
+                    obj.addProperty("toward_vel", towardVel);
+                    obj.addProperty("lateral_vel", 0.0);
+                }
+            } else {
+                obj.addProperty("toward_vel", dragonVel.length());
+                obj.addProperty("lateral_vel", 0.0);
+            }
         } else {
-            obj.addProperty("yaw", 0.0);
-            obj.addProperty("pitch", 0.0);
-            obj.addProperty("yaw_delta", 0.0);
-            obj.addProperty("pitch_delta", 0.0);
             obj.addProperty("in_view", false);
             obj.addProperty("alive", false);
             obj.addProperty("dy", 0.0);
@@ -146,9 +153,8 @@ public class ObservationBuilder {
             obj.addProperty("head_yaw_delta", 0.0);
             obj.addProperty("head_pitch_delta", 0.0);
             obj.addProperty("phase", 0);
-            JsonArray dv = new JsonArray();
-            dv.add(0.0); dv.add(0.0); dv.add(0.0);
-            obj.add("velocity", dv);
+            obj.addProperty("toward_vel", 0.0);
+            obj.addProperty("lateral_vel", 0.0);
         }
         return obj;
     }

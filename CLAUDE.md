@@ -106,8 +106,8 @@ train/
 - [x] Episode 超时：P2 18000 tick（龙会飞需要更长时间）
 - [x] 独立 Python 训练脚本 `train_p2.py` / `watch_p2.py`
 - [ ] 新增动作：举盾（长按右键）— 观察 AI 打不过再加
-- [ ] 动作表扩展为 10 动作
-- [ ] 观察空间扩展：龙 phase、龙 velocity/bbox
+- [x] 观察空间扩展：龙 phase、相对 velocity (toward/lateral)
+- [ ] 动作表扩展为 10 动作（举盾）
 - [ ] 调整奖励函数适应防御行为
 
 ### 训练流程
@@ -145,16 +145,16 @@ train/
 
 ## 观察空间设计
 
-### 当前 29 维结构
+### 当前 26 维结构
 
 ```
 [0-7]   player:       health, on_ground, sprinting, vel_xyz(3), center_dx, center_dz
-[8-17]  dragon_rel:   yaw_delta, pitch_delta, in_view, alive, dy, hit_dist, hit_yaw_delta, hit_pitch_delta, head_yaw_delta, head_pitch_delta
-[18-21] dragon_ext:   phase_id(0-10 → /10), dragon_vel_xyz(3, /20)
-[22]    terrain:      ground_distance
-[23]    raytrace:     dragon_in_crosshair
-[24-25] stats:        attack_cooldown, last_hit_type(0=none/1=body/2=head)
-[26-28] breath:       nearest_breath(/64), breath_warning(0/1), breath_yaw_delta(/180)
+[8-15]  dragon_rel:   in_view, alive, dy, hit_dist, hit_yaw_delta, hit_pitch_delta, head_yaw_delta, head_pitch_delta
+[16-18] dragon_ext:   phase_id(/10), toward_vel(/20), lateral_vel(/20)
+[19]    terrain:      ground_distance
+[20]    raytrace:     dragon_in_crosshair
+[21-22] stats:        attack_cooldown, last_hit_type(0=none/1=body/2=head)
+[23-25] breath:       nearest_breath(/64), breath_warning(0/1), breath_yaw_delta(/180)
 ```
 
 ### Phase 2 扩展计划

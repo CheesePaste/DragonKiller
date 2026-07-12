@@ -3,6 +3,8 @@ package ai.cp;
 import ai.cp.config.RLConfig;
 import ai.cp.config.TickRateHelper;
 import ai.cp.rl.RLTickHandler;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
@@ -32,29 +34,60 @@ public class DragonKiller implements ModInitializer {
 
 	private void registerCommands() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-			dispatcher.register(CommandManager.literal("tps").executes(ctx -> {
-				int tps = TickRateHelper.getTps();
-				float mspt = TickRateHelper.getMspt();
-				long interval = TickRateHelper.getIntervalMs();
-				ctx.getSource().sendFeedback(
-					() -> Text.literal(String.format(
-						"§6[TPS] §e%d  §6[MSPT] §e%.1fms  §6[Interval] §e%dms",
-						tps, mspt, interval)),
-					false);
-				return 1;
-			}));
+			// /tps — show or set TPS
+			dispatcher.register(CommandManager.literal("tps")
+				.executes(ctx -> {
+					int tps = TickRateHelper.getTps();
+					float mspt = TickRateHelper.getMspt();
+					long interval = TickRateHelper.getIntervalMs();
+					boolean locked = TickRateHelper.getForcedIntervalMs() > 0;
+					ctx.getSource().sendFeedback(
+						() -> Text.literal(String.format(
+							"%s §e%d  §6[MSPT] §e%.1fms  §6[Interval] §e%dms",
+							locked ? "§c[LOCKED]" : "§6[TPS]", tps, mspt, interval)),
+						false);
+					return 1;
+				})
+				.then(CommandManager.argument("tps", IntegerArgumentType.integer(1, 500))
+					.executes(ctx -> {
+						int target = IntegerArgumentType.getInteger(ctx, "tps");
+						TickRateHelper.setTargetTps(target);
+						ctx.getSource().sendFeedback(() ->
+							Text.literal(String.format("§6[TPS] §fLocked to §e%d TPS", target)),
+							false);
+						return 1;
+					}))
+				.then(CommandManager.literal("auto")
+					.executes(ctx -> {
+						TickRateHelper.setTargetTps(0);
+						ctx.getSource().sendFeedback(() ->
+							Text.literal("§6[TPS] §fAdaptive mode"),
+							false);
+						return 1;
+					})));
 
-			// /gm — toggle spectator ↔ creative for player inspection
+			// /gm <mode> — set game mode: spectator / creative / survival
 			dispatcher.register(CommandManager.literal("gm")
 				.requires(src -> src.hasPermissionLevel(0))
+				.then(CommandManager.argument("mode", StringArgumentType.word())
+					.executes(ctx -> {
+						ServerPlayerEntity player = ctx.getSource().getPlayer();
+						if (player == null) return 0;
+						String modeName = StringArgumentType.getString(ctx, "mode");
+						String mode = RLTickHandler.setPlayerGameMode(player.getUuid(), modeName);
+						ctx.getSource().sendFeedback(() ->
+							Text.literal("§6[GM] §fSwitched to " + mode),
+							false);
+						return 1;
+					}))
 				.executes(ctx -> {
 					ServerPlayerEntity player = ctx.getSource().getPlayer();
 					if (player == null) return 0;
-					boolean nowCreative = RLTickHandler.toggleCreativeMode(player.getUuid());
+					int current = RLTickHandler.getPlayerGameMode(player.getUuid());
+					String name = current == 1 ? "Creative" : current == 2 ? "Survival" : "Spectator";
+					String color = current == 1 ? "§a" : current == 2 ? "§e" : "§7";
 					ctx.getSource().sendFeedback(() ->
-						Text.literal(nowCreative
-							? "§a[GM] Creative mode — fly around to inspect"
-							: "§7[GM] Spectator mode"),
+						Text.literal("§6[GM] §fCurrent: " + color + name),
 						false);
 					return 1;
 				}));

@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Dynamically adjusts the server tick rate based on MSPT (smoothed tick duration).
  * Ticks as fast as the CPU can handle, keeping ~30% headroom to avoid overload.
- * Phase 2: locked at 100 TPS (10ms) for faster RL training.
+ * Phase 2: locked at 20 TPS (50ms) for consistent vanilla behavior.
  */
 @Mixin(MinecraftServer.class)
 public class TickRateMixin {
@@ -24,7 +24,7 @@ public class TickRateMixin {
     @Shadow private float tickTime;  // Smoothed MSPT in milliseconds
 
     @Unique
-    private long currentIntervalMs = RLConfig.IS_PHASE_2 ? 10 : 50;  // P2: 100 TPS, P1: 20 TPS
+    private long currentIntervalMs = 50;  // 20 TPS for both phases
 
     @Unique
     private boolean adaptiveEnabled = !RLConfig.IS_PHASE_2;
@@ -51,6 +51,14 @@ public class TickRateMixin {
             target = "Lnet/minecraft/server/MinecraftServer;endTickMetrics()V",
             shift = At.Shift.AFTER))
     private void onPostTick(CallbackInfo ci) {
+        // Check for command-forced TPS lock
+        long forced = TickRateHelper.getForcedIntervalMs();
+        if (forced > 0 && forced != currentIntervalMs) {
+            currentIntervalMs = forced;
+            TickRateHelper.update(currentIntervalMs, tickTime);
+            return;
+        }
+
         if (adaptiveEnabled) {
             if (tickTime <= 0.0f) return;
 
