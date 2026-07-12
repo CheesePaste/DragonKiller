@@ -275,4 +275,11 @@ public class ObservationBuilder {
             new Box(-200, 0, -200, 200, 256, 200), e -> true);
         return dragons.isEmpty() ? null : dragons.get(0);
     }
+
+    /** Minimum distance from player eyes to any dragon part's bounding box. */
+    public static double getHitDistance(ServerPlayerEntity player, ServerWorld world) {
+        EnderDragonEntity dragon = getDragon(world);
+        if (dragon == null || dragon.isRemoved()) return 100.0;
+        return minDistanceToDragon(player.getEyePos(), dragon);
+    }
 }

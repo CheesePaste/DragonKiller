@@ -29,7 +29,7 @@ class TrainConfigP2:
     device: str = "cuda"
 
     save_dir: str = "models/p2"
-    save_freq_steps: int = 100_000
+    save_freq_steps: int = 500_000  # save checkpoint every 500K timesteps
     load_model: str = ""  # Path to pre-trained Phase 1 model (optional)
 
     eval_episodes: int = 5

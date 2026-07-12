@@ -37,6 +37,8 @@ public class ActionParser {
     private static boolean wasAirborne;
     private static boolean wasHeadshot;
     private static int lastHitType; // 0=none, 1=body, 2=head
+    private static boolean attackChosen; // whether action 7 was selected this cycle
+    private static int totalAttackAttempts; // per-episode count of action 7 selections
 
 
     private static final double MOVE_SPEED = 0.2;
@@ -58,6 +60,8 @@ public class ActionParser {
         wasAirborne = false;
         wasHeadshot = false;
         lastHitType = 0;
+        attackChosen = false;
+        totalAttackAttempts = 0;
     }
 
     public static void execute(int actionIndex, ServerPlayerEntity player, ServerWorld world) {
@@ -70,6 +74,7 @@ public class ActionParser {
         wasAirborne = false;
         wasHeadshot = false;
         lastHitType = 0;
+        attackChosen = false;
 
         switch (actionIndex) {
             case 0: break; // noop
@@ -79,7 +84,7 @@ public class ActionParser {
             case 4: player.setYaw(player.getYaw() + TURN_SPEED); break;
             case 5: player.setPitch(MathHelper.clamp(player.getPitch() - TURN_SPEED, -90.0F, 90.0F)); break;
             case 6: player.setPitch(MathHelper.clamp(player.getPitch() + TURN_SPEED, -90.0F, 90.0F)); break;
-            case 7: performAttack(player, world); break;
+            case 7: attackChosen = true; totalAttackAttempts++; performAttack(player, world); break;
             case 8: sprinting = !sprinting; break;
             case 9: jumping = true; break;
             case 10: moveLeft = true; break;
@@ -141,6 +146,16 @@ public class ActionParser {
     /** Whether the most recent attack swing was while airborne (potential crit). */
     public static boolean wasAirborne() {
         return wasAirborne;
+    }
+
+    /** Whether the attack action (index 7) was chosen this cycle (regardless of hit). */
+    public static boolean wasAttackChosen() {
+        return attackChosen;
+    }
+
+    /** Per-episode count of attack action selections (includes misses). */
+    public static int getTotalAttackAttempts() {
+        return totalAttackAttempts;
     }
 
     /** Whether any attack was performed in the current action cycle. */

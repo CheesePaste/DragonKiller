@@ -33,7 +33,11 @@
       "Bash(timeout 60 ./gradlew compileJava)",
       "Bash(./gradlew --stop)",
       "Bash(./gradlew compileJava)",
-      "Bash(pip3 list *)"
+      "Bash(pip3 list *)",
+      "Bash(rm -rf logs/ppo_*)",
+      "Bash(rm -rf logs/p2_ppo_*)",
+      "Bash(rm \"C:/Users/huhai/Desktop/Java-mcmod/dragonkiller-template-1.20.1/models/p2/\"dragonkiller_p2_ppo_*.zip)",
+      "Bash(rm \"C:/Users/huhai/Desktop/Java-mcmod/dragonkiller-template-1.20.1/models/\"dragonkiller_ppo_*.zip)"
     ]
   }
 }

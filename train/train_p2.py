@@ -32,50 +32,63 @@ class EpisodeInfoLogger(BaseCallback):
         super().__init__(verbose)
         self.episode_rewards = []
         self.episode_lengths = []
+        self._last_ep_keys = {}  # env_idx -> (last_reward, last_length) tuple
 
     def _on_step(self) -> bool:
         for env_idx in range(self.training_env.num_envs):
-            ep_info = self.training_env.get_attr("episode_returns", indices=[env_idx])[0]
+            ep_returns = self.training_env.get_attr("episode_returns", indices=[env_idx])[0]
             ep_len = self.training_env.get_attr("episode_lengths", indices=[env_idx])[0]
-            if len(ep_info) > 0 and len(ep_info) > len(self.episode_rewards):
-                reward = ep_info[-1]
-                length = ep_len[-1]
-                self.episode_rewards.append(reward)
-                self.episode_lengths.append(length)
-                self.logger.record("train/episode_reward", reward)
-                self.logger.record("train/episode_length", length)
-                window = min(100, len(self.episode_rewards))
-                self.logger.record(
-                    "train/episode_reward_100",
-                    np.mean(self.episode_rewards[-window:]),
-                )
-                self.logger.record(
-                    "train/episode_length_100",
-                    np.mean(self.episode_lengths[-window:]),
-                )
+
+            if len(ep_returns) > 0:
+                ep_key = (ep_returns[-1], ep_len[-1])
+                if self._last_ep_keys.get(env_idx) != ep_key:
+                    self._last_ep_keys[env_idx] = ep_key
+                    reward = ep_returns[-1]
+                    length = ep_len[-1]
+                    self.episode_rewards.append(reward)
+                    self.episode_lengths.append(length)
+                    self.logger.record("train/episode_reward", reward)
+                    self.logger.record("train/episode_length", length)
+                    window = min(100, len(self.episode_rewards))
+                    self.logger.record(
+                        "train/episode_reward_100",
+                        np.mean(self.episode_rewards[-window:]),
+                    )
+                    self.logger.record(
+                        "train/episode_length_100",
+                        np.mean(self.episode_lengths[-window:]),
+                    )
+
+                    # Log per-episode tracker stats from Java
+                    tracker = self.training_env.get_attr("_episode_tracker", indices=[env_idx])[0]
+                    if tracker:
+                        for key, value in tracker.items():
+                            self.logger.record(f"train/{key}", value)
         return True
 
 
 class DragonKillRateCallback(BaseCallback):
     def __init__(self, verbose=0):
         super().__init__(verbose)
-        self.dragon_kills = 0
-        self.total_episodes = 0
+        self._last_ep_keys = {}
+        self._cumulative_kills = 0
+        self._cumulative_total = 0
 
     def _on_step(self) -> bool:
         for env_idx in range(self.training_env.num_envs):
-            ep_info = self.training_env.get_attr("episode_returns", indices=[env_idx])[0]
-            current_count = len(ep_info)
-            if current_count > self.total_episodes:
-                episodes_gained = current_count - self.total_episodes
-                for _ in range(episodes_gained):
-                    reward = ep_info[-(episodes_gained)]
+            ep_returns = self.training_env.get_attr("episode_returns", indices=[env_idx])[0]
+            ep_len = self.training_env.get_attr("episode_lengths", indices=[env_idx])[0]
+            if len(ep_returns) > 0:
+                ep_key = (ep_returns[-1], ep_len[-1])
+                if self._last_ep_keys.get(env_idx) != ep_key:
+                    self._last_ep_keys[env_idx] = ep_key
+                    reward = ep_returns[-1]
+                    self._cumulative_total += 1
                     if reward > 150:
-                        self.dragon_kills += 1
-                self.total_episodes = current_count
-                if self.total_episodes > 0:
-                    kill_rate = self.dragon_kills / self.total_episodes * 100
-                    self.logger.record("train/dragon_kill_rate", kill_rate)
+                        self._cumulative_kills += 1
+                    if self._cumulative_total > 0:
+                        self.logger.record("train/dragon_kill_rate",
+                            self._cumulative_kills / self._cumulative_total * 100)
         return True
 
 
@@ -111,7 +124,7 @@ def train(config: TrainConfigP2):
     eval_env = DummyVecEnv([make_env(config.host, config.port, config.seed)])
 
     checkpoint_callback = CheckpointCallback(
-        save_freq=max(config.save_freq_steps // config.n_steps, 1),
+        save_freq=max(config.save_freq_steps // config.n_envs, 1),
         save_path=config.save_dir,
         name_prefix="dragonkiller_p2_ppo",
     )

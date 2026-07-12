@@ -33,9 +33,9 @@ class TrainConfig:
     n_envs: int = 6  # Number of environments to run in parallel
     device: str = "cuda"  # GPU acceleration
 
-    # Checkpointing
+    # Checkpointing (save every 500K timesteps)
     save_dir: str = "models"
-    save_freq_steps: int = 100_000
+    save_freq_steps: int = 500_000
 
     # Evaluation
     eval_episodes: int = 5

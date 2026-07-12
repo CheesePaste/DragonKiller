@@ -25,6 +25,8 @@ class DragonEnv(gym.Env):
         self.port = port
         self.connect_retries = connect_retries
         self.connect_retry_delay = connect_retry_delay
+        self._last_tracker = {}
+        self._episode_tracker = {}  # persists across reset() — stores last completed episode's tracker
 
         # 12 discrete actions: noop, forward, backward, turn L/R, look U/D, attack, sprint, jump, strafe L/R
         self.action_space = spaces.Discrete(12)
@@ -37,6 +39,7 @@ class DragonEnv(gym.Env):
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
+        # Don't clear _episode_tracker — it survives for the callback to read
 
         for attempt in range(self.connect_retries):
             try:
@@ -60,7 +63,11 @@ class DragonEnv(gym.Env):
         obs = self._parse_obs(msg["data"])
         reward = float(msg["reward"])
         done = bool(msg["done"])
-        return obs, reward, done, False, {}
+        info = {}
+        if done:
+            data = msg.get("data", {})
+            self._episode_tracker = data.get("tracker", {})
+        return obs, reward, done, False, info
 
     def _parse_obs(self, data: dict) -> np.ndarray:
         vec = []

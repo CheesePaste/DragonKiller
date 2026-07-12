@@ -30,6 +30,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
+import java.util.ArrayDeque;
+
 public class RLTickHandler {
     private static final SocketServer socketServer = new SocketServer();
     private static final EpisodeManager episodeManager = new EpisodeManager();
@@ -43,6 +45,23 @@ public class RLTickHandler {
     private static double dragonDamageDealt;
     private static double prevDragonHealth;
     private static int invincibilityTicks;
+
+    // Per-episode stats for TensorBoard
+    private static double prevPlayerHealth;
+    private static int epHeadshotCount;
+    private static double epPlayerDamageTaken;
+    private static int epBreathTicks;
+    private static int epSprintTicks;
+    private static int epCrosshairTicks;
+    private static int epInViewTicks;
+    private static double epDistanceSum;
+    private static int epDistanceCount;
+    private static int epLowHpTicks;
+
+    // Anti-trade: damage proximity tracking
+    private static int lastDamageEpisodeTick = -100;
+    private static double retroactiveClawback = 0.0;
+    private static final ArrayDeque<double[]> pendingAttackClawbacks = new ArrayDeque<>();
 
     private static void broadcastActionBar(String msg) {
         if (server == null) return;
@@ -226,11 +245,14 @@ public class RLTickHandler {
         botPlayer.changeGameMode(GameMode.SURVIVAL);
 
 
-        // Phase 2: kill existing dragon and spawn a fresh one, linked to EnderDragonFight
+        // Phase 2: kill ALL existing dragons and spawn a single fresh one
         if (RLConfig.IS_PHASE_2) {
-            EnderDragonEntity oldDragon = ObservationBuilder.getDragon(endWorld);
-            if (oldDragon != null && !oldDragon.isRemoved()) {
-                oldDragon.discard();
+            var allDragons = endWorld.getEntitiesByClass(EnderDragonEntity.class,
+                new Box(-200, 0, -200, 200, 256, 200), e -> true);
+            for (EnderDragonEntity oldDragon : allDragons) {
+                if (oldDragon != null && !oldDragon.isRemoved()) {
+                    oldDragon.discard();
+                }
             }
 
             EnderDragonEntity newDragon = EntityType.ENDER_DRAGON.create(endWorld);
@@ -411,11 +433,61 @@ public class RLTickHandler {
         // Compute dragon delta before rewardCalc (it updates prev values internally)
         double dragonDelta = prevDragonHealth - dragonHealth;
 
+        // ── Anti-trade: zero damage reward if recently damaged ──
+        int epTick = episodeManager.getTickCount();
+        double healthLost = prevPlayerHealth - playerHealth;
+        if (healthLost > 0) {
+            lastDamageEpisodeTick = epTick;
+            epPlayerDamageTaken += healthLost;
+            // Retroactive clawback: attack within 20 ticks of taking damage = trade
+            while (!pendingAttackClawbacks.isEmpty()) {
+                double[] entry = pendingAttackClawbacks.peekFirst();
+                int atkTick = (int) entry[0];
+                if (epTick - atkTick <= 20) {
+                    retroactiveClawback += entry[1];
+                    pendingAttackClawbacks.pollFirst();
+                } else break;
+            }
+            // Clean entries older than 20 ticks
+            while (!pendingAttackClawbacks.isEmpty()) {
+                if (epTick - (int) pendingAttackClawbacks.peekFirst()[0] > 20)
+                    pendingAttackClawbacks.pollFirst();
+                else break;
+            }
+        }
+        prevPlayerHealth = playerHealth;
+
         double denseReward = rewardCalc.computeDense(
             dragonHealth, playerHealth, centerDistance,
             botPlayer.isSprinting(), isOverVoid,
             isDragonSitting, facingCenterFactor);
         double totalReward = denseReward;
+
+        // Zero damage reward if recently damaged (prevents profitable suicidal trades)
+        if (dragonDelta > 0 && (epTick - lastDamageEpisodeTick <= 20)) {
+            double dmgReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
+            if (isDragonSitting) dmgReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
+            totalReward -= dmgReward;
+        } else if (dragonDelta > 0) {
+            // Legitimate hit — enqueue for possible future clawback
+            double dmgReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
+            if (isDragonSitting) dmgReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
+            pendingAttackClawbacks.add(new double[]{epTick, dmgReward});
+        }
+
+        // Apply retroactive clawback from earlier damage-trading hits
+        if (retroactiveClawback != 0) {
+            totalReward += retroactiveClawback;
+            retroactiveClawback = 0;
+        }
+
+        // Proximity reward: when dragon sits and player is in melee range
+        if (isDragonSitting) {
+            double hitDist = ObservationBuilder.getHitDistance(botPlayer, endWorld);
+            if (hitDist <= RLConfig.REWARD_PROXIMITY_RANGE) {
+                totalReward += RLConfig.REWARD_PROXIMITY;
+            }
+        }
 
         // Track total damage dealt + show action bar on hit
         if (dragonDelta > 0 && dragon != null && !dragon.isDead()) {
@@ -434,6 +506,25 @@ public class RLTickHandler {
         // Build observation (6 params — our version)
         float cooldownProgress = ActionParser.getCooldownProgress();
         JsonObject obs = ObservationBuilder.build(botPlayer, endWorld, cooldownProgress);
+
+        // ── Per-episode stats tracking ──────────────────────────────────────
+        if (ActionParser.didAttackThisCycle()) {
+            if (ActionParser.wasHeadshot()) epHeadshotCount++;
+        }
+        // Note: healthLost / epPlayerDamageTaken / prevPlayerHealth handled above
+
+        if (botPlayer.isSprinting()) epSprintTicks++;
+        if (dragon != null && !dragon.isDead()) {
+            JsonObject dr = obs.getAsJsonObject("dragon_relative");
+            if (dr.get("in_view").getAsBoolean()) epInViewTicks++;
+            JsonObject rt = obs.getAsJsonObject("raytrace");
+            if (rt.get("dragon_in_crosshair").getAsBoolean()) epCrosshairTicks++;
+            epDistanceSum += dragonDistance;
+            epDistanceCount++;
+        }
+        JsonObject br = obs.getAsJsonObject("breath");
+        if (br.get("breath_warning").getAsBoolean()) epBreathTicks++;
+        if (playerHealth < 5.0) epLowHpTicks++;
 
         // Check done
         EpisodeManager.DoneInfo doneInfo = episodeManager.checkDone(botPlayer, endWorld);
@@ -459,6 +550,23 @@ public class RLTickHandler {
                 episodeManager.getTotalReward(), episodeManager.getTickCount()));
             DragonKiller.LOGGER.info("[EPISODE] Done reason={} totalReward={} ticks={}",
                 doneInfo.reason(), String.format("%.2f", episodeManager.getTotalReward()), episodeManager.getTickCount());
+
+            // Add tracker stats for TensorBoard
+            JsonObject tracker = new JsonObject();
+            tracker.addProperty("attack_attempts", ActionParser.getTotalAttackAttempts());
+            tracker.addProperty("hit_count", ActionParser.getSwingCount());
+            tracker.addProperty("headshot_count", epHeadshotCount);
+            tracker.addProperty("damage_dealt", Math.round(dragonDamageDealt * 10.0) / 10.0);
+            tracker.addProperty("player_damage_taken", Math.round(epPlayerDamageTaken * 10.0) / 10.0);
+            tracker.addProperty("breath_ticks", epBreathTicks);
+            tracker.addProperty("in_view_ticks", epInViewTicks);
+            tracker.addProperty("crosshair_ticks", epCrosshairTicks);
+            tracker.addProperty("sprint_ticks", epSprintTicks);
+            tracker.addProperty("low_hp_ticks", epLowHpTicks);
+            if (epDistanceCount > 0) {
+                tracker.addProperty("avg_dragon_distance", Math.round(epDistanceSum / epDistanceCount * 10.0) / 10.0);
+            }
+            obs.add("tracker", tracker);
         }
 
         String message = Protocol.createObsMessage(obs, totalReward, doneInfo.done());
@@ -477,6 +585,19 @@ public class RLTickHandler {
     private static void resetStats(double dragonHealth) {
         dragonDamageDealt = 0;
         prevDragonHealth = dragonHealth;
+        prevPlayerHealth = botPlayer != null ? botPlayer.getHealth() : 20.0;
+        epHeadshotCount = 0;
+        epPlayerDamageTaken = 0;
+        epBreathTicks = 0;
+        epSprintTicks = 0;
+        epCrosshairTicks = 0;
+        epInViewTicks = 0;
+        epDistanceSum = 0;
+        epDistanceCount = 0;
+        epLowHpTicks = 0;
+        lastDamageEpisodeTick = -100;
+        retroactiveClawback = 0;
+        pendingAttackClawbacks.clear();
     }
 
     public static SocketServer getSocketServer() { return socketServer; }
