@@ -25,4 +25,7 @@ public class RLConfig {
     public static final double REWARD_FACE_CENTER = 0.003; // per tick when facing dragon perch (0,69,0)
     public static final double REWARD_VOID_PENALTY = -1.0; // per tick over void
 
+    // Anti-trade window: ticks before/after damage that attack rewards are zeroed
+    public static final int ANTI_TRADE_WINDOW_TICKS = 10;
+
 }

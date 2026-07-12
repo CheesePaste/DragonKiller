@@ -42,7 +42,7 @@ public class ActionParser {
 
 
     private static final double MOVE_SPEED = 0.2;
-    private static final float TURN_SPEED = 5.0F;
+    private static final float TURN_SPEED = 15.0F;
 
     public static void reset() {
         freezeCounter = 0;

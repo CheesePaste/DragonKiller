@@ -31,6 +31,9 @@ import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
 import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 public class RLTickHandler {
     private static final SocketServer socketServer = new SocketServer();
@@ -57,11 +60,19 @@ public class RLTickHandler {
     private static double epDistanceSum;
     private static int epDistanceCount;
     private static int epLowHpTicks;
+    private static double epMinDragonDistance;
+    private static double epCenterDistanceSum;
+    private static int epCenterDistanceCount;
+    private static int epBlockedHits;
+    private static int epClawbackCount;
 
     // Anti-trade: damage proximity tracking
     private static int lastDamageEpisodeTick = -100;
     private static double retroactiveClawback = 0.0;
     private static final ArrayDeque<double[]> pendingAttackClawbacks = new ArrayDeque<>();
+
+    // Players exempted from spectator enforcement (creative mode for inspection)
+    private static final Set<UUID> creativeModePlayers = new HashSet<>();
 
     private static void broadcastActionBar(String msg) {
         if (server == null) return;
@@ -200,8 +211,16 @@ public class RLTickHandler {
     private static void ensureRealPlayersSpectate() {
         if (server == null) return;
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            if (player != botPlayer && player.interactionManager.getGameMode() != GameMode.SPECTATOR) {
-                player.changeGameMode(GameMode.SPECTATOR);
+            if (player != botPlayer) {
+                GameMode current = player.interactionManager.getGameMode();
+                if (creativeModePlayers.contains(player.getUuid())) {
+                    if (current != GameMode.CREATIVE) {
+                        player.changeGameMode(GameMode.CREATIVE);
+                        player.sendMessage(Text.literal("§a[GM] Creative mode — use §7/gm§a to switch back"), false);
+                    }
+                } else if (current != GameMode.SPECTATOR) {
+                    player.changeGameMode(GameMode.SPECTATOR);
+                }
             }
         }
     }
@@ -386,6 +405,7 @@ public class RLTickHandler {
             double dz = toDragon.z;
             double horizDist = Math.sqrt(dx * dx + dz * dz);
             dragonDistance = playerPos.distanceTo(dragonPos);
+            epMinDragonDistance = Math.min(epMinDragonDistance, dragonDistance);
 
             float yawToDragon = (float) MathHelper.atan2(-dx, dz) * MathHelper.DEGREES_PER_RADIAN;
             float pitchToDragon = -(float) MathHelper.atan2(dy, horizDist) * MathHelper.DEGREES_PER_RADIAN;
@@ -405,6 +425,8 @@ public class RLTickHandler {
         // Distance from center of End island (strategic position for dragon landing)
         Vec3d center = new Vec3d(0.0, 64.0, 0.0);
         double centerDistance = botPlayer.getPos().distanceTo(center);
+        epCenterDistanceSum += centerDistance;
+        epCenterDistanceCount++;
 
         // Continuous center-facing factor: cos(yaw_delta) × cos(pitch_delta)
         // Gives smooth gradient instead of binary on/off
@@ -439,18 +461,18 @@ public class RLTickHandler {
         if (healthLost > 0) {
             lastDamageEpisodeTick = epTick;
             epPlayerDamageTaken += healthLost;
-            // Retroactive clawback: attack within 20 ticks of taking damage = trade
+            // Retroactive clawback: attack within ANTI_TRADE_WINDOW of taking damage = trade
             while (!pendingAttackClawbacks.isEmpty()) {
                 double[] entry = pendingAttackClawbacks.peekFirst();
                 int atkTick = (int) entry[0];
-                if (epTick - atkTick <= 20) {
+                if (epTick - atkTick <= RLConfig.ANTI_TRADE_WINDOW_TICKS) {
                     retroactiveClawback += entry[1];
                     pendingAttackClawbacks.pollFirst();
                 } else break;
             }
-            // Clean entries older than 20 ticks
+            // Clean entries older than ANTI_TRADE_WINDOW ticks
             while (!pendingAttackClawbacks.isEmpty()) {
-                if (epTick - (int) pendingAttackClawbacks.peekFirst()[0] > 20)
+                if (epTick - (int) pendingAttackClawbacks.peekFirst()[0] > RLConfig.ANTI_TRADE_WINDOW_TICKS)
                     pendingAttackClawbacks.pollFirst();
                 else break;
             }
@@ -464,10 +486,13 @@ public class RLTickHandler {
         double totalReward = denseReward;
 
         // Zero damage reward if recently damaged (prevents profitable suicidal trades)
-        if (dragonDelta > 0 && (epTick - lastDamageEpisodeTick <= 20)) {
+        boolean hitZeroed = false;
+        if (dragonDelta > 0 && (epTick - lastDamageEpisodeTick <= RLConfig.ANTI_TRADE_WINDOW_TICKS)) {
             double dmgReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
             if (isDragonSitting) dmgReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
             totalReward -= dmgReward;
+            hitZeroed = true;
+            epBlockedHits++;
         } else if (dragonDelta > 0) {
             // Legitimate hit — enqueue for possible future clawback
             double dmgReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
@@ -476,8 +501,11 @@ public class RLTickHandler {
         }
 
         // Apply retroactive clawback from earlier damage-trading hits
+        boolean hadClawback = false;
         if (retroactiveClawback != 0) {
             totalReward += retroactiveClawback;
+            hadClawback = true;
+            epClawbackCount++;
             retroactiveClawback = 0;
         }
 
@@ -494,10 +522,13 @@ public class RLTickHandler {
             dragonDamageDealt += dragonDelta;
             double dmgReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
             if (isDragonSitting) dmgReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
+            String tag = hitZeroed ? " §c[BLOCKED]" : (hadClawback ? " §6[CLAWBACK]" : "");
             broadcastActionBar(String.format(
-                "§cDragon §f❤%.0f §7(-%.1f) §e+%.1f", dragonHealth, dragonDelta, dmgReward));
-            broadcastChat(String.format("§cDragon ❤%.0f §7(-%.1f) §eReward: +%.1f",
-                dragonHealth, dragonDelta, dmgReward));
+                "§cDragon §f❤%.0f §7(-%.1f) §e%s%s", dragonHealth, dragonDelta,
+                hitZeroed ? "+0.0" : String.format("+%.1f", dmgReward), tag));
+            broadcastChat(String.format("§cDragon ❤%.0f §7(-%.1f) §eReward: %s%s",
+                dragonHealth, dragonDelta,
+                hitZeroed ? "+0.0" : String.format("+%.1f", dmgReward), tag));
         }
         prevDragonHealth = dragonHealth;
 
@@ -553,6 +584,7 @@ public class RLTickHandler {
 
             // Add tracker stats for TensorBoard
             JsonObject tracker = new JsonObject();
+            tracker.addProperty("end_reason", doneInfo.reason());
             tracker.addProperty("attack_attempts", ActionParser.getTotalAttackAttempts());
             tracker.addProperty("hit_count", ActionParser.getSwingCount());
             tracker.addProperty("headshot_count", epHeadshotCount);
@@ -563,8 +595,14 @@ public class RLTickHandler {
             tracker.addProperty("crosshair_ticks", epCrosshairTicks);
             tracker.addProperty("sprint_ticks", epSprintTicks);
             tracker.addProperty("low_hp_ticks", epLowHpTicks);
+            tracker.addProperty("min_dragon_distance", Math.round(epMinDragonDistance * 10.0) / 10.0);
+            tracker.addProperty("blocked_hits", epBlockedHits);
+            tracker.addProperty("clawback_count", epClawbackCount);
             if (epDistanceCount > 0) {
                 tracker.addProperty("avg_dragon_distance", Math.round(epDistanceSum / epDistanceCount * 10.0) / 10.0);
+            }
+            if (epCenterDistanceCount > 0) {
+                tracker.addProperty("avg_center_distance", Math.round(epCenterDistanceSum / epCenterDistanceCount * 10.0) / 10.0);
             }
             obs.add("tracker", tracker);
         }
@@ -582,6 +620,17 @@ public class RLTickHandler {
         }
     }
 
+    /** Toggle a real player between forced-spectator and free-creative mode. Returns true if now creative. */
+    public static boolean toggleCreativeMode(UUID playerUuid) {
+        if (creativeModePlayers.contains(playerUuid)) {
+            creativeModePlayers.remove(playerUuid);
+            return false;
+        } else {
+            creativeModePlayers.add(playerUuid);
+            return true;
+        }
+    }
+
     private static void resetStats(double dragonHealth) {
         dragonDamageDealt = 0;
         prevDragonHealth = dragonHealth;
@@ -595,6 +644,11 @@ public class RLTickHandler {
         epDistanceSum = 0;
         epDistanceCount = 0;
         epLowHpTicks = 0;
+        epMinDragonDistance = 100.0;
+        epCenterDistanceSum = 0;
+        epCenterDistanceCount = 0;
+        epBlockedHits = 0;
+        epClawbackCount = 0;
         lastDamageEpisodeTick = -100;
         retroactiveClawback = 0;
         pendingAttackClawbacks.clear();

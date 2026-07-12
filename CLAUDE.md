@@ -192,9 +192,6 @@ REWARD_FACE_CENTER = 0.003  // 每 tick 面向龙栖息位置(0,69,0) — 防止
 
 // 爆头奖励（AI 用离散动作难以瞄准 1×1 头部，高倍率激励）
 REWARD_HEADSHOT_MULTIPLIER = 3.0 // 打中 dragon.head 时所有龙伤奖励 ×3
-
-// 龙息惩罚
-REWARD_BREATH_PENALTY = -1.0 // 每 tick 在龙息云/火球 12 格内
 ```
 
 ## 关键技术栈

@@ -2,9 +2,11 @@ package ai.cp;
 
 import ai.cp.config.RLConfig;
 import ai.cp.config.TickRateHelper;
+import ai.cp.rl.RLTickHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
@@ -41,6 +43,21 @@ public class DragonKiller implements ModInitializer {
 					false);
 				return 1;
 			}));
+
+			// /gm — toggle spectator ↔ creative for player inspection
+			dispatcher.register(CommandManager.literal("gm")
+				.requires(src -> src.hasPermissionLevel(0))
+				.executes(ctx -> {
+					ServerPlayerEntity player = ctx.getSource().getPlayer();
+					if (player == null) return 0;
+					boolean nowCreative = RLTickHandler.toggleCreativeMode(player.getUuid());
+					ctx.getSource().sendFeedback(() ->
+						Text.literal(nowCreative
+							? "§a[GM] Creative mode — fly around to inspect"
+							: "§7[GM] Spectator mode"),
+						false);
+					return 1;
+				}));
 		});
 	}
 }
