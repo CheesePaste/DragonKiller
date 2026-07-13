@@ -1,5 +1,6 @@
 *.zip
 *.0
+*.rar
 # gradle
 
 .gradle/

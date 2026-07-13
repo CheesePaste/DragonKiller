@@ -28,11 +28,11 @@ class DragonEnv(gym.Env):
         self._last_tracker = {}
         self._episode_tracker = {}  # persists across reset() — stores last completed episode's tracker
 
-        # 6 continuous actions: [worldX, worldZ, yaw, pitch, attack, jump]
-        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(6,), dtype=np.float32)
+        # 7 continuous actions: [worldX, worldZ, yaw, pitch, attack, jump, shoot]
+        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(7,), dtype=np.float32)
 
-        # 38-dimensional observation
-        obs_dim = 38
+        # 39-dimensional observation
+        obs_dim = 39
         self.observation_space = spaces.Box(
             low=-1.0, high=1.0, shape=(obs_dim,), dtype=np.float32
         )
@@ -115,9 +115,10 @@ class DragonEnv(gym.Env):
         r = data.get("raytrace", {})
         vec.append(1.0 if r.get("dragon_in_crosshair", False) else 0.0)
 
-        # ── Stats (2: attack_cooldown, last_hit_type) ─────────────────
+        # ── Stats (3: attack_cooldown, ranged_cooldown, last_hit_type) ─────────────────
         s = data.get("stats", {})
         vec.append(np.clip(float(s.get("attack_cooldown", 1.0)), 0.0, 1.0))
+        vec.append(np.clip(float(s.get("ranged_cooldown", 0.0)), 0.0, 1.0))
         vec.append(float(s.get("last_hit_type", 0)) / 2.0)
 
         # ── Breath (3: distance, warning, yaw_delta) ─────────────────

@@ -34,7 +34,7 @@ def test_env(host="127.0.0.1", port=5670, retries=30):
         raise RuntimeError("No MC connection")
 
     # Check observation
-    expected_dim = 29
+    expected_dim = 39
     print(f"\nObservation shape: {obs.shape}")
     assert obs.shape == (expected_dim,), f"Expected ({expected_dim},), got {obs.shape}"
     print(f"[OK] Observation dimension = {expected_dim}")
@@ -46,14 +46,15 @@ def test_env(host="127.0.0.1", port=5670, retries=30):
 
     # Check action space
     print(f"Action space: {env.action_space}")
-    assert env.action_space.n == 12
-    print(f"[OK] Action space = 12 discrete")
+    assert env.action_space.shape == (7,)
+    print(f"[OK] Action space = 7 continuous actions")
 
-    # Run a few steps with different actions
+    # Run a few steps with random continuous actions
     print("\nStepping through actions...")
-    for action in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]:
+    for step in range(12):
+        action = env.action_space.sample()
         obs, reward, done, truncated, info = env.step(action)
-        print(f"  action={action:2d}: reward={reward:+7.3f}, done={done}, obs_range=[{obs.min():.2f}, {obs.max():.2f}]")
+        print(f"  step={step:2d}: reward={reward:+7.3f}, done={done}, obs_range=[{obs.min():.2f}, {obs.max():.2f}]")
         if done:
             print("[INFO] Episode ended, resetting...")
             obs, info = env.reset()
@@ -64,13 +65,14 @@ def test_env(host="127.0.0.1", port=5670, retries=30):
     # Print observation structure breakdown (normalized)
     print("\nObservation breakdown (all normalized to [-1, 1]):")
     sections = {
-        "player":        (0, 8),      # health, on_ground, sprinting, vel_xyz, center_dx/dz
-        "dragon_rel":    (8, 18),     # yaw_delta, pitch_delta, in_view, alive, dy, hit_dist, hit_yaw/pitch, head_yaw/pitch
-        "dragon_ext":    (18, 22),    # phase, dvel_xyz
-        "terrain":       (22, 23),    # ground_distance
-        "raytrace":      (23, 24),    # dragon_in_crosshair
-        "stats":         (24, 26),    # attack_cooldown, last_hit_type
-        "breath":        (26, 29),    # nearest_breath, breath_warning, breath_yaw_delta
+        "player":        (0, 7),      # health, on_ground, vel_xyz, center_dx/dz (7)
+        "dragon_rel":    (7, 17),     # in_view, dragon_dx/dz, dy, hurt_time, hit_dist, hit_yaw/pitch, head_yaw/pitch (10)
+        "dragon_phase":  (17, 28),    # 11 one-hot phase (11)
+        "dragon_vel":    (28, 31),    # toward, lateral, vertical relative velocity (3)
+        "terrain":       (31, 32),    # ground_distance (1)
+        "raytrace":      (32, 33),    # dragon_in_crosshair (1)
+        "stats":         (33, 36),    # attack_cooldown, ranged_cooldown, last_hit_type (3)
+        "breath":        (36, 39),    # nearest_breath, breath_warning, breath_yaw_delta (3)
     }
     for name, (start, end) in sections.items():
         vals = obs[start:end]

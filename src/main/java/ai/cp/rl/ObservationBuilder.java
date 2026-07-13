@@ -273,6 +273,7 @@ public class ObservationBuilder {
     private static JsonObject buildStats(float attackCooldown) {
         JsonObject obj = new JsonObject();
         obj.addProperty("attack_cooldown", attackCooldown);
+        obj.addProperty("ranged_cooldown", ActionParser.getRangedCooldownProgress());
         obj.addProperty("last_hit_type", ActionParser.getLastHitType());
         return obj;
     }

@@ -359,6 +359,9 @@ public class RLTickHandler {
         // Diamond sword
         botPlayer.getInventory().setStack(0, new ItemStack(Items.DIAMOND_SWORD));
 
+        // Crossbow in offhand
+        botPlayer.equipStack(net.minecraft.entity.EquipmentSlot.OFFHAND, new ItemStack(Items.CROSSBOW));
+
         // Diamond armor
         botPlayer.getInventory().armor.set(3, new ItemStack(Items.DIAMOND_HELMET));
         botPlayer.getInventory().armor.set(2, new ItemStack(Items.DIAMOND_CHESTPLATE));
@@ -479,7 +482,7 @@ public class RLTickHandler {
         }
         prevPlayerHealth = playerHealth;
 
-        boolean didAttack = ActionParser.didAttackThisCycle();
+        boolean didAttack = ActionParser.didAttackThisCycle() || ActionParser.wasRangedHit();
         double hitDist = ObservationBuilder.getHitDistance(botPlayer, endWorld);
 
         // Build observation early so reward calc can read breath data
@@ -491,6 +494,11 @@ public class RLTickHandler {
             isOverVoid, isDragonSitting, didAttack);
         double totalReward = denseReward;
         epRewardDense += denseReward;
+
+        // Ranged miss penalty
+        if (ActionParser.wasRangedMiss()) {
+            totalReward += RLConfig.REWARD_RANGED_MISS;
+        }
 
         // Anti-trade: only zero/queue damage reward when bot actually attacked
         boolean hitZeroed = false;

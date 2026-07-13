@@ -13,6 +13,9 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.particle.ParticleTypes;
 import com.google.gson.JsonArray;
 
 public class ActionParser {
@@ -38,6 +41,13 @@ public class ActionParser {
     private static int lastHitType; // 0=none, 1=body, 2=head
     private static boolean attackChosen; // whether action 7 was selected this cycle
     private static int totalAttackAttempts; // per-episode count of action 7 selections
+
+    // Ranged weapon state
+    private static int rangedCooldown;
+    private static final int RANGED_COOLDOWN_TICKS = 30; // 1.5 seconds
+    private static final double RANGED_DAMAGE = 5.0;
+    private static boolean rangedMissThisCycle;
+    private static boolean rangedHitThisCycle;
 
 
     /** Base walk speed (vanilla ≈0.215 blocks/tick = 4.317 blocks/sec). */
@@ -66,6 +76,9 @@ public class ActionParser {
         lastHitType = 0;
         attackChosen = false;
         totalAttackAttempts = 0;
+        rangedCooldown = 0;
+        rangedMissThisCycle = false;
+        rangedHitThisCycle = false;
     }
 
     public static void execute(JsonArray actionArray, ServerPlayerEntity player, ServerWorld world) {
@@ -79,8 +92,10 @@ public class ActionParser {
         wasHeadshot = false;
         lastHitType = 0;
         attackChosen = false;
+        rangedMissThisCycle = false;
+        rangedHitThisCycle = false;
 
-        if (actionArray == null || actionArray.size() < 6) {
+        if (actionArray == null || actionArray.size() < 7) {
             // Default reset if invalid
             freezeCounter = RLConfig.ACTION_REPEAT;
             observationSent = false;
@@ -93,6 +108,7 @@ public class ActionParser {
         float aPitch = actionArray.get(3).getAsFloat();
         float aAttack = actionArray.get(4).getAsFloat();
         float aJump = actionArray.get(5).getAsFloat();
+        float aShoot = actionArray.get(6).getAsFloat();
 
         // 1 & 2. Absolute World Movement (X and Z)
         targetMoveX = aMoveX;
@@ -125,6 +141,11 @@ public class ActionParser {
             jumping = true;
         }
 
+        // 7. Shoot (Crossbow)
+        if (aShoot > 0.0f) {
+            performRangedAttack(player, world);
+        }
+
         freezeCounter = RLConfig.ACTION_REPEAT;
         observationSent = false;
     }
@@ -138,6 +159,11 @@ public class ActionParser {
         // Decrement attack cooldown
         if (attackCooldown > 0) {
             attackCooldown--;
+        }
+
+        // Decrement ranged cooldown
+        if (rangedCooldown > 0) {
+            rangedCooldown--;
         }
 
         applyMovement(player);
@@ -301,6 +327,97 @@ public class ActionParser {
         }
 
         return closest;
+    }
+
+    private static void performRangedAttack(ServerPlayerEntity player, ServerWorld world) {
+        if (rangedCooldown > 0) return;
+
+        EnderDragonEntity dragon = ObservationBuilder.getDragon(world);
+        if (dragon == null) return;
+
+        Vec3d eyePos = player.getCameraPosVec(0.0F);
+        Vec3d lookVec = player.getRotationVec(0.0F);
+
+        // Simulation parameters (Crossbow initial speed is 3.0 blocks/tick)
+        double initialSpeed = 3.0;
+        Vec3d velocity = lookVec.multiply(initialSpeed);
+        Vec3d arrowPos = eyePos;
+        Vec3d dragonVel = dragon.getVelocity();
+
+        boolean hit = false;
+        Entity hitPart = null;
+        Vec3d hitPos = null;
+
+        // Simulate up to 60 ticks of flight (approx 180 blocks distance)
+        for (int tick = 0; tick < 60; tick++) {
+            // Apply drag (0.99) and gravity (0.05)
+            velocity = velocity.multiply(0.99);
+            velocity = new Vec3d(velocity.x, velocity.y - 0.05, velocity.z);
+            arrowPos = arrowPos.add(velocity);
+
+            // Estimate dragon's part positions in the future (current + velocity * tick)
+            Vec3d offset = dragonVel.multiply(tick);
+
+            for (EnderDragonPart part : dragon.getBodyParts()) {
+                Box futureBox = part.getBoundingBox().offset(offset);
+
+                // Check if the simulated arrow point is inside the shifted bounding box
+                if (futureBox.contains(arrowPos)) {
+                    hit = true;
+                    hitPart = part;
+                    hitPos = arrowPos;
+                    break;
+                }
+            }
+
+            if (hit) break;
+
+            // Stop if below void height
+            if (arrowPos.y < world.getBottomY()) break;
+        }
+
+        if (hit && hitPart != null) {
+            // Apply damage instantly
+            hitPart.damage(world.getDamageSources().playerAttack(player), (float) RANGED_DAMAGE);
+            rangedHitThisCycle = true;
+
+            // Play effects
+            world.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 1.0F, 1.0F);
+            spawnShootParticles(world, eyePos, hitPos);
+        } else {
+            // Miss
+            rangedMissThisCycle = true;
+            world.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.ITEM_CROSSBOW_SHOOT, SoundCategory.PLAYERS, 1.0F, 1.0F);
+            spawnShootParticles(world, eyePos, arrowPos);
+        }
+
+        rangedCooldown = RANGED_COOLDOWN_TICKS;
+    }
+
+    private static void spawnShootParticles(ServerWorld world, Vec3d start, Vec3d end) {
+        Vec3d dir = end.subtract(start);
+        double dist = dir.length();
+        int count = (int) (dist * 2); // 2 particles per block
+        for (int i = 0; i < count; i++) {
+            double ratio = (double) i / count;
+            Vec3d point = start.add(dir.multiply(ratio));
+            world.spawnParticles(ParticleTypes.CRIT, point.x, point.y, point.z,
+                1, 0.0, 0.0, 0.0, 0.0);
+        }
+    }
+
+    public static float getRangedCooldownProgress() {
+        return (float) rangedCooldown / RANGED_COOLDOWN_TICKS;
+    }
+
+    public static boolean wasRangedMiss() {
+        return rangedMissThisCycle;
+    }
+
+    public static boolean wasRangedHit() {
+        return rangedHitThisCycle;
     }
 
 }

@@ -33,4 +33,7 @@ public class RLConfig {
     // Anti-trade window: ticks before/after damage that attack rewards are zeroed
     public static final int ANTI_TRADE_WINDOW_TICKS = 10;
 
+    // Ranged miss penalty
+    public static final double REWARD_RANGED_MISS = -1.0;
+
 }
