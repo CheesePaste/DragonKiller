@@ -48,6 +48,7 @@ public class RLTickHandler {
     private static double dragonDamageDealt;
     private static double prevDragonHealth;
     private static double prevHitDist;       // previous observation's hit distance to dragon (for push detection)
+    private static double prevSittingDist = 100.0; // previous distance to dragon when sitting (for approach reward)
     private static int invincibilityTicks;
 
     // Per-episode stats for TensorBoard
@@ -74,6 +75,7 @@ public class RLTickHandler {
     private static double epRewardClawback;    // retroactive clawback
     private static double epRewardTradeZero;   // anti-trade zeroed damage reward
     private static double epRewardDeath;       // death penalty / dragon kill bonus
+    private static double epRewardSurvive;     // survive tick reward
 
     // Player game mode override: 0=spectator(default), 1=creative, 2=survival
     private static final Map<UUID, Integer> playerGameModeOverrides = new HashMap<>();
@@ -133,9 +135,8 @@ public class RLTickHandler {
         // Ensure real players are in spectator mode
         ensureRealPlayersSpectate();
 
-        // Bot physics is NOT ticked by ServerWorld — we must call playerTick explicitly.
-        // Order: first apply action velocity (from episodeTick), then tick physics,
-        // so velocity takes effect immediately (no 1-tick delay).
+        // BotPlayer.playerTick() drives physics — called explicitly here AFTER setting velocity.
+        // BotPlayer.tick() is guarded to skip the ServerWorld entity loop (BotPlayer.java guard flag).
         if (botPlayer != null) {
             // Run episode logic (applies movement/jump velocity via ActionParser.tickExecute)
             if (episodeManager.getState() == EpisodeManager.State.RUNNING) {
@@ -145,10 +146,8 @@ public class RLTickHandler {
                 if (botPlayer.interactionManager.getGameMode() != GameMode.SURVIVAL) {
                     botPlayer.changeGameMode(GameMode.SURVIVAL);
                 }
-            }
 
-            // Tick physics AFTER action execution so jump/velocity applies same tick
-            if (episodeManager.getState() == EpisodeManager.State.RUNNING && !botPlayer.isRemoved()) {
+                // Tick physics AFTER action execution so jump/velocity applies same tick
                 botPlayer.playerTick();
             }
         }
@@ -329,7 +328,7 @@ public class RLTickHandler {
         EnderDragonEntity dragon = ObservationBuilder.getDragon(endWorld);
         double dragonHealth = dragon != null ? dragon.getHealth() : 0;
         double centerDistance = botPlayer.getPos().distanceTo(new Vec3d(0.0, 64.0, 0.0));
-        rewardCalc.reset(dragonHealth, centerDistance);
+        rewardCalc.reset(dragonHealth);
         resetStats(dragonHealth);
 
         DragonKiller.LOGGER.info("[RESET] Episode {} started, bot at ({},{},{}) hp={} dragonHp={}",
@@ -476,7 +475,7 @@ public class RLTickHandler {
         double hitDist = ObservationBuilder.getHitDistance(botPlayer, endWorld);
 
         // Build observation early so reward calc can read breath data
-        float cooldownProgress = ActionParser.getCooldownProgress();
+        float cooldownProgress = ActionParser.getCooldownProgress(botPlayer);
         JsonObject obs = ObservationBuilder.build(botPlayer, endWorld, cooldownProgress);
 
         double denseReward = rewardCalc.computeDense(
@@ -484,6 +483,10 @@ public class RLTickHandler {
             isOverVoid, isDragonSitting, didAttack);
         double totalReward = denseReward;
         epRewardDense += denseReward;
+
+        // Survive tick reward (replaces time penalty)
+        totalReward += RLConfig.REWARD_SURVIVE_TICK;
+        epRewardSurvive += RLConfig.REWARD_SURVIVE_TICK;
 
         // Anti-trade: only zero/queue damage reward when bot actually attacked
         boolean hitZeroed = false;
@@ -512,28 +515,27 @@ public class RLTickHandler {
             retroactiveClawback = 0;
         }
 
-        // Breath penalty
-        double nearestBreathDist = 64.0;
-        try {
-            JsonObject br = obs.getAsJsonObject("breath");
-            if (br != null) {
-                nearestBreathDist = br.get("nearest_breath").getAsDouble() * 64.0;
-            }
-        } catch (Exception ignored) {}
-        if (nearestBreathDist < RLConfig.BREATH_PENALTY_RANGE) {
-            double breathFactor = 1.0 - (nearestBreathDist / RLConfig.BREATH_PENALTY_RANGE);
-            double breathReward = breathFactor * RLConfig.REWARD_BREATH_PENALTY;
-            totalReward += breathReward;
-            epRewardBreath += breathReward;
-        }
-
-        // Collision push penalty
+// Collision push penalty
         boolean wasPushed = prevHitDist < RLConfig.COLLISION_PENALTY_RANGE && hitDist > prevHitDist + 0.3;
         if (wasPushed) {
             totalReward += RLConfig.REWARD_COLLISION_PENALTY;
             epRewardPush += RLConfig.REWARD_COLLISION_PENALTY;
             DragonKiller.LOGGER.info("[PUSH] tick={} dist {}->{} penalty={}", epTick, String.format("%.2f", prevHitDist), String.format("%.2f", hitDist), String.format("%.1f", RLConfig.REWARD_COLLISION_PENALTY));
             broadcastActionBar(String.format("§7[PUSH] -%.1f", Math.abs(RLConfig.REWARD_COLLISION_PENALTY)));
+        }
+
+        // Sitting dragon rewards: approach/retreat + in-range bonus
+        if (isDragonSitting && dragon != null && !dragon.isDead()) {
+            double distDelta = prevSittingDist - dragonDistance; // positive = getting closer
+            totalReward += distDelta * RLConfig.REWARD_SITTING_APPROACH;
+
+            if (hitDist < RLConfig.SITTING_ATTACK_RANGE) {
+                totalReward += RLConfig.REWARD_SITTING_RANGE_REWARD;
+            }
+
+            prevSittingDist = dragonDistance;
+        } else {
+            prevSittingDist = 100.0;
         }
 
         // Track total damage dealt + show action bar on hit
@@ -620,7 +622,8 @@ public class RLTickHandler {
             DragonKiller.LOGGER.info("[EPISODE] Episode {} ended: {} ({} ticks, total reward: {})",
                 episodeManager.getEpisodeCount(), doneInfo.reason(),
                 episodeManager.getTickCount(), String.format("%.2f", episodeManager.getTotalReward()));
-            DragonKiller.LOGGER.info("[EP_REWARD] dense={} breath={} push={} trade0={} claw={} death={} total={}",
+            DragonKiller.LOGGER.info("[EP_REWARD] survive={} dense={} breath={} push={} trade0={} claw={} death={} total={}",
+                String.format("%.1f", epRewardSurvive),
                 String.format("%.1f", epRewardDense),
                 String.format("%.1f", epRewardBreath), String.format("%.1f", epRewardPush),
                 String.format("%.1f", epRewardTradeZero), String.format("%.1f", epRewardClawback),
@@ -662,6 +665,8 @@ public class RLTickHandler {
         regenTimer = 0;
         retroactiveClawback = 0;
         prevHitDist = 100.0;
+        prevSittingDist = 100.0;
+        epRewardSurvive = 0;
         epRewardDense = 0;
         epRewardBreath = 0;
         epRewardPush = 0;

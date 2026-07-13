@@ -25,7 +25,7 @@ class TrainConfigP2:
     net_arch: list = field(default_factory=lambda: [256, 256])
 
     seed: int = 42
-    n_envs: int = 8
+    n_envs: int = 1
     device: str = "cuda"
 
     save_dir: str = "models/p2"

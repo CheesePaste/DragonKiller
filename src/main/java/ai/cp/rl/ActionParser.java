@@ -1,18 +1,14 @@
 package ai.cp.rl;
 
 import ai.cp.config.RLConfig;
-import java.util.Optional;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RaycastContext;
 import com.google.gson.JsonArray;
 
 public class ActionParser {
@@ -27,27 +23,23 @@ public class ActionParser {
     private static boolean sprinting;
     private static boolean jumping;
 
-    // Attack cooldown (diamond sword: 1.6 speed → 12 ticks)
-    private static int attackCooldown;
-    private static final int ATTACK_COOLDOWN_TICKS = 12;
-
     // Swing/hit tracking per action cycle
     private static int swingCount;
     private static boolean attackHappenedThisCycle;
     private static boolean wasFullCharge;
     private static boolean wasAirborne;
     private static boolean wasHeadshot;
-    private static int lastHitType; // 0=none, 1=body, 2=head
-    private static boolean attackChosen; // whether action 7 was selected this cycle
-    private static int totalAttackAttempts; // per-episode count of action 7 selections
+    private static int lastHitType; // 0=none/miss, 1=body, 2=head
+    private static boolean attackChosen;
+    private static int totalAttackAttempts;
 
 
     /** Base walk speed (vanilla ≈0.215 blocks/tick = 4.317 blocks/sec). */
     private static final double WALK_SPEED = 0.215;
     /** Sprint multiplier (vanilla: +30%). */
     private static final double SPRINT_MULTIPLIER = 1.3;
-    /** Backward speed fraction of forward (vanilla: ~0.7). */
-    private static final double BACKWARD_MULTIPLIER = 0.7;
+    /** Backward speed fraction of forward (vanilla: ~0.6). */
+    private static final double BACKWARD_MULTIPLIER = 0.6;
     /** Strafe speed fraction of forward (vanilla: ~0.85). */
     private static final double STRAFE_MULTIPLIER = 0.85;
     private static final float TURN_SPEED = 5.0F;
@@ -61,7 +53,6 @@ public class ActionParser {
         moveRight = false;
         sprinting = false;
         jumping = false;
-        attackCooldown = 0;
         swingCount = 0;
         attackHappenedThisCycle = false;
         wasFullCharge = false;
@@ -151,11 +142,6 @@ public class ActionParser {
         // Always hold the sword in slot 0
         player.getInventory().selectedSlot = 0;
 
-        // Decrement attack cooldown
-        if (attackCooldown > 0) {
-            attackCooldown--;
-        }
-
         applyMovement(player);
 
         if (jumping) {
@@ -230,8 +216,8 @@ public class ActionParser {
     }
 
     /** Normalized cooldown [0, 1] for observation. 1.0 = fully charged. */
-    public static float getCooldownProgress() {
-        return 1.0f - (float) attackCooldown / ATTACK_COOLDOWN_TICKS;
+    public static float getCooldownProgress(ServerPlayerEntity player) {
+        return player.getAttackCooldownProgress(0.5f);
     }
 
     private static void applyMovement(ServerPlayerEntity player) {
@@ -239,23 +225,24 @@ public class ActionParser {
         double forward = 0, strafe = 0;
 
         if (moveForward) forward = 1.0;
-        else if (moveBackward) forward = -BACKWARD_MULTIPLIER;
+        else if (moveBackward) forward = -1.0;
 
         if (moveLeft) strafe = 1.0;
         else if (moveRight) strafe = -1.0;
 
         if (forward == 0 && strafe == 0) return;
 
-        double speed = WALK_SPEED;
-        if (sprinting) speed *= SPRINT_MULTIPLIER;
-
         // Normalize input vector so diagonal isn't faster than cardinal
         double inputLen = Math.sqrt(forward * forward + strafe * strafe);
         forward /= inputLen;
         strafe /= inputLen;
 
-        // Apply strafe multiplier to perpendicular component
-        strafe *= STRAFE_MULTIPLIER;
+        // Apply speed penalties AFTER normalization (so they aren't normalized away)
+        if (forward < 0) forward *= BACKWARD_MULTIPLIER;  // backward: 60% of forward
+        strafe *= STRAFE_MULTIPLIER;                       // strafe: 85% of forward
+
+        double speed = WALK_SPEED;
+        if (sprinting) speed *= SPRINT_MULTIPLIER;
 
         // Compute velocity from yaw
         double vx = forward * -MathHelper.sin(yawRad) + strafe * MathHelper.cos(yawRad);
@@ -270,57 +257,32 @@ public class ActionParser {
     }
 
     private static void performAttack(ServerPlayerEntity player, ServerWorld world) {
-        // Respect attack cooldown — no spamming
-        if (attackCooldown > 0) return;
-
         EnderDragonEntity dragon = ObservationBuilder.getDragon(world);
         if (dragon == null) return;
 
-        Entity target = findClosestDragonPart(player, dragon);
-        if (target != null) {
-            attackHappenedThisCycle = true;
-            wasFullCharge = (player.getAttackCooldownProgress(0.5f) >= 0.99f);
-            wasAirborne = !player.isOnGround() && player.getVelocity().y < 0;
-            wasHeadshot = (target == dragon.head);
-            lastHitType = wasHeadshot ? 2 : 1;
+        swingCount++;
 
-            player.attack(target);
-            attackCooldown = ATTACK_COOLDOWN_TICKS;
-            swingCount++;
-        }
-    }
+        // Vanilla raycast: what is the player actually looking at?
+        double reach = 3.0;
+        HitResult hit = player.raycast(reach, 0.0F, false);
 
-    private static Entity findClosestDragonPart(ServerPlayerEntity player, EnderDragonEntity dragon) {
-        // Vanilla player attack: raycast from camera along look direction, max 3 blocks
-        Vec3d from = player.getCameraPosVec(0.0F);
-        Vec3d lookVec = player.getRotationVec(0.0F);
-        double maxDist = 3.0;
-        Vec3d to = from.add(lookVec.x * maxDist, lookVec.y * maxDist, lookVec.z * maxDist);
+        boolean hitDragon = false;
+        boolean headshot = false;
 
-        // Block raycast — entity must be in front of any block (vanilla compares block vs entity distance)
-        BlockHitResult blockHit = player.getWorld().raycast(
-            new RaycastContext(from, to,
-                RaycastContext.ShapeType.COLLIDER,
-                RaycastContext.FluidHandling.NONE, player));
-        double blockDistSq = blockHit.getType() == HitResult.Type.MISS
-            ? Double.MAX_VALUE : from.squaredDistanceTo(blockHit.getPos());
-
-        // Entity raycast — check all 8 dragon parts (head, neck, body, 3×tail, 2×wing)
-        Entity closest = null;
-        double closestDistSq = maxDist * maxDist;
-
-        for (EnderDragonPart part : dragon.getBodyParts()) {
-            Optional<Vec3d> hitPoint = part.getBoundingBox().raycast(from, to);
-            if (hitPoint.isPresent()) {
-                double distSq = from.squaredDistanceTo(hitPoint.get());
-                if (distSq < closestDistSq && distSq < blockDistSq) {
-                    closestDistSq = distSq;
-                    closest = part;
-                }
+        if (hit.getType() == HitResult.Type.ENTITY) {
+            Entity entityHit = ((EntityHitResult) hit).getEntity();
+            if (entityHit == dragon || entityHit instanceof EnderDragonPart) {
+                hitDragon = true;
+                headshot = (entityHit == dragon.head);
+                player.attack(entityHit);
             }
         }
 
-        return closest;
+        attackHappenedThisCycle = hitDragon;
+        wasFullCharge = (player.getAttackCooldownProgress(0.5f) >= 0.99f);
+        wasAirborne = !player.isOnGround() && player.getVelocity().y < 0;
+        wasHeadshot = headshot;
+        lastHitType = headshot ? 2 : (hitDragon ? 1 : 0);
     }
 
 }

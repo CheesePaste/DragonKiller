@@ -38,7 +38,20 @@
       "Bash(rm -rf logs/p2_ppo_*)",
       "Bash(rm \"C:/Users/huhai/Desktop/Java-mcmod/dragonkiller-template-1.20.1/models/p2/\"dragonkiller_p2_ppo_*.zip)",
       "Bash(rm \"C:/Users/huhai/Desktop/Java-mcmod/dragonkiller-template-1.20.1/models/\"dragonkiller_ppo_*.zip)",
-      "Bash(python3 -c \"import tensorboard; print\\(tensorboard.__version__\\)\")"
+      "Bash(python3 -c \"import tensorboard; print\\(tensorboard.__version__\\)\")",
+      "Bash(./gradlew runMultiEnv *)",
+      "Bash(pkill -f \"runServer\")",
+      "Bash(pkill -f \"runClient\")",
+      "Bash(./gradlew runServer5671 -PnumEnvs=8 -Drlphase=p2)",
+      "Bash(tee run_server_5671.log)",
+      "Bash(.claude/skills/minecraft-source/scripts/find-class-location.sh MinecraftServer)",
+      "Bash(unzip -p .gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-common-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-common-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2-sources.jar net/minecraft/server/MinecraftServer.java)",
+      "Bash(javap -c -p build/classes/java/main/ai/cp/mixin/TickRateMixin.class)",
+      "Bash(javap -p build/classes/java/main/ai/cp/mixin/TickRateMixin.class)",
+      "Bash(grep -E \"^[A-Za-z].*[a-z]$\")",
+      "Bash(awk '{print $2}')",
+      "Bash(xargs -r kill -9)",
+      "Bash(pkill -f \"runServer5671\")"
     ]
   }
 }

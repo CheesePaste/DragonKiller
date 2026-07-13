@@ -61,7 +61,7 @@ fabricApi {
 }
 
 dependencies {
-	// To change the versions see the gradle.properties file
+	// To change the dependencies see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
@@ -112,7 +112,7 @@ publishing {
 
 	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 	repositories {
-		// Add repositories to publish to here.
+		// Add repositories to retrieve artifacts from in here.
 		// Notice: This block does NOT have the same function as the block in the top level.
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
@@ -134,13 +134,13 @@ tasks.register('runMultiEnv') {
 		println "Log files: run_client_*.log / run_server_*.log"
 
 		def isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
-		def gradlew = isWindows ? "gradlew.bat" : "./gradlew"
+		def gradlewPath = new File(project.projectDir, "gradlew.bat").absolutePath
+		def baseCmd = isWindows ? ["cmd.exe", "/c", gradlewPath] : ["./gradlew"]
 
 		ports.eachWithIndex { port, index ->
 			if (index == 0) {
 				// First instance: GUI client
-				List<String> cmd = new ArrayList<>()
-				cmd.add(gradlew)
+				List<String> cmd = new ArrayList<String>(baseCmd)
 				cmd.add("runClient")
 				cmd.add("-Drlport=" + port.toString())
 				if (phase == 'p2') cmd.add("-Drlphase=p2")
@@ -167,8 +167,7 @@ tasks.register('runMultiEnv') {
 				props.setProperty("spawn-monsters", "true")
 				props.store(new FileWriter(new File(runDir, "server.properties")), null)
 
-				List<String> cmd = new ArrayList<>()
-				cmd.add(gradlew)
+				List<String> cmd = new ArrayList<String>(baseCmd)
 				cmd.add("runServer" + port.toString())
 				cmd.add("-PnumEnvs=" + numEnvs.toString())
 				cmd.add("-Drlphase=" + phase.toString())

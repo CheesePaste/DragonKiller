@@ -38,6 +38,11 @@ public class BotPlayer extends ServerPlayerEntity {
         //  - Overrides tick() to ONLY run physics, skipping the position
         //    reset that ServerPlayNetworkHandler.tick() normally does
         //    (updatePositionAndAngles(lastTickX, lastTickY, lastTickZ, ...))
+        // Note: this handler's tick() is only ever called via ServerNetworkIo
+        // for real network connections. BotPlayer's dummy ClientConnection is
+        // NOT registered with ServerNetworkIo, so this tick() is effectively
+        // dead code in the current architecture. RLTickHandler calls
+        // playerTick() separately for physics.
         this.networkHandler = new ServerPlayNetworkHandler(server, conn, this) {
             @Override
             public void sendPacket(Packet<?> packet) {}
@@ -47,9 +52,6 @@ public class BotPlayer extends ServerPlayerEntity {
 
             @Override
             public void tick() {
-                // Only run physics tick — skip syncWithPlayerPosition
-                // and updatePositionAndAngles which would undo
-                // velocity-driven movement on every tick.
                 this.player.playerTick();
             }
         };

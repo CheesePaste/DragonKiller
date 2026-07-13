@@ -14,73 +14,89 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Dynamically adjusts the server tick rate based on MSPT (smoothed tick duration).
- * Ticks as fast as the CPU can handle, keeping ~30% headroom to avoid overload.
- * Phase 2: locked at 20 TPS (50ms) for consistent vanilla behavior.
+ * Phase 1: dynamically adjusts server tick rate based on MSPT.
+ * Phase 2: locked at 20 TPS (50ms) — high TPS causes RL training instability.
  */
 @Mixin(MinecraftServer.class)
 public class TickRateMixin {
 
-    @Shadow private float tickTime;  // Smoothed MSPT in milliseconds
+	@Shadow private float tickTime;  // Smoothed MSPT in milliseconds
 
-    @Unique
-    private long currentIntervalMs = 2;  // Start at 500 TPS
+	@Unique
+	private long currentIntervalMs = 2;  // Start at 500 TPS
 
-    @Unique
-    private boolean adaptiveEnabled = true; // Enable adaptive tick rate for all phases
+	@Unique
+	private boolean adaptiveEnabled = true;
 
-    @Unique
-    private int tickCounter;
+	@Unique
+	private int tickCounter;
 
-    /**
-     * Replace all 50L literals in runServer() with the dynamic interval.
-     * Affects: lag detection, catchup, timeReference, nextTickTimestamp.
-     */
-    @ModifyConstant(method = "runServer", constant = @Constant(longValue = 50L))
-    private long dynamicTickRate(long original) {
-        return currentIntervalMs;
-    }
+	@Unique
+	private long lastTickMs = 0;
 
-    /**
-     * After every tick, adjust interval based on smoothed MSPT.
-     * Target: tick takes ~70% of interval (30% headroom for spikes).
-     * Clamped to [2ms = 500 TPS, 50ms = 20 TPS].
-     * Smooths changes to max +/-1ms per tick to prevent oscillation.
-     */
-    @Inject(method = "runServer", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/server/MinecraftServer;endTickMetrics()V",
-            shift = At.Shift.AFTER))
-    private void onPostTick(CallbackInfo ci) {
-        // Check for command-forced TPS lock
-        long forced = TickRateHelper.getForcedIntervalMs();
-        if (forced > 0 && forced != currentIntervalMs) {
-            currentIntervalMs = forced;
-            TickRateHelper.update(currentIntervalMs, tickTime);
-            return;
-        }
+	/**
+	 * Phase 2: return 50 (vanilla 20 TPS) so the server loop uses normal timing.
+	 * Phase 1: return the adaptive interval for dynamic tick rate.
+	 */
+	@ModifyConstant(method = "runServer", constant = @Constant(longValue = 50L))
+	private long dynamicTickRate(long original) {
+		if (RLConfig.IS_PHASE_2) {
+			return 50L;
+		}
+		return currentIntervalMs;
+	}
 
-        if (adaptiveEnabled) {
-            if (tickTime <= 0.0f) return;
+	/**
+	 * Phase 2: enforce hard 50ms sleep after each tick to guarantee 20 TPS.
+	 * Phase 1: adaptive tick rate with timing headroom check.
+	 */
+	@Inject(method = "runServer", at = @At(value = "INVOKE",
+			target = "Lnet/minecraft/server/MinecraftServer;endTickMetrics()V",
+			shift = At.Shift.AFTER))
+	private void onPostTick(CallbackInfo ci) {
+		if (RLConfig.IS_PHASE_2) {
+			// Hard 20 TPS enforcement: sleep until 50ms since last tick
+			long now = System.currentTimeMillis();
+			if (lastTickMs != 0) {
+				long elapsed = now - lastTickMs;
+				if (elapsed < 50) {
+					try {
+						Thread.sleep(50 - elapsed);
+					} catch (InterruptedException ignored) {}
+				}
+			}
+			lastTickMs = System.currentTimeMillis();
+		} else {
+			// Phase 1: adaptive tick rate logic
+			long forced = TickRateHelper.getForcedIntervalMs();
+			if (forced > 0 && forced != currentIntervalMs) {
+				currentIntervalMs = forced;
+				TickRateHelper.update(currentIntervalMs, tickTime);
+				return;
+			}
 
-            long targetMs = (long) Math.ceil(tickTime * 1.43f);
+			if (adaptiveEnabled) {
+				if (tickTime <= 0.0f) return;
 
-            if (targetMs < 2) targetMs = 2;
-            if (targetMs > 50) targetMs = 50;
+				long targetMs = (long) Math.ceil(tickTime * 1.43f);
 
-            long diff = targetMs - currentIntervalMs;
-            if (diff > 1) diff = 1;
-            if (diff < -1) diff = -1;
-            currentIntervalMs += diff;
+				if (targetMs < 2) targetMs = 2;
+				if (targetMs > 50) targetMs = 50;
 
-            // Publish to helper for /tps command
-            TickRateHelper.update(currentIntervalMs, tickTime);
-        }
+				long diff = targetMs - currentIntervalMs;
+				if (diff > 1) diff = 1;
+				if (diff < -1) diff = -1;
+				currentIntervalMs += diff;
 
-        tickCounter++;
-        if (tickCounter % 200 == 0) {
-            int tps = (int)(1000 / currentIntervalMs);
-            DragonKiller.LOGGER.info("[RATE] {} TPS (interval={}ms, mspt={}ms)",
-                tps, currentIntervalMs, String.format("%.1f", tickTime));
-        }
-    }
+				TickRateHelper.update(currentIntervalMs, tickTime);
+			}
+		}
+
+		tickCounter++;
+		if (tickCounter % 200 == 0) {
+			int tps = (int)(1000 / (RLConfig.IS_PHASE_2 ? 50L : currentIntervalMs));
+			DragonKiller.LOGGER.info("[RATE] {} TPS (interval={}ms, mspt={}ms)",
+				tps, RLConfig.IS_PHASE_2 ? 50L : currentIntervalMs, String.format("%.1f", tickTime));
+		}
+	}
 }

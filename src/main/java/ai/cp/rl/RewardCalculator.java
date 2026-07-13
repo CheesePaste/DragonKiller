@@ -4,11 +4,9 @@ import ai.cp.config.RLConfig;
 
 public class RewardCalculator {
     private double prevDragonHealth = 200.0;
-    private double prevCenterDistance;
 
-    public void reset(double dragonHealth, double centerDistance) {
+    public void reset(double dragonHealth) {
         prevDragonHealth = dragonHealth;
-        prevCenterDistance = centerDistance;
     }
 
     /** Call after healing the dragon to keep health tracking in sync. */
@@ -23,9 +21,6 @@ public class RewardCalculator {
                                 boolean didAttack) {
         double reward = 0.0;
 
-        // Time penalty to prevent farming
-        reward += RLConfig.REWARD_TIME_PENALTY;
-
         // Pure damage reward: ONLY when bot actually attacked this cycle
         if (didAttack) {
             double dragonDelta = prevDragonHealth - dragonHealth;
@@ -36,16 +31,15 @@ public class RewardCalculator {
             }
         }
 
-        // Center approach reward (Potential-based, cannot be farmed)
-        double centerDelta = prevCenterDistance - centerDistance;
-        reward += centerDelta * RLConfig.REWARD_APPROACH;
+        // Center proximity reward: per-tick exponential decay
+        // Gentle pull toward center without trapping AI in breath range
+        reward += RLConfig.REWARD_CENTER_PROXIMITY * Math.exp(-centerDistance / RLConfig.CENTER_PROXIMITY_DECAY);
 
         // Void penalty
         if (isOverVoid) reward += RLConfig.REWARD_VOID_PENALTY;
 
         // Update previous values
         prevDragonHealth = dragonHealth;
-        prevCenterDistance = centerDistance;
 
         return reward;
     }

@@ -190,7 +190,10 @@ def train(config: TrainConfigP2):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="DragonKiller Phase 2 PPO Training")
     parser.add_argument("--total-timesteps", type=int, default=None)
+    parser.add_argument("--n-envs", type=int, default=None,
+                        help="Number of parallel environments (default 1, use 8 for multi-env)")
     parser.add_argument("--port", type=int, default=None)
+    parser.add_argument("--host", type=str, default=None)
     parser.add_argument("--learning-rate", type=float, default=None)
     parser.add_argument("--load-model", type=str, default=None,
                         help="Path to a pre-trained Phase 1 model zip to continue training from")
@@ -199,8 +202,12 @@ if __name__ == "__main__":
     config = TrainConfigP2()
     if args.total_timesteps:
         config.total_timesteps = args.total_timesteps
+    if args.n_envs:
+        config.n_envs = args.n_envs
     if args.port:
         config.port = args.port
+    if args.host:
+        config.host = args.host
     if args.learning_rate:
         config.learning_rate = args.learning_rate
     if args.load_model:
