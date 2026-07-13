@@ -38,6 +38,7 @@ public class RLConfig {
     // Collision push penalty: penalize when the bot gets pushed away by dragon collision
     // Detected as: was within push range, now further away (got pushed out)
     public static final double REWARD_COLLISION_PENALTY = -10.0; // per push event — strong disincentive to face-hug
+    public static final double REWARD_PLAYER_DAMAGE_PENALTY = -5.0; // penalty per point of player health lost (1 HP)
     public static final double COLLISION_PENALTY_RANGE = 2.0;   // blocks — within entity push range
 
     // Anti-trade window: ticks before/after damage that attack rewards are zeroed

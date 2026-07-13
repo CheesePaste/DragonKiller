@@ -72,6 +72,7 @@ public class RLTickHandler {
     private static double epRewardDense;       // total from computeDense
     private static double epRewardBreath;      // breath penalty
     private static double epRewardPush;        // collision push penalty
+    private static double epRewardPlayerDamage; // player damage penalty
     private static double epRewardClawback;    // retroactive clawback
     private static double epRewardTradeZero;   // anti-trade zeroed damage reward
     private static double epRewardDeath;       // death penalty / dragon kill bonus
@@ -465,7 +466,11 @@ public class RLTickHandler {
         // ── Anti-trade: zero damage reward if recently damaged ──
         int epTick = episodeManager.getTickCount();
         double healthLost = prevPlayerHealth - playerHealth;
+        double tickPlayerDmgPenalty = 0.0;
         if (healthLost > 0) {
+            tickPlayerDmgPenalty = healthLost * RLConfig.REWARD_PLAYER_DAMAGE_PENALTY;
+            epRewardPlayerDamage += tickPlayerDmgPenalty;
+
             lastDamageEpisodeTick = epTick;
             epPlayerDamageTaken += healthLost;
             // Retroactive clawback: iterate newest→oldest (deque head=oldest, tail=newest).
@@ -500,7 +505,7 @@ public class RLTickHandler {
         double denseReward = rewardCalc.computeDense(
             dragonHealth, playerHealth, centerDistance,
             isOverVoid, isDragonSitting, didAttack);
-        double totalReward = denseReward;
+        double totalReward = denseReward + tickPlayerDmgPenalty;
         epRewardDense += denseReward;
 
         // Ranged miss penalty
@@ -643,9 +648,10 @@ public class RLTickHandler {
             DragonKiller.LOGGER.info("[EPISODE] Episode {} ended: {} ({} ticks, total reward: {})",
                 episodeManager.getEpisodeCount(), doneInfo.reason(),
                 episodeManager.getTickCount(), String.format("%.2f", episodeManager.getTotalReward()));
-            DragonKiller.LOGGER.info("[EP_REWARD] dense={} breath={} push={} trade0={} claw={} death={} total={}",
+            DragonKiller.LOGGER.info("[EP_REWARD] dense={} breath={} push={} playerDmg={} trade0={} claw={} death={} total={}",
                 String.format("%.1f", epRewardDense),
                 String.format("%.1f", epRewardBreath), String.format("%.1f", epRewardPush),
+                String.format("%.1f", epRewardPlayerDamage),
                 String.format("%.1f", epRewardTradeZero), String.format("%.1f", epRewardClawback),
                 String.format("%.1f", epRewardDeath), String.format("%.1f", episodeManager.getTotalReward()));
         }
@@ -688,6 +694,7 @@ public class RLTickHandler {
         epRewardDense = 0;
         epRewardBreath = 0;
         epRewardPush = 0;
+        epRewardPlayerDamage = 0;
         epRewardClawback = 0;
         epRewardTradeZero = 0;
         epRewardDeath = 0;
