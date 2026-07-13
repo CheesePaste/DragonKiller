@@ -24,10 +24,10 @@ public class TickRateMixin {
     @Shadow private float tickTime;  // Smoothed MSPT in milliseconds
 
     @Unique
-    private long currentIntervalMs = 50;  // 20 TPS for both phases
+    private long currentIntervalMs = 2;  // Start at 500 TPS
 
     @Unique
-    private boolean adaptiveEnabled = !RLConfig.IS_PHASE_2;
+    private boolean adaptiveEnabled = true; // Enable adaptive tick rate for all phases
 
     @Unique
     private int tickCounter;

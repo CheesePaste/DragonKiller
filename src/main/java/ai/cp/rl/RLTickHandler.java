@@ -55,15 +55,8 @@ public class RLTickHandler {
     private static int epHeadshotCount;
     private static double epPlayerDamageTaken;
     private static int epBreathTicks;
-    private static int epSprintTicks;
-    private static int epCrosshairTicks;
-    private static int epInViewTicks;
-    private static double epDistanceSum;
-    private static int epDistanceCount;
     private static int epLowHpTicks;
     private static double epMinDragonDistance;
-    private static double epCenterDistanceSum;
-    private static int epCenterDistanceCount;
     private static int epBlockedHits;
     private static int epClawbackCount;
 
@@ -75,9 +68,7 @@ public class RLTickHandler {
     // Passive regen: 1 HP per 80 ticks (same as vanilla with full food, 0 saturation)
     private static int regenTimer;
 
-    // Per-episode reward component tracking
-    private static double epRewardDense;       // total from computeDense (survive+health+approach+sprint+distance+void+face+damage)
-    private static double epRewardProximity;   // sitting proximity bonus
+    private static double epRewardDense;       // total from computeDense
     private static double epRewardBreath;      // breath penalty
     private static double epRewardPush;        // collision push penalty
     private static double epRewardClawback;    // retroactive clawback
@@ -118,11 +109,24 @@ public class RLTickHandler {
             socketServer.acceptClient();
         }
 
-        // Check for reset or step messages
-        if (socketServer.isConnected()) {
+        // Check for reset or step messages and BLOCK if needed (fixes 500 TPS async bug)
+        while (socketServer.isConnected()) {
+            boolean needsBlock = false;
+            if (episodeManager.getState() != EpisodeManager.State.RUNNING) {
+                needsBlock = true;
+            } else if (ActionParser.isWaitingForAction()) {
+                needsBlock = true;
+            }
+
+            if (!needsBlock) {
+                break;
+            }
+
             JsonObject msg = socketServer.tryReceive();
             if (msg != null) {
                 handleMessage(msg);
+            } else {
+                try { Thread.sleep(1); } catch (InterruptedException ignored) {}
             }
         }
 
@@ -144,7 +148,9 @@ public class RLTickHandler {
             }
 
             // Tick physics AFTER action execution so jump/velocity applies same tick
-            botPlayer.playerTick();
+            if (episodeManager.getState() == EpisodeManager.State.RUNNING && !botPlayer.isRemoved()) {
+                botPlayer.playerTick();
+            }
         }
 
         // Drain send queue (non-blocking, best-effort per tick)
@@ -345,6 +351,7 @@ public class RLTickHandler {
         JsonObject obs = ObservationBuilder.build(botPlayer, endWorld, 0.0f);
         String message = Protocol.createObsMessage(obs, 0.0, false);
         socketServer.send(message);
+        ActionParser.markObservationSent();
     }
 
     private static void giveBotEquipment() {
@@ -365,8 +372,8 @@ public class RLTickHandler {
         }
         if (botPlayer == null) return;
 
-        int actionIndex = Protocol.getAction(msg);
-        ActionParser.execute(actionIndex, botPlayer, endWorld);
+        com.google.gson.JsonArray actionArray = Protocol.getActionArray(msg);
+        ActionParser.execute(actionArray, botPlayer, endWorld);
     }
 
     private static void episodeTick() {
@@ -416,29 +423,12 @@ public class RLTickHandler {
         }
 
         // Calculate facing-dragon flag and distance
-        boolean facingDragon = false;
         double dragonDistance = 100.0;
         if (dragon != null && !dragon.isDead()) {
             Vec3d playerPos = botPlayer.getEyePos();
             Vec3d dragonPos = dragon.getPos();
-            Vec3d toDragon = dragonPos.subtract(playerPos);
-            double dx = toDragon.x;
-            double dy = toDragon.y;
-            double dz = toDragon.z;
-            double horizDist = Math.sqrt(dx * dx + dz * dz);
             dragonDistance = playerPos.distanceTo(dragonPos);
             epMinDragonDistance = Math.min(epMinDragonDistance, dragonDistance);
-
-            float yawToDragon = (float) MathHelper.atan2(-dx, dz) * MathHelper.DEGREES_PER_RADIAN;
-            float pitchToDragon = -(float) MathHelper.atan2(dy, horizDist) * MathHelper.DEGREES_PER_RADIAN;
-            float yawDelta = yawToDragon - botPlayer.getYaw();
-            while (yawDelta > 180F) yawDelta -= 360F;
-            while (yawDelta < -180F) yawDelta += 360F;
-            float pitchDelta = pitchToDragon - botPlayer.getPitch();
-            while (pitchDelta > 180F) pitchDelta -= 360F;
-            while (pitchDelta < -180F) pitchDelta += 360F;
-
-            facingDragon = Math.abs(yawDelta) < 45 && Math.abs(pitchDelta) < 30;
         }
 
         // Check if over void
@@ -447,25 +437,6 @@ public class RLTickHandler {
         // Distance from center of End island (strategic position for dragon landing)
         Vec3d center = new Vec3d(0.0, 64.0, 0.0);
         double centerDistance = botPlayer.getPos().distanceTo(center);
-        epCenterDistanceSum += centerDistance;
-        epCenterDistanceCount++;
-
-        // Continuous center-facing factor: cos(yaw_delta) × cos(pitch_delta)
-        // Gives smooth gradient instead of binary on/off
-        Vec3d perchPos = new Vec3d(0.0, 69.0, 0.0);
-        Vec3d toPerch = perchPos.subtract(botPlayer.getEyePos());
-        double perchDx = toPerch.x, perchDz = toPerch.z;
-        double perchHoriz = Math.sqrt(perchDx * perchDx + perchDz * perchDz);
-        float yawToPerch = (float) MathHelper.atan2(-perchDx, perchDz) * MathHelper.DEGREES_PER_RADIAN;
-        float pitchToPerch = -(float) MathHelper.atan2(toPerch.y, perchHoriz) * MathHelper.DEGREES_PER_RADIAN;
-        float perchYawDelta = yawToPerch - botPlayer.getYaw();
-        while (perchYawDelta > 180F) perchYawDelta -= 360F;
-        while (perchYawDelta < -180F) perchYawDelta += 360F;
-        float perchPitchDelta = pitchToPerch - botPlayer.getPitch();
-        while (perchPitchDelta > 180F) perchPitchDelta -= 360F;
-        while (perchPitchDelta < -180F) perchPitchDelta += 360F;
-        double facingCenterFactor = Math.max(0, Math.cos(Math.abs(perchYawDelta) * MathHelper.RADIANS_PER_DEGREE))
-                                  * Math.max(0, Math.cos(Math.abs(perchPitchDelta) * MathHelper.RADIANS_PER_DEGREE));
 
         // Compute dense reward
         boolean isDragonSitting = false;
@@ -509,10 +480,8 @@ public class RLTickHandler {
         JsonObject obs = ObservationBuilder.build(botPlayer, endWorld, cooldownProgress);
 
         double denseReward = rewardCalc.computeDense(
-            dragonHealth, playerHealth, botPlayer.getMaxHealth(), centerDistance,
-            botPlayer.isSprinting(), isOverVoid,
-            isDragonSitting, facingCenterFactor,
-            didAttack);
+            dragonHealth, playerHealth, centerDistance,
+            isOverVoid, isDragonSitting, didAttack);
         double totalReward = denseReward;
         epRewardDense += denseReward;
 
@@ -541,12 +510,6 @@ public class RLTickHandler {
             hadClawback = true;
             epClawbackCount++;
             retroactiveClawback = 0;
-        }
-
-        // Proximity reward: when dragon sits and player is in melee range
-        if (isDragonSitting && hitDist <= RLConfig.REWARD_PROXIMITY_RANGE) {
-            totalReward += RLConfig.REWARD_PROXIMITY;
-            epRewardProximity += RLConfig.REWARD_PROXIMITY;
         }
 
         // Breath penalty
@@ -597,14 +560,9 @@ public class RLTickHandler {
         }
         // Note: healthLost / epPlayerDamageTaken / prevPlayerHealth handled above
 
-        if (botPlayer.isSprinting()) epSprintTicks++;
         if (dragon != null && !dragon.isDead()) {
             JsonObject dr = obs.getAsJsonObject("dragon_relative");
-            if (dr.get("in_view").getAsBoolean()) epInViewTicks++;
             JsonObject rt = obs.getAsJsonObject("raytrace");
-            if (rt.get("dragon_in_crosshair").getAsBoolean()) epCrosshairTicks++;
-            epDistanceSum += dragonDistance;
-            epDistanceCount++;
         }
         JsonObject br = obs.getAsJsonObject("breath");
         if (br.get("breath_warning").getAsBoolean()) epBreathTicks++;
@@ -645,19 +603,10 @@ public class RLTickHandler {
             tracker.addProperty("damage_dealt", Math.round(dragonDamageDealt * 10.0) / 10.0);
             tracker.addProperty("player_damage_taken", Math.round(epPlayerDamageTaken * 10.0) / 10.0);
             tracker.addProperty("breath_ticks", epBreathTicks);
-            tracker.addProperty("in_view_ticks", epInViewTicks);
-            tracker.addProperty("crosshair_ticks", epCrosshairTicks);
-            tracker.addProperty("sprint_ticks", epSprintTicks);
             tracker.addProperty("low_hp_ticks", epLowHpTicks);
             tracker.addProperty("min_dragon_distance", Math.round(epMinDragonDistance * 10.0) / 10.0);
             tracker.addProperty("blocked_hits", epBlockedHits);
             tracker.addProperty("clawback_count", epClawbackCount);
-            if (epDistanceCount > 0) {
-                tracker.addProperty("avg_dragon_distance", Math.round(epDistanceSum / epDistanceCount * 10.0) / 10.0);
-            }
-            if (epCenterDistanceCount > 0) {
-                tracker.addProperty("avg_center_distance", Math.round(epCenterDistanceSum / epCenterDistanceCount * 10.0) / 10.0);
-            }
             obs.add("tracker", tracker);
         }
 
@@ -671,8 +620,8 @@ public class RLTickHandler {
             DragonKiller.LOGGER.info("[EPISODE] Episode {} ended: {} ({} ticks, total reward: {})",
                 episodeManager.getEpisodeCount(), doneInfo.reason(),
                 episodeManager.getTickCount(), String.format("%.2f", episodeManager.getTotalReward()));
-            DragonKiller.LOGGER.info("[EP_REWARD] dense={} prox={} breath={} push={} trade0={} claw={} death={} total={}",
-                String.format("%.1f", epRewardDense), String.format("%.1f", epRewardProximity),
+            DragonKiller.LOGGER.info("[EP_REWARD] dense={} breath={} push={} trade0={} claw={} death={} total={}",
+                String.format("%.1f", epRewardDense),
                 String.format("%.1f", epRewardBreath), String.format("%.1f", epRewardPush),
                 String.format("%.1f", epRewardTradeZero), String.format("%.1f", epRewardClawback),
                 String.format("%.1f", epRewardDeath), String.format("%.1f", episodeManager.getTotalReward()));
@@ -705,15 +654,8 @@ public class RLTickHandler {
         epHeadshotCount = 0;
         epPlayerDamageTaken = 0;
         epBreathTicks = 0;
-        epSprintTicks = 0;
-        epCrosshairTicks = 0;
-        epInViewTicks = 0;
-        epDistanceSum = 0;
-        epDistanceCount = 0;
         epLowHpTicks = 0;
         epMinDragonDistance = 100.0;
-        epCenterDistanceSum = 0;
-        epCenterDistanceCount = 0;
         epBlockedHits = 0;
         epClawbackCount = 0;
         lastDamageEpisodeTick = -100;
@@ -721,7 +663,6 @@ public class RLTickHandler {
         retroactiveClawback = 0;
         prevHitDist = 100.0;
         epRewardDense = 0;
-        epRewardProximity = 0;
         epRewardBreath = 0;
         epRewardPush = 0;
         epRewardClawback = 0;

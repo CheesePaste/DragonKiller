@@ -27,7 +27,7 @@ class MCProtocol:
         self.send({"type": "reset"})
         return self.recv()
 
-    def step(self, action: int) -> dict:
+    def step(self, action: list) -> dict:
         self.send({"type": "step", "action": action})
         return self.recv()
 

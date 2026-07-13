@@ -32,4 +32,8 @@ public class Protocol {
     public static int getAction(JsonObject msg) {
         return msg.has("action") ? msg.get("action").getAsInt() : 0;
     }
+
+    public static com.google.gson.JsonArray getActionArray(JsonObject msg) {
+        return msg.has("action") ? msg.get("action").getAsJsonArray() : new com.google.gson.JsonArray();
+    }
 }

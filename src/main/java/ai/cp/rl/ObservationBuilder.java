@@ -34,7 +34,6 @@ public class ObservationBuilder {
         JsonObject obj = new JsonObject();
         obj.addProperty("health", player.getHealth());
         obj.addProperty("on_ground", player.isOnGround());
-        obj.addProperty("sprinting", player.isSprinting());
         Vec3d vel = player.getVelocity();
         JsonArray v = new JsonArray();
         v.add(vel.x); v.add(vel.y); v.add(vel.z);
@@ -74,10 +73,16 @@ public class ObservationBuilder {
             boolean inView = Math.abs(yawDelta) < 45 && Math.abs(pitchDelta) < 30;
 
             obj.addProperty("in_view", inView);
-            obj.addProperty("alive", true);
+
+            // Relative Cartesian coordinates
+            obj.addProperty("dragon_dx", dx);
+            obj.addProperty("dragon_dz", dz);
 
             // Vertical height difference (+ = dragon above player)
-            obj.addProperty("dy", dragonPos.y - playerPos.y);
+            obj.addProperty("dy", dy);
+
+            // Dragon hurt time (invincibility frame 0-10)
+            obj.addProperty("dragon_hurt_time", dragon.hurtTime / 10.0);
 
             // Min distance from player eye to any dragon part's bounding box
             obj.addProperty("hit_dist", minDistanceToDragon(playerPos, dragon));
@@ -135,18 +140,23 @@ public class ObservationBuilder {
                     double lateralVel = dragonVel.x * (-nz) + dragonVel.z * nx;
                     obj.addProperty("toward_vel", towardVel);
                     obj.addProperty("lateral_vel", lateralVel);
+                    obj.addProperty("vertical_vel", dragonVel.y);
                 } else {
                     obj.addProperty("toward_vel", towardVel);
                     obj.addProperty("lateral_vel", 0.0);
+                    obj.addProperty("vertical_vel", dragonVel.y);
                 }
             } else {
                 obj.addProperty("toward_vel", dragonVel.length());
                 obj.addProperty("lateral_vel", 0.0);
+                obj.addProperty("vertical_vel", dragonVel.y);
             }
         } else {
             obj.addProperty("in_view", false);
-            obj.addProperty("alive", false);
+            obj.addProperty("dragon_dx", 0.0);
+            obj.addProperty("dragon_dz", 0.0);
             obj.addProperty("dy", 0.0);
+            obj.addProperty("dragon_hurt_time", 0.0);
             obj.addProperty("hit_dist", 100.0);
             obj.addProperty("hit_yaw_delta", 0.0);
             obj.addProperty("hit_pitch_delta", 0.0);
@@ -155,6 +165,7 @@ public class ObservationBuilder {
             obj.addProperty("phase", 0);
             obj.addProperty("toward_vel", 0.0);
             obj.addProperty("lateral_vel", 0.0);
+            obj.addProperty("vertical_vel", 0.0);
         }
         return obj;
     }

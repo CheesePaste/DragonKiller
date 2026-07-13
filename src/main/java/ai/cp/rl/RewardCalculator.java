@@ -16,16 +16,17 @@ public class RewardCalculator {
         prevDragonHealth = maxHealth;
     }
 
-    public double computeDense(double dragonHealth, double playerHealth, double playerMaxHealth,
+    public double computeDense(double dragonHealth, double playerHealth,
                                 double centerDistance,
-                                boolean isSprinting, boolean isOverVoid,
+                                boolean isOverVoid,
                                 boolean isDragonSitting,
-                                double facingCenterFactor,
                                 boolean didAttack) {
         double reward = 0.0;
 
+        // Time penalty to prevent farming
+        reward += RLConfig.REWARD_TIME_PENALTY;
+
         // Pure damage reward: ONLY when bot actually attacked this cycle
-        // This excludes environmental damage (void, collision) from generating reward
         if (didAttack) {
             double dragonDelta = prevDragonHealth - dragonHealth;
             if (dragonDelta > 0) {
@@ -35,29 +36,12 @@ public class RewardCalculator {
             }
         }
 
-        // Survival baseline
-        reward += RLConfig.REWARD_SURVIVE_TICK;
-
-        // Health reward: proportional to current HP
-        reward += (playerHealth / playerMaxHealth) * RLConfig.REWARD_HEALTH;
-
-        // Center approach reward
+        // Center approach reward (Potential-based, cannot be farmed)
         double centerDelta = prevCenterDistance - centerDistance;
         reward += centerDelta * RLConfig.REWARD_APPROACH;
 
-        // Sprint reward
-        if (isSprinting) reward += RLConfig.REWARD_SPRINT;
-
-        // Distance-to-center reward
-        double distReward = RLConfig.REWARD_DISTANCE *
-            Math.exp(-centerDistance / RLConfig.REWARD_DISTANCE_DECAY);
-        reward += distReward;
-
         // Void penalty
         if (isOverVoid) reward += RLConfig.REWARD_VOID_PENALTY;
-
-        // Center-facing reward
-        reward += facingCenterFactor * RLConfig.REWARD_FACE_CENTER;
 
         // Update previous values
         prevDragonHealth = dragonHealth;

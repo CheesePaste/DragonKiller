@@ -28,11 +28,11 @@ class DragonEnv(gym.Env):
         self._last_tracker = {}
         self._episode_tracker = {}  # persists across reset() — stores last completed episode's tracker
 
-        # 12 discrete actions: noop, forward, backward, turn L/R, look U/D, attack, sprint, jump, strafe L/R
-        self.action_space = spaces.Discrete(12)
+        # 6 continuous actions: [forward/back, strafe L/R, yaw, pitch, attack, jump]
+        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(6,), dtype=np.float32)
 
-        # 26-dimensional observation
-        obs_dim = 26
+        # 38-dimensional observation
+        obs_dim = 38
         self.observation_space = spaces.Box(
             low=-1.0, high=1.0, shape=(obs_dim,), dtype=np.float32
         )
@@ -59,7 +59,8 @@ class DragonEnv(gym.Env):
                     ) from e
 
     def step(self, action):
-        msg = self.conn.step(int(action))
+        action_list = [float(x) for x in action]
+        msg = self.conn.step(action_list)
         obs = self._parse_obs(msg["data"])
         reward = float(msg["reward"])
         done = bool(msg["done"])
@@ -72,11 +73,10 @@ class DragonEnv(gym.Env):
     def _parse_obs(self, data: dict) -> np.ndarray:
         vec = []
 
-        # ── Player state (8) ────────────────────────────────────────
+        # ── Player state (7) ────────────────────────────────────────
         p = data.get("player", {})
         vec.append(p.get("health", 20.0) / PLAYER_HEALTH_MAX)
         vec.append(1.0 if p.get("on_ground", True) else 0.0)
-        vec.append(1.0 if p.get("sprinting", False) else 0.0)
         vel = p.get("velocity", [0, 0, 0])
         vec.append(np.clip(float(vel[0]) / VEL_BOUND, -1.0, 1.0))
         vec.append(np.clip(float(vel[1]) / VEL_BOUND, -1.0, 1.0))
@@ -84,21 +84,27 @@ class DragonEnv(gym.Env):
         vec.append(np.clip(float(p.get("center_dx", 0.0)), -1.0, 1.0))
         vec.append(np.clip(float(p.get("center_dz", 0.0)), -1.0, 1.0))
 
-        # ── Dragon relative (8: in_view, alive, dy, hit_dist, hit_yaw/pitch, head_yaw/pitch) ─
+        # ── Dragon relative (10: in_view, dragon_dx, dragon_dz, dy, hurt_time, hit_dist, hit_yaw/pitch, head_yaw/pitch) ─
         d = data.get("dragon_relative", {})
         vec.append(1.0 if d.get("in_view", False) else 0.0)
-        vec.append(1.0 if d.get("alive", True) else 0.0)
+        vec.append(np.clip(float(d.get("dragon_dx", 0.0)) / 100.0, -1.0, 1.0))
+        vec.append(np.clip(float(d.get("dragon_dz", 0.0)) / 100.0, -1.0, 1.0))
         vec.append(np.clip(float(d.get("dy", 0.0)) / DRAGON_DY_BOUND, -1.0, 1.0))
+        vec.append(np.clip(float(d.get("dragon_hurt_time", 0.0)), 0.0, 1.0))
         vec.append(np.clip(float(d.get("hit_dist", DISTANCE_MAX)) / DISTANCE_MAX, 0.0, 1.0))
         vec.append(np.clip(float(d.get("hit_yaw_delta", 0.0)) / 180.0, -1.0, 1.0))
         vec.append(np.clip(float(d.get("hit_pitch_delta", 0.0)) / 90.0, -1.0, 1.0))
         vec.append(np.clip(float(d.get("head_yaw_delta", 0.0)) / 180.0, -1.0, 1.0))
         vec.append(np.clip(float(d.get("head_pitch_delta", 0.0)) / 90.0, -1.0, 1.0))
 
-        # ── Dragon phase (1) + relative velocity (2: toward_vel, lateral_vel) ─
-        vec.append(np.clip(float(d.get("phase", 0)) / DRAGON_PHASE_MAX, 0.0, 1.0))
+        # ── Dragon phase (11 one-hot) + relative velocity (3: toward, lateral, vertical) ─
+        phase = int(d.get("phase", 0))
+        for i in range(11):
+            vec.append(1.0 if i == phase else 0.0)
+        
         vec.append(np.clip(float(d.get("toward_vel", 0.0)) / DRAGON_VEL_BOUND, -1.0, 1.0))
         vec.append(np.clip(float(d.get("lateral_vel", 0.0)) / DRAGON_VEL_BOUND, -1.0, 1.0))
+        vec.append(np.clip(float(d.get("vertical_vel", 0.0)) / DRAGON_VEL_BOUND, -1.0, 1.0))
 
         # ── Terrain (1: ground_distance) ─────────────────────────────
         t = data.get("terrain", {})

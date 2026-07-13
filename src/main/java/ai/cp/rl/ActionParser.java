@@ -13,6 +13,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
+import com.google.gson.JsonArray;
 
 public class ActionParser {
     private static int freezeCounter;
@@ -71,11 +72,13 @@ public class ActionParser {
         totalAttackAttempts = 0;
     }
 
-    public static void execute(int actionIndex, ServerPlayerEntity player, ServerWorld world) {
+    public static void execute(JsonArray actionArray, ServerPlayerEntity player, ServerWorld world) {
         moveForward = false;
         moveBackward = false;
         moveLeft = false;
         moveRight = false;
+        sprinting = false;
+        jumping = false;
         attackHappenedThisCycle = false;
         wasFullCharge = false;
         wasAirborne = false;
@@ -83,24 +86,66 @@ public class ActionParser {
         lastHitType = 0;
         attackChosen = false;
 
-        switch (actionIndex) {
-            case 0: break; // noop
-            case 1: moveForward = true; break;
-            case 2: moveBackward = true; break;
-            case 3: player.setYaw(player.getYaw() - TURN_SPEED); break;
-            case 4: player.setYaw(player.getYaw() + TURN_SPEED); break;
-            case 5: player.setPitch(MathHelper.clamp(player.getPitch() - TURN_SPEED, -90.0F, 90.0F)); break;
-            case 6: player.setPitch(MathHelper.clamp(player.getPitch() + TURN_SPEED, -90.0F, 90.0F)); break;
-            case 7: attackChosen = true; totalAttackAttempts++; performAttack(player, world); break;
-            case 8: sprinting = !sprinting; break;
-            case 9: jumping = true; break;
-            case 10: moveLeft = true; break;
-            case 11: moveRight = true; break;
+        if (actionArray == null || actionArray.size() < 6) {
+            // Default reset if invalid
+            freezeCounter = RLConfig.ACTION_REPEAT;
+            observationSent = false;
+            return;
+        }
+
+        float aForward = actionArray.get(0).getAsFloat();
+        float aStrafe = actionArray.get(1).getAsFloat();
+        float aYaw = actionArray.get(2).getAsFloat();
+        float aPitch = actionArray.get(3).getAsFloat();
+        float aAttack = actionArray.get(4).getAsFloat();
+        float aJump = actionArray.get(5).getAsFloat();
+
+        // 1. Forward / Backward & Sprint
+        if (aForward >= 0.6f) {
+            moveForward = true;
+            sprinting = true;
+        } else if (aForward >= 0.2f) {
+            moveForward = true;
+            sprinting = false;
+        } else if (aForward <= -0.2f) {
+            moveBackward = true;
+            sprinting = false;
+        }
+
+        // 2. Strafe Left / Right
+        if (aStrafe >= 0.2f) {
+            moveRight = true;
+        } else if (aStrafe <= -0.2f) {
+            moveLeft = true;
+        }
+
+        // 3. Yaw (Continuous)
+        if (Math.abs(aYaw) > 0.01f) {
+            player.setYaw(player.getYaw() + aYaw * RLConfig.MAX_TURN_SPEED);
+        }
+
+        // 4. Pitch (Continuous)
+        if (Math.abs(aPitch) > 0.01f) {
+            player.setPitch(MathHelper.clamp(player.getPitch() + aPitch * RLConfig.MAX_TURN_SPEED, -90.0F, 90.0F));
+        }
+
+        // 5. Attack
+        if (aAttack > 0.0f) {
+            attackChosen = true;
+            totalAttackAttempts++;
+            performAttack(player, world);
+        }
+
+        // 6. Jump
+        if (aJump > 0.0f) {
+            jumping = true;
         }
 
         freezeCounter = RLConfig.ACTION_REPEAT;
         observationSent = false;
     }
+
+
 
     public static void tickExecute(ServerPlayerEntity player, ServerWorld world) {
         // Always hold the sword in slot 0
@@ -129,6 +174,10 @@ public class ActionParser {
 
     public static boolean needsNewAction() {
         return freezeCounter <= 0 && !observationSent;
+    }
+
+    public static boolean isWaitingForAction() {
+        return freezeCounter <= 0 && observationSent;
     }
 
     public static void markObservationSent() {
