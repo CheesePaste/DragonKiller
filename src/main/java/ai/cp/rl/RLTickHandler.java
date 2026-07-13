@@ -296,8 +296,15 @@ public class RLTickHandler {
 
             EnderDragonEntity newDragon = EntityType.ENDER_DRAGON.create(endWorld);
             if (newDragon != null) {
-                newDragon.getPhaseManager().setPhase(PhaseType.HOLDING_PATTERN);
-                newDragon.setPosition(0.0, 128.0, 0.0);
+                if (ai.cp.config.RLConfig.COMBAT_MODE == ai.cp.config.RLConfig.CombatMode.RANGED_ONLY) {
+                    newDragon.getPhaseManager().setPhase(PhaseType.HOVER);
+                    newDragon.setPosition(0.0, 85.0, 0.0);
+                    DragonKiller.LOGGER.info("[RESET] Phase 2 dragon spawned at (0, 85, 0) in HOVER for target practice");
+                } else {
+                    newDragon.getPhaseManager().setPhase(PhaseType.HOLDING_PATTERN);
+                    newDragon.setPosition(0.0, 128.0, 0.0);
+                    DragonKiller.LOGGER.info("[RESET] Phase 2 dragon spawned at (0, 128, 0) in HOLDING_PATTERN");
+                }
                 endWorld.spawnEntity(newDragon);
 
                 // Sync fight manager so it tracks this dragon immediately
@@ -307,7 +314,6 @@ public class RLTickHandler {
                     newDragon.setFightOrigin(BlockPos.ORIGIN);
                     ((EnderDragonFightAccessor) fight).setDragonUuid(newDragon.getUuid());
                 }
-                DragonKiller.LOGGER.info("[RESET] Phase 2 dragon spawned at (0, 128, 0) in HOLDING_PATTERN");
             }
         }
 
@@ -360,7 +366,9 @@ public class RLTickHandler {
         botPlayer.getInventory().setStack(0, new ItemStack(Items.DIAMOND_SWORD));
 
         // Crossbow in offhand
-        botPlayer.equipStack(net.minecraft.entity.EquipmentSlot.OFFHAND, new ItemStack(Items.CROSSBOW));
+        if (ai.cp.config.RLConfig.COMBAT_MODE != ai.cp.config.RLConfig.CombatMode.MELEE_ONLY) {
+            botPlayer.equipStack(net.minecraft.entity.EquipmentSlot.OFFHAND, new ItemStack(Items.CROSSBOW));
+        }
 
         // Diamond armor
         botPlayer.getInventory().armor.set(3, new ItemStack(Items.DIAMOND_HELMET));

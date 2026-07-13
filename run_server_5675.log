@@ -1,55 +1,7 @@
-Starting a Gradle Daemon, 78 busy and 1 incompatible and 7 stopped Daemons could not be reused, use --status for details
+Starting a Gradle Daemon, 86 busy and 1 incompatible and 8 stopped Daemons could not be reused, use --status for details
 
 > Configure project :
 Fabric Loom: 1.17.14
-"Lock for cache='C:\Users\mrx\.gradle\caches\fabric-loom', project=':'" is currently held by pid '13608'.
-Run with --info or --debug to show arguments, may reveal sensitive info
-- pid: 13608
-- command: C:\Users\mrx\.jdks\ms-21.0.7\bin\java.exe
-- started at: 2026-07-13T10:56:22.451Z
-- user: LAPTOP-L4JDQ9NU\mrx
-- parent:
-	- pid: 36664
-	- command: C:\Users\mrx\.jdks\ms-21.0.7\bin\java.exe
-	- started at: 2026-07-13T10:56:18.573Z
-	- user: LAPTOP-L4JDQ9NU\mrx
-	- parent:
-		- pid: 30564
-		- command: C:\Windows\System32\cmd.exe
-		- started at: 2026-07-13T10:56:18.454Z
-		- user: LAPTOP-L4JDQ9NU\mrx
-		- parent:
-			- pid: 25756
-			- command: C:\Users\mrx\.jdks\ms-21.0.7\bin\java.exe
-			- started at: 2026-07-13T10:56:04.604Z
-			- user: LAPTOP-L4JDQ9NU\mrx
-			- parent:
-				- pid: 18208
-				- command: C:\Users\mrx\.jdks\ms-21.0.7\bin\java.exe
-				- started at: 2026-07-13T10:56:00.915Z
-				- user: LAPTOP-L4JDQ9NU\mrx
-				- parent:
-					- pid: 26916
-					- command: C:\Windows\System32\cmd.exe
-					- started at: 2026-07-13T10:56:00.822Z
-					- user: LAPTOP-L4JDQ9NU\mrx
-					- parent:
-						- pid: 27604
-						- command: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
-						- started at: 2026-07-13T08:22:54.248Z
-						- user: LAPTOP-L4JDQ9NU\mrx
-						- parent:
-							- title: 'dragonkiller – .gitignore [ai.cp.dragonkiller]'
-							- pid: 6944
-							- command: C:\Program Files\JetBrains\IntelliJ IDEA 2025.3.1\bin\idea64.exe
-							- started at: 2026-07-13T08:22:48.933Z
-							- user: LAPTOP-L4JDQ9NU\mrx
-							- parent:
-								- pid: 15320
-								- command: C:\Windows\explorer.exe
-								- started at: 2026-07-13T08:21:39.208Z
-								- user: LAPTOP-L4JDQ9NU\mrx
-Waiting for lock to be released...
 
 > Task :compileJava UP-TO-DATE
 > Task :processResources UP-TO-DATE
@@ -60,8 +12,8 @@ Waiting for lock to be released...
 > Task :configureLaunch UP-TO-DATE
 
 > Task :runServer5675
-[34m[18:56:39][m [32m[main/INFO][m [36m(FabricLoader/GameProvider)[m [0mLoading Minecraft 1.20.1 with Fabric Loader 0.19.3
-[m[34m[18:56:39][m [32m[main/INFO][m [36m(FabricLoader)[m [0mLoading 46 mods:
+[34m[19:11:28][m [32m[main/INFO][m [36m(FabricLoader/GameProvider)[m [0mLoading Minecraft 1.20.1 with Fabric Loader 0.19.3
+[m[34m[19:11:29][m [32m[main/INFO][m [36m(FabricLoader)[m [0mLoading 46 mods:
 	- dragonkiller 1.0.0
 	- fabric-api 0.92.9+1.20.1
 	- fabric-api-base 0.4.32+1802ada577
@@ -108,488 +60,393 @@ Waiting for lock to be released...
 	- java 21
 	- minecraft 1.20.1
 	- mixinextras 0.5.4
-[m[34m[18:56:39][m [32m[main/INFO][m [36m(FabricLoader/Mixin)[m [0mSpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/C:/Users/mrx/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.17.3+mixin.0.8.7/41c4a3984a80f4679e759fb9f495587acc5cdac7/sponge-mixin-0.17.3+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
-[m[34m[18:56:39][m [32m[main/INFO][m [36m(FabricLoader/Mixin)[m [0mLoaded Fabric development mappings for mixin remapper!
-[m[34m[18:56:39][m [32m[main/INFO][m [36m(FabricLoader/Mixin)[m [0mCompatibility level set to JAVA_16
-[m[34m[18:56:39][m [32m[main/INFO][m [36m(FabricLoader/Mixin)[m [0mCompatibility level set to JAVA_17
-[m[34m[18:56:40][m [32m[main/INFO][m [36m(FabricLoader/MixinExtras|Service)[m [0mInitializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.4).
-[m[34m[18:56:57][m [32m[main/INFO][m [36m(dragonkiller)[m [0mDragonKiller RL Environment initializing...
-[m[34m[18:56:57][m [32m[main/INFO][m [36m(dragonkiller)[m [0mPhase: PHASE 2 (IS_PHASE_2=true, rlphase=p2)
-[m[34m[18:56:58][m [32m[main/INFO][m [36m(Minecraft)[m [0mEnvironment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
-[m[34m[18:57:06][m [32m[main/INFO][m [36m(Minecraft)[m [0mLoaded 7 recipes
-[m[34m[18:57:07][m [32m[main/INFO][m [36m(Minecraft)[m [0mLoaded 1271 advancements
-[m[34m[18:57:08][m [32m[main/INFO][m [36m(BiomeModificationImpl)[m [0mApplied 0 biome modifications to 0 of 64 new biomes in 3.244 ms
-[m[34m[18:57:08][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mStarting minecraft server version 1.20.1
-[m[34m[18:57:08][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mLoading properties
-[m[34m[18:57:08][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mDefault game type: SURVIVAL
-[m[34m[18:57:08][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mGenerating keypair
-[m[34m[18:57:08][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mStarting Minecraft server on *:25675
-[m[34m[18:57:08][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mUsing default channel type
-[m[34m[18:57:08][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0m**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
-[m[34m[18:57:08][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mThe server will make no attempt to authenticate usernames. Beware.
-[m[34m[18:57:08][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mWhile this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
-[m[34m[18:57:08][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mTo change this, set "online-mode" to "true" in the server.properties file.
-[m[34m[18:57:08][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mPreparing level "world"
-[m[34m[18:57:10][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mPreparing start region for dimension minecraft:overworld
-[m[34m[18:57:12][m [32m[Worker-Main-11/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 0%
-[m[34m[18:57:12][m [32m[Worker-Main-11/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 0%
-[m[34m[18:57:12][m [32m[Worker-Main-18/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 0%
-[m[34m[18:57:12][m [32m[Worker-Main-18/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 0%
-[m[34m[18:57:12][m [32m[Worker-Main-20/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 0%
-[m[34m[18:57:12][m [32m[Worker-Main-23/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 0%
-[m[34m[18:57:13][m [32m[Worker-Main-8/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 1%
-[m[34m[18:57:13][m [32m[Worker-Main-21/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 9%
-[m[34m[18:57:14][m [32m[Worker-Main-4/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 15%
-[m[34m[18:57:14][m [32m[Worker-Main-21/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 47%
-[m[34m[18:57:15][m [32m[Worker-Main-9/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 55%
-[m[34m[18:57:16][m [32m[Worker-Main-9/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 68%
-[m[34m[18:57:16][m [32m[Worker-Main-5/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 68%
-[m[34m[18:57:16][m [32m[Worker-Main-22/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 69%
-[m[34m[18:57:17][m [32m[Worker-Main-4/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 72%
-[m[34m[18:57:17][m [32m[Worker-Main-5/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 77%
-[m[34m[18:57:18][m [32m[Worker-Main-18/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 83%
-[m[34m[18:57:18][m [32m[Worker-Main-6/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 83%
-[m[34m[18:57:19][m [32m[Worker-Main-6/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 84%
-[m[34m[18:57:19][m [32m[Worker-Main-5/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 86%
-[m[34m[18:57:20][m [32m[Worker-Main-11/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 92%
-[m[34m[18:57:20][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mTime elapsed: 10380 ms
-[m[34m[18:57:20][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mDone (11.977s)! For help, type "help"
-[m[34m[18:57:20][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mRL SocketServer listening on port 5675
-[m[34m[18:57:20][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mBotPlayer created: RLBot (UUID: 75749aa9-5dfe-307b-9f25-d1c6891f911a)
-[m[34m[18:57:20][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mRLTickHandler initialized with BotPlayer
-[m[34m[18:57:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mRL client connected: /127.0.0.1:58997
-[m[34m[18:57:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mBotPlayer created: RLBot (UUID: 75749aa9-5dfe-307b-9f25-d1c6891f911a)
-[m[34m[18:57:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Phase 2 dragon spawned at (0, 128, 0) in HOLDING_PATTERN
-[m[34m[18:57:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 1 started
-[m[34m[18:57:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Episode 1 started, bot at (0.0,65.0,43.0) hp=20.0 dragonHp=200.0
-[m[34m[18:57:23][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mCan't keep up! Is the server overloaded? Running 2082ms or 130 ticks behind
-[m[34m[18:57:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 250 TPS (interval=4ms, mspt=2.2ms)
-[m[34m[18:57:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.7ms)
-[m[34m[18:57:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
-[m[34m[18:57:30][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.6ms)
-[m[34m[18:57:31][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.4ms)
-[m[34m[18:57:32][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1095 dist 0.09->0.52 penalty=-10.0
-[m[34m[18:57:32][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1108 dist 0.16->0.53 penalty=-10.0
-[m[34m[18:57:32][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1109 dist 0.53->0.98 penalty=-10.0
-[m[34m[18:57:32][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1110 dist 0.98->1.49 penalty=-10.0
-[m[34m[18:57:32][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1122 dist 0.16->0.53 penalty=-10.0
-[m[34m[18:57:32][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1135 dist 0.16->0.53 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1147 dist 0.16->0.53 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1148 dist 0.53->0.98 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1149 dist 0.98->1.49 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1164 dist 0.16->0.53 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1177 dist 0.16->0.53 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.5ms)
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1191 dist 1.28->1.59 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1212 dist 0.16->0.53 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1233 dist 0.16->0.53 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1248 dist 0.00->0.49 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1249 dist 0.49->1.21 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1250 dist 1.21->2.04 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1283 dist 0.29->0.65 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1291 dist 0.65->1.63 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1293 dist 1.76->2.18 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1303 dist 0.67->1.40 penalty=-10.0
-[m[34m[18:57:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1304 dist 1.40->2.13 penalty=-10.0
-[m[34m[18:57:34][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1324 dist 0.27->0.64 penalty=-10.0
-[m[34m[18:57:34][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1330 dist 0.95->1.45 penalty=-10.0
-[m[34m[18:57:34][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1331 dist 1.45->1.86 penalty=-10.0
-[m[34m[18:57:34][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1332 dist 1.86->2.18 penalty=-10.0
-[m[34m[18:57:34][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
-[m[34m[18:57:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.6ms)
-[m[34m[18:57:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.4ms)
-[m[34m[18:57:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.4ms)
-[m[34m[18:57:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
-[m[34m[18:57:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.4ms)
-[m[34m[18:57:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
-[m[34m[18:57:43][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2649 dist 1.48->2.31 penalty=-10.0
-[m[34m[18:57:43][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2712 dist 0.28->0.76 penalty=-10.0
-[m[34m[18:57:43][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2713 dist 0.76->1.15 penalty=-10.0
-[m[34m[18:57:43][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2714 dist 1.15->1.45 penalty=-10.0
-[m[34m[18:57:43][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2720 dist 1.94->2.29 penalty=-10.0
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.4ms)
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2826 dist 1.63->2.15 penalty=-10.0
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2860 dist 0.13->0.57 penalty=-10.0
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2861 dist 0.57->1.12 penalty=-10.0
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2862 dist 1.12->1.58 penalty=-10.0
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2863 dist 1.58->1.95 penalty=-10.0
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2879 dist 0.00->0.66 penalty=-10.0
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2880 dist 0.66->1.53 penalty=-10.0
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2881 dist 1.53->2.47 penalty=-10.0
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2900 dist 0.75->1.05 penalty=-10.0
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2901 dist 1.05->1.47 penalty=-10.0
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2902 dist 1.47->2.00 penalty=-10.0
-[m[34m[18:57:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2924 dist 0.08->0.85 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2927 dist 0.87->1.30 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2936 dist 0.00->0.51 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2937 dist 0.51->1.19 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2938 dist 1.19->1.77 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2939 dist 1.77->2.27 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2963 dist 0.00->0.31 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2969 dist 0.00->0.56 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2970 dist 0.56->1.87 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2971 dist 1.87->2.71 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.4ms)
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3013 dist 0.00->0.32 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3014 dist 0.32->1.16 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3015 dist 1.16->2.11 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3059 dist 0.52->0.90 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3060 dist 0.90->1.41 penalty=-10.0
-[m[34m[18:57:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3061 dist 1.41->2.34 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3089 dist 0.00->0.58 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3092 dist 0.73->1.39 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3100 dist 0.00->0.43 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3101 dist 0.43->1.02 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3102 dist 1.02->2.21 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3133 dist 0.00->0.89 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3135 dist 1.01->1.63 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3146 dist 0.00->0.41 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3147 dist 0.41->0.81 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3148 dist 0.81->1.13 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3175 dist 0.05->0.86 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3176 dist 0.86->1.58 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3177 dist 1.58->2.20 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3196 dist 0.26->0.79 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3197 dist 0.79->1.33 penalty=-10.0
-[m[34m[18:57:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3198 dist 1.33->2.15 penalty=-10.0
-[m[34m[18:57:47][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
-[m[34m[18:57:48][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.4ms)
-[m[34m[18:57:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
-[m[34m[18:57:51][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
-[m[34m[18:57:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
-[m[34m[18:57:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
-[m[34m[18:57:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.5ms)
-[m[34m[18:57:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4774 dist 0.63->1.26 penalty=-10.0
-[m[34m[18:57:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4775 dist 1.26->1.89 penalty=-10.0
-[m[34m[18:57:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4776 dist 1.89->2.38 penalty=-10.0
-[m[34m[18:57:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:57:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4781 dist 0.76->4.11 penalty=-10.0
-[m[34m[18:57:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4823 dist 0.00->1.52 penalty=-10.0
-[m[34m[18:57:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4824 dist 1.52->2.15 penalty=-10.0
-[m[34m[18:57:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4827 dist 1.96->2.42 penalty=-10.0
-[m[34m[18:57:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4856 dist 1.44->1.83 penalty=-10.0
-[m[34m[18:57:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4857 dist 1.83->2.32 penalty=-10.0
-[m[34m[18:57:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4878 dist 0.15->1.09 penalty=-10.0
-[m[34m[18:57:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4879 dist 1.09->2.09 penalty=-10.0
-[m[34m[18:57:58][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
-[m[34m[18:57:58][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5042 dist 1.76->2.08 penalty=-10.0
-[m[34m[18:57:58][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5054 dist 0.00->1.13 penalty=-10.0
-[m[34m[18:57:58][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5055 dist 1.13->3.10 penalty=-10.0
-[m[34m[18:57:58][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5102 dist 0.00->0.97 penalty=-10.0
-[m[34m[18:57:58][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5122 dist 0.93->1.60 penalty=-10.0
-[m[34m[18:57:58][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5123 dist 1.60->2.06 penalty=-10.0
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5158 dist 0.00->0.74 penalty=-10.0
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5159 dist 0.74->1.21 penalty=-10.0
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5167 dist 0.18->0.69 penalty=-10.0
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5168 dist 0.69->1.34 penalty=-10.0
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5169 dist 1.34->1.88 penalty=-10.0
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5170 dist 1.88->2.40 penalty=-10.0
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5186 dist 1.94->2.42 penalty=-10.0
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5201 dist 1.91->2.42 penalty=-10.0
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5235 dist 0.15->0.62 penalty=-10.0
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5236 dist 0.62->1.19 penalty=-10.0
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5238 dist 1.41->1.79 penalty=-10.0
-[m[34m[18:57:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5257 dist 1.69->2.19 penalty=-10.0
-[m[34m[18:58:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.5ms)
-[m[34m[18:58:01][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:01][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mCan't keep up! Is the server overloaded? Running 23438ms or 11719 ticks behind
-[m[34m[18:58:02][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:03][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=5.9ms)
-[m[34m[18:58:05][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6060 dist 0.54->1.37 penalty=-10.0
-[m[34m[18:58:05][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6061 dist 1.37->2.49 penalty=-10.0
-[m[34m[18:58:06][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6096 dist 0.00->0.35 penalty=-10.0
-[m[34m[18:58:06][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6102 dist 0.22->1.14 penalty=-10.0
-[m[34m[18:58:06][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6103 dist 1.14->2.13 penalty=-10.0
-[m[34m[18:58:06][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6123 dist 0.24->0.74 penalty=-10.0
-[m[34m[18:58:06][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6124 dist 0.74->1.83 penalty=-10.0
-[m[34m[18:58:06][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6125 dist 1.83->3.04 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6170 dist 0.73->1.25 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6171 dist 1.25->1.96 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6172 dist 1.96->2.79 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6202 dist 0.11->0.60 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6203 dist 0.60->1.20 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6204 dist 1.20->1.90 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6205 dist 1.90->2.52 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6231 dist 0.00->0.31 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6235 dist 0.70->1.28 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6246 dist 0.00->0.92 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6247 dist 0.92->2.14 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6282 dist 0.81->1.19 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6286 dist 1.21->1.58 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6296 dist 0.43->0.85 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6297 dist 0.85->1.35 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6298 dist 1.35->1.74 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6299 dist 1.74->2.07 penalty=-10.0
-[m[34m[18:58:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6345 dist 0.21->0.52 penalty=-10.0
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6354 dist 0.85->1.29 penalty=-10.0
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6355 dist 1.29->1.75 penalty=-10.0
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6356 dist 1.75->2.39 penalty=-10.0
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6392 dist 1.24->1.56 penalty=-10.0
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6393 dist 1.56->1.95 penalty=-10.0
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=6394 dist 1.95->2.78 penalty=-10.0
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[DEATH] Dragon killed! +1000.0 reward
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EPISODE] Done reason=dragon_killed totalReward=-580.87 ticks=6438
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 1 ended: dragon_killed (6438 ticks, total reward: -580.870381152982)
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EPISODE] Episode 1 ended: dragon_killed (6438 ticks, total reward: -580.87)
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EP_REWARD] dense=1135.8 breath=-1176.6 push=-1350.0 trade0=0.0 claw=0.0 death=1000.0 total=-580.9
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mBotPlayer created: RLBot (UUID: 75749aa9-5dfe-307b-9f25-d1c6891f911a)
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Phase 2 dragon spawned at (0, 128, 0) in HOLDING_PATTERN
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 2 started
-[m[34m[18:58:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Episode 2 started, bot at (0.0,65.0,43.0) hp=20.0 dragonHp=200.0
-[m[34m[18:58:09][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:10][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
-[m[34m[18:58:11][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
-[m[34m[18:58:12][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
-[m[34m[18:58:14][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:14][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1080 dist 0.00->0.66 penalty=-10.0
-[m[34m[18:58:14][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1081 dist 0.66->1.58 penalty=-10.0
-[m[34m[18:58:14][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1082 dist 1.58->2.58 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1114 dist 1.94->2.33 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1180 dist 0.00->0.82 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1181 dist 0.82->1.81 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1182 dist 1.81->2.58 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1219 dist 0.66->1.17 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1220 dist 1.17->1.69 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1236 dist 0.00->0.79 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1237 dist 0.79->1.18 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1239 dist 1.41->1.92 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1240 dist 1.92->2.29 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1262 dist 0.10->1.04 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1263 dist 1.04->1.84 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1264 dist 1.84->2.28 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1272 dist 0.00->0.48 penalty=-10.0
-[m[34m[18:58:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1279 dist 1.26->1.64 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1307 dist 0.20->0.52 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1308 dist 0.52->0.91 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1309 dist 0.91->1.36 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1310 dist 1.36->1.89 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1328 dist 0.00->0.62 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1329 dist 0.62->1.65 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1330 dist 1.65->2.59 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1360 dist 0.17->1.18 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1361 dist 1.18->2.42 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1403 dist 0.00->0.32 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1404 dist 0.32->1.28 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1414 dist 0.16->1.40 penalty=-10.0
-[m[34m[18:58:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1415 dist 1.40->2.95 penalty=-10.0
-[m[34m[18:58:17][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1464 dist 0.73->1.35 penalty=-10.0
-[m[34m[18:58:17][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1478 dist 0.29->0.63 penalty=-10.0
-[m[34m[18:58:17][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1479 dist 0.63->1.04 penalty=-10.0
-[m[34m[18:58:17][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1481 dist 1.28->2.29 penalty=-10.0
-[m[34m[18:58:17][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1516 dist 0.12->0.75 penalty=-10.0
-[m[34m[18:58:17][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1517 dist 0.75->1.51 penalty=-10.0
-[m[34m[18:58:17][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1518 dist 1.51->2.53 penalty=-10.0
-[m[34m[18:58:17][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
-[m[34m[18:58:18][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
-[m[34m[18:58:20][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:21][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:24][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3122 dist 0.00->0.30 penalty=-10.0
-[m[34m[18:58:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3123 dist 0.30->0.62 penalty=-10.0
-[m[34m[18:58:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3124 dist 0.62->1.71 penalty=-10.0
-[m[34m[18:58:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3125 dist 1.71->2.71 penalty=-10.0
-[m[34m[18:58:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3155 dist 0.29->1.17 penalty=-10.0
-[m[34m[18:58:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3156 dist 1.17->1.88 penalty=-10.0
-[m[34m[18:58:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3157 dist 1.88->2.21 penalty=-10.0
-[m[34m[18:58:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3165 dist 1.09->1.94 penalty=-10.0
-[m[34m[18:58:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3166 dist 1.94->2.84 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3204 dist 0.00->0.58 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3205 dist 0.58->1.21 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3206 dist 1.21->1.54 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3216 dist 0.00->0.86 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3217 dist 0.86->2.05 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3255 dist 0.19->1.08 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3262 dist 0.04->1.16 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3263 dist 1.16->3.28 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3317 dist 0.39->1.14 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3318 dist 1.14->1.47 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3326 dist 0.00->0.40 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3327 dist 0.40->1.07 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3328 dist 1.07->1.70 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3329 dist 1.70->2.56 penalty=-10.0
-[m[34m[18:58:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3360 dist 0.05->1.04 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3361 dist 1.04->2.08 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3368 dist 0.00->1.72 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3369 dist 1.72->3.47 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3421 dist 0.36->0.90 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3434 dist 0.22->0.84 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3435 dist 0.84->2.20 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3462 dist 0.24->1.03 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3463 dist 1.03->1.88 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3464 dist 1.88->2.25 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3478 dist 0.18->0.53 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3485 dist 1.48->1.85 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3523 dist 0.92->1.32 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3524 dist 1.32->2.04 penalty=-10.0
-[m[34m[18:58:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3551 dist 0.50->0.84 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3552 dist 0.84->1.38 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3560 dist 0.00->1.03 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3561 dist 1.03->2.50 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3598 dist 0.00->0.45 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3600 dist 0.48->1.47 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3611 dist 0.04->0.92 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3612 dist 0.92->1.99 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3613 dist 1.99->2.92 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3644 dist 0.01->0.99 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3645 dist 0.99->2.02 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3655 dist 0.00->1.48 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3656 dist 1.48->3.23 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3709 dist 0.17->0.87 penalty=-10.0
-[m[34m[18:58:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3712 dist 1.38->2.16 penalty=-10.0
-[m[34m[18:58:30][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
-[m[34m[18:58:31][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:34][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:34][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4408 dist 0.64->1.19 penalty=-10.0
-[m[34m[18:58:34][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4409 dist 1.19->2.07 penalty=-10.0
-[m[34m[18:58:34][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4474 dist 0.00->0.56 penalty=-10.0
-[m[34m[18:58:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4494 dist 0.00->1.13 penalty=-10.0
-[m[34m[18:58:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4495 dist 1.13->2.68 penalty=-10.0
-[m[34m[18:58:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4544 dist 0.00->0.48 penalty=-10.0
-[m[34m[18:58:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4553 dist 0.00->1.14 penalty=-10.0
-[m[34m[18:58:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4554 dist 1.14->2.81 penalty=-10.0
-[m[34m[18:58:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4606 dist 0.00->0.56 penalty=-10.0
-[m[34m[18:58:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4613 dist 0.00->1.14 penalty=-10.0
-[m[34m[18:58:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4614 dist 1.14->2.24 penalty=-10.0
-[m[34m[18:58:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4657 dist 0.39->1.07 penalty=-10.0
-[m[34m[18:58:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4658 dist 1.07->2.06 penalty=-10.0
-[m[34m[18:58:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4714 dist 0.57->1.10 penalty=-10.0
-[m[34m[18:58:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4715 dist 1.10->1.50 penalty=-10.0
-[m[34m[18:58:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4716 dist 1.50->2.49 penalty=-10.0
-[m[34m[18:58:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4755 dist 0.11->0.54 penalty=-10.0
-[m[34m[18:58:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4756 dist 0.54->1.57 penalty=-10.0
-[m[34m[18:58:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4757 dist 1.57->2.03 penalty=-10.0
-[m[34m[18:58:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4773 dist 1.59->2.57 penalty=-10.0
-[m[34m[18:58:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4815 dist 0.10->0.90 penalty=-10.0
-[m[34m[18:58:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4816 dist 0.90->2.12 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4864 dist 0.62->1.02 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4865 dist 1.02->2.03 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4903 dist 0.02->0.49 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4904 dist 0.49->0.95 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4912 dist 1.10->1.41 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4922 dist 0.00->0.39 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4923 dist 0.39->1.40 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4924 dist 1.40->2.40 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4958 dist 0.00->0.37 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4959 dist 0.37->1.43 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4960 dist 1.43->2.54 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4969 dist 0.00->0.39 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4970 dist 0.39->0.86 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4971 dist 0.86->1.25 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4974 dist 1.76->2.30 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5005 dist 0.79->1.53 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5010 dist 1.38->1.76 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5011 dist 1.76->2.23 penalty=-10.0
-[m[34m[18:58:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5027 dist 1.58->2.05 penalty=-10.0
-[m[34m[18:58:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=4.2ms)
-[m[34m[18:58:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
-[m[34m[18:58:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5748 dist 0.04->0.50 penalty=-10.0
-[m[34m[18:58:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=5749 dist 0.50->2.13 penalty=-10.0
-[m[34m[18:58:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[DEATH] Dragon killed! +1000.0 reward
-[m[34m[18:58:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EPISODE] Done reason=dragon_killed totalReward=-490.98 ticks=5759
-[m[34m[18:58:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 2 ended: dragon_killed (5759 ticks, total reward: -490.9821485412772)
-[m[34m[18:58:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EPISODE] Episode 2 ended: dragon_killed (5759 ticks, total reward: -490.98)
-[m[34m[18:58:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EP_REWARD] dense=1134.4 breath=-1125.4 push=-1330.0 trade0=0.0 claw=0.0 death=1000.0 total=-491.0
-[m[34m[18:58:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mBotPlayer created: RLBot (UUID: 75749aa9-5dfe-307b-9f25-d1c6891f911a)
-[m[34m[18:58:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Phase 2 dragon spawned at (0, 128, 0) in HOLDING_PATTERN
-[m[34m[18:58:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 3 started
-[m[34m[18:58:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Episode 3 started, bot at (0.0,65.0,43.0) hp=20.0 dragonHp=200.0
-[m[34m[18:58:43][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
-[m[34m[18:58:47][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:47][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mCan't keep up! Is the server overloaded? Running 30918ms or 15459 ticks behind
-[m[34m[18:58:48][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:49][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1106 dist 1.00->1.40 penalty=-10.0
-[m[34m[18:58:49][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1107 dist 1.40->1.81 penalty=-10.0
-[m[34m[18:58:49][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1127 dist 0.18->0.77 penalty=-10.0
-[m[34m[18:58:49][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1135 dist 0.00->1.31 penalty=-10.0
-[m[34m[18:58:49][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1136 dist 1.31->2.92 penalty=-10.0
-[m[34m[18:58:49][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1181 dist 0.00->0.43 penalty=-10.0
-[m[34m[18:58:49][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:49][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1194 dist 0.00->0.75 penalty=-10.0
-[m[34m[18:58:49][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1195 dist 0.75->1.76 penalty=-10.0
-[m[34m[18:58:49][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1196 dist 1.76->2.48 penalty=-10.0
-[m[34m[18:58:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1282 dist 0.00->0.31 penalty=-10.0
-[m[34m[18:58:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1297 dist 0.00->0.31 penalty=-10.0
-[m[34m[18:58:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1313 dist 0.00->0.31 penalty=-10.0
-[m[34m[18:58:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1351 dist 0.00->1.37 penalty=-10.0
-[m[34m[18:58:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1352 dist 1.37->2.12 penalty=-10.0
-[m[34m[18:58:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1371 dist 0.54->0.98 penalty=-10.0
-[m[34m[18:58:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1372 dist 0.98->1.28 penalty=-10.0
-[m[34m[18:58:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1373 dist 1.28->1.67 penalty=-10.0
-[m[34m[18:58:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1375 dist 1.92->2.34 penalty=-10.0
-[m[34m[18:58:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:51][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:52][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1944 dist 0.36->0.73 penalty=-10.0
-[m[34m[18:58:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1945 dist 0.73->1.90 penalty=-10.0
-[m[34m[18:58:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1946 dist 1.90->2.80 penalty=-10.0
-[m[34m[18:58:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1958 dist 0.07->0.69 penalty=-10.0
-[m[34m[18:58:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1959 dist 0.69->1.23 penalty=-10.0
-[m[34m[18:58:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1960 dist 1.23->1.67 penalty=-10.0
-[m[34m[18:58:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1961 dist 1.67->2.03 penalty=-10.0
-[m[34m[18:58:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1981 dist 0.18->1.40 penalty=-10.0
-[m[34m[18:58:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
-[m[34m[18:58:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=1982 dist 1.40->2.92 penalty=-10.0
-[m[34m[18:58:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2021 dist 0.61->1.08 penalty=-10.0
-[m[34m[18:58:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2022 dist 1.08->1.47 penalty=-10.0
-[m[34m[18:58:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2032 dist 1.66->2.05 penalty=-10.0
-[m[34m[18:58:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2053 dist 1.77->2.13 penalty=-10.0
-[m[34m[18:58:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2065 dist 1.85->2.46 penalty=-10.0
-[m[34m[18:58:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2108 dist 0.24->0.59 penalty=-10.0
-[m[34m[18:58:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2109 dist 0.59->1.55 penalty=-10.0
-[m[34m[18:58:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2110 dist 1.55->2.81 penalty=-10.0
-[m[34m[18:58:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2143 dist 1.05->1.35 penalty=-10.0
-[m[34m[18:58:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2144 dist 1.35->1.97 penalty=-10.0
-[m[34m[18:58:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2145 dist 1.97->2.90 penalty=-10.0
-[m[34m[18:58:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2171 dist 1.46->1.96 penalty=-10.0
-[m[34m[18:58:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2172 dist 1.96->2.57 penalty=-10.0
-[m[34m[18:58:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2204 dist 0.00->0.92 penalty=-10.0
-[m[34m[18:58:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2205 dist 0.92->2.05 penalty=-10.0
-[m[34m[18:58:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2251 dist 0.00->0.67 penalty=-10.0
-[m[34m[18:58:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2252 dist 0.67->1.14 penalty=-10.0
-[m[34m[18:58:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2262 dist 0.00->0.72 penalty=-10.0
-[m[34m[18:58:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2263 dist 0.72->1.74 penalty=-10.0
-[m[34m[18:58:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2264 dist 1.74->2.86 penalty=-10.0
-[m[34m[18:58:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2302 dist 0.00->0.96 penalty=-10.0
-[m[34m[18:58:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2313 dist 0.14->1.13 penalty=-10.0
-[m[34m[18:58:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2314 dist 1.13->2.22 penalty=-10.0
-[m[34m[18:58:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2375 dist 1.45->1.85 penalty=-10.0
-[m[34m[18:58:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2376 dist 1.85->2.20 penalty=-10.0
-[m[34m[18:58:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2385 dist 1.19->1.88 penalty=-10.0
-[m[34m[18:58:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2386 dist 1.88->2.36 penalty=-10.0
-[m[34m[18:58:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2449 dist 0.55->1.07 penalty=-10.0
-[m[34m[18:58:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2452 dist 1.25->1.55 penalty=-10.0
-[m[34m[18:58:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2454 dist 1.83->2.37 penalty=-10.0
-[m[34m[18:58:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:58:58][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
-[m[34m[18:58:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
-[m[34m[18:59:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3046 dist 0.44->1.17 penalty=-10.0
-[m[34m[18:59:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3047 dist 1.17->1.49 penalty=-10.0
-[m[34m[18:59:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3051 dist 0.27->2.17 penalty=-10.0
-[m[34m[18:59:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3068 dist 0.00->0.51 penalty=-10.0
-[m[34m[18:59:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3069 dist 0.51->1.09 penalty=-10.0
-[m[34m[18:59:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3070 dist 1.09->1.82 penalty=-10.0
-[m[34m[18:59:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3071 dist 1.82->2.66 penalty=-10.0
-[m[34m[18:59:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3092 dist 1.73->2.04 penalty=-10.0
+[m[34m[19:11:29][m [32m[main/INFO][m [36m(FabricLoader/Mixin)[m [0mSpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/C:/Users/mrx/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.17.3+mixin.0.8.7/41c4a3984a80f4679e759fb9f495587acc5cdac7/sponge-mixin-0.17.3+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[m[34m[19:11:29][m [32m[main/INFO][m [36m(FabricLoader/Mixin)[m [0mLoaded Fabric development mappings for mixin remapper!
+[m[34m[19:11:29][m [32m[main/INFO][m [36m(FabricLoader/Mixin)[m [0mCompatibility level set to JAVA_16
+[m[34m[19:11:29][m [32m[main/INFO][m [36m(FabricLoader/Mixin)[m [0mCompatibility level set to JAVA_17
+[m[34m[19:11:30][m [32m[main/INFO][m [36m(FabricLoader/MixinExtras|Service)[m [0mInitializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.4).
+[m[34m[19:11:41][m [32m[main/INFO][m [36m(dragonkiller)[m [0mDragonKiller RL Environment initializing...
+[m[34m[19:11:41][m [32m[main/INFO][m [36m(dragonkiller)[m [0mPhase: PHASE 2 (IS_PHASE_2=true, rlphase=p2)
+[m[34m[19:11:41][m [32m[main/INFO][m [36m(Minecraft)[m [0mEnvironment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[m[34m[19:11:45][m [32m[main/INFO][m [36m(Minecraft)[m [0mLoaded 7 recipes
+[m[34m[19:11:45][m [32m[main/INFO][m [36m(Minecraft)[m [0mLoaded 1271 advancements
+[m[34m[19:11:46][m [32m[main/INFO][m [36m(BiomeModificationImpl)[m [0mApplied 0 biome modifications to 0 of 64 new biomes in 1.560 ms
+[m[34m[19:11:46][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mStarting minecraft server version 1.20.1
+[m[34m[19:11:46][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mLoading properties
+[m[34m[19:11:46][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mDefault game type: SURVIVAL
+[m[34m[19:11:46][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mGenerating keypair
+[m[34m[19:11:46][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mStarting Minecraft server on *:25675
+[m[34m[19:11:46][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mUsing default channel type
+[m[34m[19:11:46][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0m**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[m[34m[19:11:46][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mThe server will make no attempt to authenticate usernames. Beware.
+[m[34m[19:11:46][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mWhile this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[m[34m[19:11:46][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mTo change this, set "online-mode" to "true" in the server.properties file.
+[m[34m[19:11:46][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mPreparing level "world"
+[m[34m[19:11:47][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mPreparing start region for dimension minecraft:overworld
+[m[34m[19:11:49][m [32m[Worker-Main-8/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 0%
+[m[34m[19:11:49][m [32m[Worker-Main-8/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 0%
+[m[34m[19:11:49][m [32m[Worker-Main-15/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 0%
+[m[34m[19:11:49][m [32m[Worker-Main-8/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 0%
+[m[34m[19:11:49][m [32m[Worker-Main-20/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 0%
+[m[34m[19:11:50][m [32m[Worker-Main-20/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 9%
+[m[34m[19:11:50][m [32m[Worker-Main-10/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 39%
+[m[34m[19:11:52][m [32m[Worker-Main-20/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 54%
+[m[34m[19:11:52][m [32m[Worker-Main-20/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 54%
+[m[34m[19:11:52][m [32m[Worker-Main-3/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 54%
+[m[34m[19:11:52][m [32m[Worker-Main-1/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 68%
+[m[34m[19:11:53][m [32m[Worker-Main-1/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 71%
+[m[34m[19:11:53][m [32m[Worker-Main-8/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 75%
+[m[34m[19:11:54][m [32m[Worker-Main-16/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 83%
+[m[34m[19:11:54][m [32m[Worker-Main-10/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 83%
+[m[34m[19:11:55][m [32m[Worker-Main-4/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 86%
+[m[34m[19:11:55][m [32m[Worker-Main-13/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 87%
+[m[34m[19:11:56][m [32m[Worker-Main-2/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 88%
+[m[34m[19:11:56][m [32m[Worker-Main-14/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 90%
+[m[34m[19:11:57][m [32m[Worker-Main-7/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 91%
+[m[34m[19:11:57][m [32m[Worker-Main-4/INFO][m [36m(Minecraft)[m [0mPreparing spawn area: 95%
+[m[34m[19:11:58][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mTime elapsed: 10482 ms
+[m[34m[19:11:58][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mDone (11.611s)! For help, type "help"
+[m[34m[19:11:58][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mRL SocketServer listening on port 5675
+[m[34m[19:11:58][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mBotPlayer created: RLBot (UUID: 75749aa9-5dfe-307b-9f25-d1c6891f911a)
+[m[34m[19:11:58][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mRLTickHandler initialized with BotPlayer
+[m[34m[19:12:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 250 TPS (interval=4ms, mspt=2.7ms)
+[m[34m[19:12:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:12:01][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:12:01][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.6ms)
+[m[34m[19:12:01][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.7ms)
+[m[34m[19:12:02][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mRL client connected: /127.0.0.1:42965
+[m[34m[19:12:02][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mBotPlayer created: RLBot (UUID: 75749aa9-5dfe-307b-9f25-d1c6891f911a)
+[m[34m[19:12:02][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Phase 2 dragon spawned at (0, 85, 0) in HOVER for target practice
+[m[34m[19:12:02][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 1 started
+[m[34m[19:12:02][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Episode 1 started, bot at (0.0,65.0,43.0) hp=20.0 dragonHp=200.0
+[m[34m[19:12:03][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.4ms)
+[m[34m[19:12:04][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:12:05][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mCan't keep up! Is the server overloaded? Running 2002ms or 1001 ticks behind
+[m[34m[19:12:06][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
+[m[34m[19:12:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.4ms)
+[m[34m[19:12:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:12:09][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:12:10][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:12:11][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
+[m[34m[19:12:13][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:12:14][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:12:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:12:17][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:12:18][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
+[m[34m[19:12:19][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:12:20][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.4ms)
+[m[34m[19:12:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:12:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.4ms)
+[m[34m[19:12:24][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:12:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:12:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:12:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:12:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:12:30][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:12:31][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:12:32][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=7.8ms)
+[m[34m[19:12:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:12:34][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:12:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
+[m[34m[19:12:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:12:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:12:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:12:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:12:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:12:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:12:43][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:12:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:12:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:12:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:12:47][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:12:48][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mCan't keep up! Is the server overloaded? Running 27489ms or 13744 ticks behind
+[m[34m[19:12:48][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:12:49][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:12:51][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:12:52][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:12:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:12:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:12:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:12:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:12:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:12:58][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:12:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:13:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:02][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:13:03][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
+[m[34m[19:13:04][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:13:05][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=3.1ms)
+[m[34m[19:13:06][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:13:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:09][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.4ms)
+[m[34m[19:13:10][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.4ms)
+[m[34m[19:13:11][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
+[m[34m[19:13:13][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:13:14][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:13:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:13:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:17][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:13:18][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:19][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:13:20][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:13:21][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:13:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14075 dist 0.00->0.64 penalty=-10.0
+[m[34m[19:13:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14076 dist 0.64->1.34 penalty=-10.0
+[m[34m[19:13:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14077 dist 1.34->1.97 penalty=-10.0
+[m[34m[19:13:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14078 dist 1.97->2.50 penalty=-10.0
+[m[34m[19:13:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14117 dist 0.00->0.40 penalty=-10.0
+[m[34m[19:13:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14118 dist 0.40->1.21 penalty=-10.0
+[m[34m[19:13:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14119 dist 1.21->2.13 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14152 dist 0.00->0.48 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14153 dist 0.48->1.14 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14154 dist 1.14->1.92 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14155 dist 1.92->2.60 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14179 dist 0.00->0.85 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14180 dist 0.85->1.99 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14189 dist 0.05->0.73 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14190 dist 0.73->2.48 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14233 dist 0.07->0.40 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14234 dist 0.40->0.78 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14235 dist 0.78->1.80 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14236 dist 1.80->2.17 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14268 dist 0.11->0.53 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14269 dist 0.53->1.72 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14270 dist 1.72->3.06 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14307 dist 0.23->0.88 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14308 dist 0.88->1.99 penalty=-10.0
+[m[34m[19:13:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:24][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14316 dist 0.43->0.85 penalty=-10.0
+[m[34m[19:13:24][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14317 dist 0.85->1.50 penalty=-10.0
+[m[34m[19:13:24][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14318 dist 1.50->2.12 penalty=-10.0
+[m[34m[19:13:24][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14344 dist 0.00->0.77 penalty=-10.0
+[m[34m[19:13:24][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14345 dist 0.77->1.92 penalty=-10.0
+[m[34m[19:13:24][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14346 dist 1.92->3.13 penalty=-10.0
+[m[34m[19:13:24][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14367 dist 0.00->0.53 penalty=-10.0
+[m[34m[19:13:24][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14368 dist 0.53->2.21 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14418 dist 0.20->0.55 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14419 dist 0.55->1.51 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14420 dist 1.51->2.36 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14433 dist 0.27->1.54 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14434 dist 1.54->2.90 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14470 dist 0.00->0.53 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14471 dist 0.53->0.98 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14483 dist 0.05->1.00 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14484 dist 1.00->1.85 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14485 dist 1.85->2.60 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14512 dist 0.27->0.94 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14513 dist 0.94->1.32 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14514 dist 1.32->1.67 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14515 dist 1.67->2.18 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14525 dist 0.27->1.54 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14526 dist 1.54->2.70 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14558 dist 0.17->1.21 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14560 dist 1.19->1.89 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14561 dist 1.89->2.39 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14571 dist 0.05->1.24 penalty=-10.0
+[m[34m[19:13:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14572 dist 1.24->2.32 penalty=-10.0
+[m[34m[19:13:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14602 dist 0.00->0.80 penalty=-10.0
+[m[34m[19:13:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14603 dist 0.80->1.90 penalty=-10.0
+[m[34m[19:13:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=14604 dist 1.90->3.04 penalty=-10.0
+[m[34m[19:13:26][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:13:29][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mCan't keep up! Is the server overloaded? Running 26188ms or 13094 ticks behind
+[m[34m[19:13:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:13:30][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
+[m[34m[19:13:32][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:13:34][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:13:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:13:36][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:13:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16771 dist 0.00->0.64 penalty=-10.0
+[m[34m[19:13:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16776 dist 1.47->1.87 penalty=-10.0
+[m[34m[19:13:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16777 dist 1.87->2.58 penalty=-10.0
+[m[34m[19:13:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16818 dist 0.36->0.73 penalty=-10.0
+[m[34m[19:13:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16819 dist 0.73->1.41 penalty=-10.0
+[m[34m[19:13:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16820 dist 1.41->2.56 penalty=-10.0
+[m[34m[19:13:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16861 dist 0.12->0.75 penalty=-10.0
+[m[34m[19:13:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16872 dist 0.26->1.22 penalty=-10.0
+[m[34m[19:13:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16873 dist 1.22->2.28 penalty=-10.0
+[m[34m[19:13:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=4.2ms)
+[m[34m[19:13:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16912 dist 0.00->0.75 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16937 dist 0.00->0.84 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16938 dist 0.84->1.56 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16939 dist 1.56->2.30 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16981 dist 0.84->1.16 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=16984 dist 1.50->2.01 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17016 dist 1.03->1.39 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17017 dist 1.39->1.92 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17018 dist 1.92->2.49 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17045 dist 0.16->0.60 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17046 dist 0.60->1.15 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17047 dist 1.15->1.91 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17048 dist 1.91->2.47 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17071 dist 0.05->0.75 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17082 dist 0.26->0.63 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17094 dist 0.26->0.63 penalty=-10.0
+[m[34m[19:13:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17107 dist 0.26->0.63 penalty=-10.0
+[m[34m[19:13:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:13:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17119 dist 0.26->0.63 penalty=-10.0
+[m[34m[19:13:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17133 dist 0.72->1.12 penalty=-10.0
+[m[34m[19:13:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17200 dist 0.26->0.63 penalty=-10.0
+[m[34m[19:13:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17213 dist 0.26->0.63 penalty=-10.0
+[m[34m[19:13:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17226 dist 0.26->0.63 penalty=-10.0
+[m[34m[19:13:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17238 dist 0.26->0.63 penalty=-10.0
+[m[34m[19:13:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17259 dist 0.25->0.75 penalty=-10.0
+[m[34m[19:13:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17273 dist 0.26->0.63 penalty=-10.0
+[m[34m[19:13:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17285 dist 0.26->0.63 penalty=-10.0
+[m[34m[19:13:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17289 dist 0.33->0.93 penalty=-10.0
+[m[34m[19:13:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17297 dist 0.90->1.21 penalty=-10.0
+[m[34m[19:13:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17307 dist 0.65->1.48 penalty=-10.0
+[m[34m[19:13:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17308 dist 1.48->2.05 penalty=-10.0
+[m[34m[19:13:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
+[m[34m[19:13:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17328 dist 1.45->1.99 penalty=-10.0
+[m[34m[19:13:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:13:43][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:13:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:13:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17959 dist 0.00->0.47 penalty=-10.0
+[m[34m[19:13:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17960 dist 0.47->1.68 penalty=-10.0
+[m[34m[19:13:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=17961 dist 1.68->2.83 penalty=-10.0
+[m[34m[19:13:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EPISODE] Done reason=timeout totalReward=-1058.69 ticks=18000
+[m[34m[19:13:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 1 ended: timeout (18000 ticks, total reward: -1058.6939423530291)
+[m[34m[19:13:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EPISODE] Episode 1 ended: timeout (18000 ticks, total reward: -1058.69)
+[m[34m[19:13:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EP_REWARD] dense=880.0 breath=-400.7 push=-990.0 trade0=0.0 claw=0.0 death=0.0 total=-1058.7
+[m[34m[19:13:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mBotPlayer created: RLBot (UUID: 75749aa9-5dfe-307b-9f25-d1c6891f911a)
+[m[34m[19:13:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Phase 2 dragon spawned at (0, 85, 0) in HOVER for target practice
+[m[34m[19:13:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 2 started
+[m[34m[19:13:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Episode 2 started, bot at (0.0,65.0,43.0) hp=20.0 dragonHp=200.0
+[m[34m[19:13:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:13:48][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:49][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:13:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:13:51][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:13:52][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
+[m[34m[19:13:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:13:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:13:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:13:57][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:13:59][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:14:00][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:14:01][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:02][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:14:03][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:04][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:14:05][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:14:06][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:07][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:08][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:14:09][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
+[m[34m[19:14:11][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mCan't keep up! Is the server overloaded? Running 26736ms or 13368 ticks behind
+[m[34m[19:14:11][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:14:12][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=4.3ms)
+[m[34m[19:14:13][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:14:14][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:14:15][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:14:16][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:14:17][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:19][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:20][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:21][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:14:22][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:14:23][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:14:24][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:14:25][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:14:27][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:28][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:29][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:30][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:14:31][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:14:32][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:14:33][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:14:34][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:14:35][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:14:37][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9510 dist 1.18->1.88 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9511 dist 1.88->2.69 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9554 dist 0.56->0.99 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9555 dist 0.99->1.42 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9556 dist 1.42->1.77 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9571 dist 0.96->1.28 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9582 dist 0.14->1.10 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9583 dist 1.10->2.16 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9612 dist 0.24->1.39 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9613 dist 1.39->2.60 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9624 dist 0.37->0.68 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9625 dist 0.68->1.82 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9626 dist 1.82->2.89 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9658 dist 0.27->0.88 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9659 dist 0.88->1.63 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9660 dist 1.63->2.30 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9671 dist 0.28->0.84 penalty=-10.0
+[m[34m[19:14:38][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9672 dist 0.84->2.11 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9708 dist 0.03->1.09 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9709 dist 1.09->2.14 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9716 dist 0.00->0.33 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9717 dist 0.33->1.37 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9718 dist 1.37->1.99 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9719 dist 1.99->2.66 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9754 dist 0.68->1.21 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9755 dist 1.21->1.89 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9756 dist 1.89->2.39 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9776 dist 1.48->1.87 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9787 dist 1.93->2.26 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9845 dist 0.00->0.76 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9846 dist 0.76->1.35 penalty=-10.0
+[m[34m[19:14:39][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9848 dist 1.57->3.02 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9893 dist 1.21->1.58 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9913 dist 1.11->1.47 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9914 dist 1.47->1.79 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9915 dist 1.79->2.16 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9939 dist 0.90->1.26 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9940 dist 1.26->1.56 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9941 dist 1.56->2.01 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9960 dist 1.68->1.99 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9969 dist 0.22->0.57 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9974 dist 0.00->1.13 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=9975 dist 1.13->2.73 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10027 dist 0.21->1.57 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10041 dist 0.00->0.83 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10042 dist 0.83->1.61 penalty=-10.0
+[m[34m[19:14:40][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10043 dist 1.61->3.21 penalty=-10.0
+[m[34m[19:14:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10086 dist 0.07->0.65 penalty=-10.0
+[m[34m[19:14:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10087 dist 0.65->2.07 penalty=-10.0
+[m[34m[19:14:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10097 dist 0.00->0.93 penalty=-10.0
+[m[34m[19:14:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10098 dist 0.93->2.49 penalty=-10.0
+[m[34m[19:14:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=1.5ms)
+[m[34m[19:14:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10148 dist 0.12->0.76 penalty=-10.0
+[m[34m[19:14:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10149 dist 0.76->1.80 penalty=-10.0
+[m[34m[19:14:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10160 dist 0.44->1.05 penalty=-10.0
+[m[34m[19:14:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10164 dist 0.73->1.36 penalty=-10.0
+[m[34m[19:14:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10165 dist 1.36->1.73 penalty=-10.0
+[m[34m[19:14:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10166 dist 1.73->2.13 penalty=-10.0
+[m[34m[19:14:41][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=10177 dist 0.93->2.34 penalty=-10.0
+[m[34m[19:14:42][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:14:43][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mRL client disconnected
+[m[34m[19:14:43][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:14:43][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:43][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 250 TPS (interval=4ms, mspt=6.2ms)
+[m[34m[19:14:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
+[m[34m[19:14:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[19:14:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[19:14:44][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[19:14:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.7ms)
+[m[34m[19:14:45][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mCan't keep up! Is the server overloaded? Running 18932ms or 9466 ticks behind
+[m[34m[19:14:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[19:14:45][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[19:14:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.4ms)
+[m[34m[19:14:46][m [32m[Server thread/INFO][m [36m(Minecraft)[m [0mRLBot fell out of the world
+[m[34m[19:14:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[DEATH] Bot died! hp=0.0 reason=player_died reward=-500.0
+[m[34m[19:14:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EPISODE] Done reason=player_died totalReward=-995.99 ticks=12532
+[m[34m[19:14:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 2 ended: player_died (12532 ticks, total reward: -995.9870090974814)
+[m[34m[19:14:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EPISODE] Episode 2 ended: player_died (12532 ticks, total reward: -995.99)
+[m[34m[19:14:46][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EP_REWARD] dense=403.9 breath=-10.9 push=-580.0 trade0=0.0 claw=0.0 death=-500.0 total=-996.0
 [m

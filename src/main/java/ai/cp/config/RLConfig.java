@@ -1,6 +1,16 @@
 package ai.cp.config;
 
 public class RLConfig {
+    public enum CombatMode {
+        MELEE_ONLY,
+        RANGED_ONLY,
+        MIXED
+    }
+
+    public static final CombatMode COMBAT_MODE = CombatMode.valueOf(
+        System.getProperty("rlcombatmode", "MIXED").toUpperCase()
+    );
+
     public static final boolean IS_PHASE_2 = "p2".equals(System.getProperty("rlphase", "p1"));
     public static final int TCP_PORT = Integer.parseInt(System.getProperty("rlport", "5670"));
     public static final int ACTION_REPEAT = IS_PHASE_2 ? 1 : 3;
@@ -12,8 +22,8 @@ public class RLConfig {
     // Reward coefficients
     public static final double REWARD_DRAGON_DAMAGE = 3.0;    // pure damage reward: 3 * damage dealt
     public static final double REWARD_SITTING_MULTIPLIER = 2.0; // ×multiplier when dragon sitting
-    public static final double REWARD_TIME_PENALTY = -0.01;  // per tick penalty (prevents farming)
-    public static final double REWARD_DEATH = -200.0;
+    public static final double REWARD_TIME_PENALTY = -0.002;  // per tick penalty (prevents farming)
+    public static final double REWARD_DEATH = -500.0;
     public static final double REWARD_DRAGON_DEATH = 1000.0;
 
     // Approach & movement rewards
@@ -22,7 +32,7 @@ public class RLConfig {
     public static final double REWARD_VOID_PENALTY = -1.0; // per tick over void
 
     // Breath penalty: scaled by proximity to nearest breath cloud (0 at dist>=range, max at dist=0)
-    public static final double REWARD_BREATH_PENALTY = -2.0;   // max per tick when inside breath
+    public static final double REWARD_BREATH_PENALTY = -0.5;   // max per tick when inside breath
     public static final double BREATH_PENALTY_RANGE = 10.0;    // blocks — start penalizing at this range
 
     // Collision push penalty: penalize when the bot gets pushed away by dragon collision

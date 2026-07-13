@@ -330,6 +330,7 @@ public class ActionParser {
     }
 
     private static void performRangedAttack(ServerPlayerEntity player, ServerWorld world) {
+        if (RLConfig.COMBAT_MODE == RLConfig.CombatMode.MELEE_ONLY) return;
         if (rangedCooldown > 0) return;
 
         EnderDragonEntity dragon = ObservationBuilder.getDragon(world);

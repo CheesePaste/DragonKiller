@@ -28,12 +28,14 @@ loom {
 		client {
 			vmArg "-Drlport=${System.getProperty('rlport', '5670')}"
 			vmArg "-Drlphase=${System.getProperty('rlphase', 'p1')}"
+			vmArg "-Drlcombatmode=${System.getProperty('rlcombatmode', 'mixed')}"
 		}
 
 		clientP2 {
 			client()
 			vmArg "-Drlport=${System.getProperty('rlport', '5670')}"
 			vmArg "-Drlphase=p2"
+			vmArg "-Drlcombatmode=${System.getProperty('rlcombatmode', 'mixed')}"
 		}
 
 		def numEnvs = project.hasProperty('numEnvs') ? project.property('numEnvs').toInteger() : 4
@@ -46,6 +48,7 @@ loom {
 				runDir = "run/server_${port}"
 				vmArg "-Drlport=${port}"
 				vmArg "-Drlphase=${System.getProperty('rlphase', 'p1')}"
+				vmArg "-Drlcombatmode=${System.getProperty('rlcombatmode', 'mixed')}"
 				vmArg "-Xmx1024M"
 				vmArg "-Xms512M"
 				programArg "nogui"
@@ -122,34 +125,56 @@ publishing {
 tasks.register('runMultiEnv') {
 	group = "dragonkiller"
 	description = "Runs multiple Minecraft instances for vectorized RL training."
-	description += " Usage: -PnumEnvs=4 -Pphase=p2"
+	description += " Usage: -PnumEnvs=4 -Prlcombatmode=mixed"
 
 	doLast {
 		def numEnvs = project.hasProperty('numEnvs') ? project.property('numEnvs').toInteger() : 4
-		def phase = project.hasProperty('rlphase') ? project.property('rlphase') : System.getProperty('rlphase', 'p1')
+		def baseMode = project.hasProperty('rlcombatmode') ? project.property('rlcombatmode') : System.getProperty('rlcombatmode', 'mixed')
+		def phase = project.hasProperty('rlphase') ? project.property('rlphase') : System.getProperty('rlphase', 'p2')
+		
+		// Default phase to p1 for melee_only if not specified
+		if (baseMode == 'melee_only' && !project.hasProperty('rlphase') && System.getProperty('rlphase') == null) {
+			phase = 'p1'
+		}
+		
 		def ports = (0..<numEnvs).collect { 5670 + it }
 		def processes = []
 
-		println "Starting ${ports.size()} Minecraft instances (phase=${phase}) on ports: ${ports}..."
+		println "Starting ${ports.size()} Minecraft instances (combatMode=${baseMode}, phase=${phase}) on ports: ${ports}..."
 		println "Log files: run_client_*.log / run_server_*.log"
 
 		def isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
 		def gradlew = isWindows ? "gradlew.bat" : "./gradlew"
 
 		ports.eachWithIndex { port, index ->
+			String instanceMode = baseMode
+			String instancePhase = phase
+			
+			// Stage 3 Mixed: Split instances between melee_only and mixed
+			if (baseMode == 'mixed') {
+				int meleeCount = numEnvs >= 6 ? 2 : 1
+				if (index < meleeCount) {
+					instanceMode = 'melee_only'
+				} else {
+					instanceMode = 'mixed'
+				}
+				instancePhase = 'p2'
+			}
+
 			if (index == 0) {
 				// First instance: GUI client
 				List<String> cmd = new ArrayList<>()
 				cmd.add(gradlew)
 				cmd.add("runClient")
 				cmd.add("-Drlport=" + port.toString())
-				if (phase == 'p2') cmd.add("-Drlphase=p2")
+				cmd.add("-Drlcombatmode=" + instanceMode)
+				cmd.add("-Drlphase=" + instancePhase)
 				def pb = new ProcessBuilder(cmd)
 				pb.directory(project.projectDir)
 				pb.redirectOutput(new File(project.projectDir, "run_client_${port}.log"))
 				pb.redirectErrorStream(true)
 				processes << pb.start()
-				println "[${index + 1}/${numEnvs}] Started GUI Client (${phase}) on port ${port}"
+				println "[${index + 1}/${numEnvs}] Started GUI Client (mode=${instanceMode}, phase=${instancePhase}) on port ${port}"
 			} else {
 				// Headless server instances
 				def runDir = new File(project.projectDir, "run/server_${port}")
@@ -171,13 +196,14 @@ tasks.register('runMultiEnv') {
 				cmd.add(gradlew)
 				cmd.add("runServer" + port.toString())
 				cmd.add("-PnumEnvs=" + numEnvs.toString())
-				cmd.add("-Drlphase=" + phase.toString())
+				cmd.add("-Drlcombatmode=" + instanceMode)
+				cmd.add("-Drlphase=" + instancePhase)
 				def pb = new ProcessBuilder(cmd)
 				pb.directory(project.projectDir)
 				pb.redirectOutput(new File(project.projectDir, "run_server_${port}.log"))
 				pb.redirectErrorStream(true)
 				processes << pb.start()
-				println "[${index + 1}/${numEnvs}] Started Headless Server (${phase}) on port ${port}"
+				println "[${index + 1}/${numEnvs}] Started Headless Server (mode=${instanceMode}, phase=${instancePhase}) on port ${port}"
 			}
 			Thread.sleep(2000)
 		}
