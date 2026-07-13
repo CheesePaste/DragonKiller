@@ -189,25 +189,29 @@ def train(config: TrainConfig):
 
     # Train
     start_time = time.time()
-    model.learn(
-        total_timesteps=config.total_timesteps,
-        callback=callbacks,
-        log_interval=config.log_interval,
-        tb_log_name=f"ppo_{int(start_time)}",
-        progress_bar=True,
-    )
+    try:
+        model.learn(
+            total_timesteps=config.total_timesteps,
+            callback=callbacks,
+            log_interval=config.log_interval,
+            tb_log_name=f"ppo_{int(start_time)}",
+            progress_bar=True,
+        )
+        print(f"\nTraining completed.")
+    except KeyboardInterrupt:
+        print("\nTraining interrupted by user (Ctrl+C). Saving current model weights...")
+    finally:
+        elapsed = time.time() - start_time
+        print(f"Elapsed time: {elapsed:.1f}s ({elapsed/60:.1f} min)")
 
-    elapsed = time.time() - start_time
-    print(f"\nTraining completed in {elapsed:.1f}s ({elapsed/60:.1f} min)")
+        # Save final model
+        final_path = os.path.join(config.save_dir, "dragonkiller_ppo_final.zip")
+        model.save(final_path)
+        print(f"Model saved successfully: {final_path}")
+        print(f"TensorBoard: tensorboard --logdir {config.log_dir}")
 
-    # Save final model
-    final_path = os.path.join(config.save_dir, "dragonkiller_ppo_final.zip")
-    model.save(final_path)
-    print(f"Final model saved: {final_path}")
-    print(f"TensorBoard: tensorboard --logdir {config.log_dir}")
-
-    env.close()
-    eval_env.close()
+        env.close()
+        eval_env.close()
 
 
 if __name__ == "__main__":
@@ -218,6 +222,8 @@ if __name__ == "__main__":
                         help="Override TCP port")
     parser.add_argument("--learning-rate", type=float, default=None,
                         help="Override PPO learning rate")
+    parser.add_argument("--save-freq", type=int, default=None,
+                        help="Checkpoint save frequency in steps")
     args = parser.parse_args()
 
     config = TrainConfig()
@@ -227,5 +233,7 @@ if __name__ == "__main__":
         config.port = args.port
     if args.learning_rate:
         config.learning_rate = args.learning_rate
+    if args.save_freq:
+        config.save_freq_steps = args.save_freq
 
     train(config)
