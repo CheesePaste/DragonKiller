@@ -271,8 +271,15 @@ public class ActionParser {
         double worldZ =  Math.cos(yawRad) * vz + Math.sin(yawRad) * vx;
 
         Vec3d v = player.getVelocity();
-        player.setVelocity(worldX * speed, v.y, worldZ * speed);
-        player.velocityModified = true;
+        // If the player took damage within the last 5 ticks, let the vanilla knockback velocity handle horizontal movement.
+        int epTick = RLTickHandler.getEpisodeManager().getTickCount();
+        int lastDamageTick = RLTickHandler.getLastDamageEpisodeTick();
+        if (epTick - lastDamageTick <= 5) {
+            // Do not override horizontal velocity; let the knockback push them away!
+        } else {
+            player.setVelocity(worldX * speed, v.y, worldZ * speed);
+            player.velocityModified = true;
+        }
     }
 
     private static void performAttack(ServerPlayerEntity player, ServerWorld world) {

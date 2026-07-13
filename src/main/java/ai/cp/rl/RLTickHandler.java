@@ -703,4 +703,5 @@ public class RLTickHandler {
 
     public static SocketServer getSocketServer() { return socketServer; }
     public static EpisodeManager getEpisodeManager() { return episodeManager; }
+    public static int getLastDamageEpisodeTick() { return lastDamageEpisodeTick; }
 }
