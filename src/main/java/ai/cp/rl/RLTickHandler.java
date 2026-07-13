@@ -32,6 +32,7 @@ import net.minecraft.world.World;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -442,7 +443,9 @@ public class RLTickHandler {
         boolean isDragonSitting = false;
         if (dragon != null) {
             int phase = dragon.getPhaseManager().getCurrent().getType().getTypeId();
-            isDragonSitting = phase == 3 || phase == 5 || phase == 6 || phase == 7;
+            // PhaseType IDs: 3=LANDING, 4=SITTING_SCANNING, 5=SITTING_ATTACKING,
+            // 6=SITTING_FLAMING, 7=TAKEOFF — all counts as "sitting" for reward multiplier
+            isDragonSitting = phase == 3 || phase == 4 || phase == 5 || phase == 6 || phase == 7;
         }
 
         // Compute dragon delta before rewardCalc (it updates prev values internally)
@@ -454,16 +457,20 @@ public class RLTickHandler {
         if (healthLost > 0) {
             lastDamageEpisodeTick = epTick;
             epPlayerDamageTaken += healthLost;
-            // Retroactive clawback: attack within ANTI_TRADE_WINDOW of taking damage = trade
-            while (!pendingAttackClawbacks.isEmpty()) {
-                double[] entry = pendingAttackClawbacks.peekFirst();
+            // Retroactive clawback: iterate newest→oldest (deque head=oldest, tail=newest).
+            // Descending so we can break early once entries are outside the window.
+            Iterator<double[]> clawIter = pendingAttackClawbacks.descendingIterator();
+            while (clawIter.hasNext()) {
+                double[] entry = clawIter.next();
                 int atkTick = (int) entry[0];
                 if (epTick - atkTick <= RLConfig.ANTI_TRADE_WINDOW_TICKS) {
                     retroactiveClawback += entry[1];
-                    pendingAttackClawbacks.pollFirst();
-                } else break;
+                    clawIter.remove();
+                } else {
+                    break; // Older entries are further outside the window; stop.
+                }
             }
-            // Clean entries older than ANTI_TRADE_WINDOW ticks
+            // Clean stale entries (older than window) from the head
             while (!pendingAttackClawbacks.isEmpty()) {
                 if (epTick - (int) pendingAttackClawbacks.peekFirst()[0] > RLConfig.ANTI_TRADE_WINDOW_TICKS)
                     pendingAttackClawbacks.pollFirst();
@@ -565,7 +572,7 @@ public class RLTickHandler {
             JsonObject rt = obs.getAsJsonObject("raytrace");
         }
         JsonObject br = obs.getAsJsonObject("breath");
-        if (br.get("breath_warning").getAsBoolean()) epBreathTicks++;
+        if (br != null && br.get("breath_warning").getAsBoolean()) epBreathTicks++;
         if (playerHealth < 5.0) epLowHpTicks++;
 
         // Check done

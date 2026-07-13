@@ -10,7 +10,7 @@ class TrainConfig:
     port: int = 5670
 
     # Training duration
-    total_timesteps: int = 10_000_000
+    total_timesteps: int = 500_000  # Phase 1: 静态龙，500K 步足够；Phase 2 可传 2M+
 
     # PPO hyperparameters (SB3 defaults tuned for this env)
     learning_rate: float = 3e-4
@@ -33,13 +33,13 @@ class TrainConfig:
     n_envs: int = 6  # Number of environments to run in parallel
     device: str = "cuda"  # GPU acceleration
 
-    # Checkpointing (save every 500K timesteps)
+    # Checkpointing (save every 50K timesteps)
     save_dir: str = "models"
-    save_freq_steps: int = 500_000
+    save_freq_steps: int = 50_000
 
     # Evaluation
     eval_episodes: int = 5
-    eval_freq_steps: int = 50_000
+    eval_freq_steps: int = 20_000
     eval_deterministic: bool = True
 
     # Logging

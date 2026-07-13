@@ -19,6 +19,9 @@ import net.minecraft.world.Heightmap;
 
 public class ObservationBuilder {
 
+    /** Reusable search box covering the entire End island. Avoids per-call allocation. */
+    private static final Box END_SEARCH_BOX = new Box(-200, 0, -200, 200, 256, 200);
+
     public static JsonObject build(ServerPlayerEntity player, ServerWorld world, float attackCooldown) {
         JsonObject data = new JsonObject();
         data.add("player", buildPlayer(player));
@@ -175,7 +178,7 @@ public class ObservationBuilder {
         BlockPos playerPos = player.getBlockPos();
         int topY = world.getTopY(Heightmap.Type.MOTION_BLOCKING, playerPos.getX(), playerPos.getZ());
         boolean overVoid = topY <= world.getBottomY();
-        double groundDist = overVoid ? 100.0 : playerPos.getY() - topY;
+        double groundDist = overVoid ? 100.0 : Math.max(0.0, playerPos.getY() - topY);
         obj.addProperty("ground_distance", groundDist);
         return obj;
     }
@@ -285,7 +288,7 @@ public class ObservationBuilder {
 
     /** Minimum distance from player eyes to any part of the dragon's collision body. */
     private static double minDistanceToDragon(Vec3d eyePos, EnderDragonEntity dragon) {
-        double minDist = distanceToBox(eyePos, dragon.getBoundingBox());
+        double minDist = 64.0;
         for (EnderDragonPart part : dragon.getBodyParts()) {
             double d = distanceToBox(eyePos, part.getBoundingBox());
             if (d < minDist) minDist = d;
@@ -295,8 +298,8 @@ public class ObservationBuilder {
 
     /** Center of the closest dragon part's bounding box. Used to compute direction toward the nearest hitbox. */
     private static Vec3d findClosestPartCenter(Vec3d eyePos, EnderDragonEntity dragon) {
-        Vec3d closestCenter = dragon.getBoundingBox().getCenter();
-        double minDistSq = eyePos.squaredDistanceTo(closestCenter);
+        Vec3d closestCenter = dragon.getPos(); // Fallback
+        double minDistSq = 9999.0;
         for (EnderDragonPart part : dragon.getBodyParts()) {
             Vec3d center = part.getBoundingBox().getCenter();
             double dSq = eyePos.squaredDistanceTo(center);
@@ -310,7 +313,7 @@ public class ObservationBuilder {
 
     public static EnderDragonEntity getDragon(ServerWorld world) {
         var dragons = world.getEntitiesByClass(EnderDragonEntity.class,
-            new Box(-200, 0, -200, 200, 256, 200), e -> true);
+            END_SEARCH_BOX, e -> true);
         return dragons.isEmpty() ? null : dragons.get(0);
     }
 

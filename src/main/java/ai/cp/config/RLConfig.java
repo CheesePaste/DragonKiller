@@ -4,7 +4,7 @@ public class RLConfig {
     public static final boolean IS_PHASE_2 = "p2".equals(System.getProperty("rlphase", "p1"));
     public static final int TCP_PORT = Integer.parseInt(System.getProperty("rlport", "5670"));
     public static final int ACTION_REPEAT = IS_PHASE_2 ? 1 : 3;
-    public static final int EPISODE_TIMEOUT = IS_PHASE_2 ? 18000 : 6000;
+    public static final int EPISODE_TIMEOUT = IS_PHASE_2 ? 18000 : 2000; // P1: ~667 RL steps; P2: 6000 steps
     public static final long WORLD_SEED = 12345L;
 
     public static final float MAX_TURN_SPEED = 20.0f;

@@ -126,7 +126,7 @@ tasks.register('runMultiEnv') {
 
 	doLast {
 		def numEnvs = project.hasProperty('numEnvs') ? project.property('numEnvs').toInteger() : 4
-		def phase = project.hasProperty('phase') ? project.property('phase') : System.getProperty('rlphase', 'p1')
+		def phase = project.hasProperty('rlphase') ? project.property('rlphase') : System.getProperty('rlphase', 'p1')
 		def ports = (0..<numEnvs).collect { 5670 + it }
 		def processes = []
 

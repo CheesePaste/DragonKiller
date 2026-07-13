@@ -28,7 +28,7 @@ class DragonEnv(gym.Env):
         self._last_tracker = {}
         self._episode_tracker = {}  # persists across reset() — stores last completed episode's tracker
 
-        # 6 continuous actions: [forward/back, strafe L/R, yaw, pitch, attack, jump]
+        # 6 continuous actions: [worldX, worldZ, yaw, pitch, attack, jump]
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(6,), dtype=np.float32)
 
         # 38-dimensional observation
@@ -62,6 +62,7 @@ class DragonEnv(gym.Env):
         action_list = [float(x) for x in action]
         msg = self.conn.step(action_list)
         obs = self._parse_obs(msg["data"])
+        # Parse response
         reward = float(msg["reward"])
         done = bool(msg["done"])
         info = {}

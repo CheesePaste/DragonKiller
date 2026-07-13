@@ -20,10 +20,8 @@ public class ActionParser {
     private static boolean observationSent;
 
     // Continuous movement state
-    private static boolean moveForward;
-    private static boolean moveBackward;
-    private static boolean moveLeft;
-    private static boolean moveRight;
+    private static float targetMoveX;
+    private static float targetMoveZ;
     private static boolean sprinting;
     private static boolean jumping;
 
@@ -55,10 +53,8 @@ public class ActionParser {
     public static void reset() {
         freezeCounter = 0;
         observationSent = true;
-        moveForward = false;
-        moveBackward = false;
-        moveLeft = false;
-        moveRight = false;
+        targetMoveX = 0;
+        targetMoveZ = 0;
         sprinting = false;
         jumping = false;
         attackCooldown = 0;
@@ -73,10 +69,8 @@ public class ActionParser {
     }
 
     public static void execute(JsonArray actionArray, ServerPlayerEntity player, ServerWorld world) {
-        moveForward = false;
-        moveBackward = false;
-        moveLeft = false;
-        moveRight = false;
+        targetMoveX = 0;
+        targetMoveZ = 0;
         sprinting = false;
         jumping = false;
         attackHappenedThisCycle = false;
@@ -93,30 +87,20 @@ public class ActionParser {
             return;
         }
 
-        float aForward = actionArray.get(0).getAsFloat();
-        float aStrafe = actionArray.get(1).getAsFloat();
+        float aMoveX = actionArray.get(0).getAsFloat();
+        float aMoveZ = actionArray.get(1).getAsFloat();
         float aYaw = actionArray.get(2).getAsFloat();
         float aPitch = actionArray.get(3).getAsFloat();
         float aAttack = actionArray.get(4).getAsFloat();
         float aJump = actionArray.get(5).getAsFloat();
 
-        // 1. Forward / Backward & Sprint
-        if (aForward >= 0.6f) {
-            moveForward = true;
-            sprinting = true;
-        } else if (aForward >= 0.2f) {
-            moveForward = true;
-            sprinting = false;
-        } else if (aForward <= -0.2f) {
-            moveBackward = true;
-            sprinting = false;
-        }
+        // 1 & 2. Absolute World Movement (X and Z)
+        targetMoveX = aMoveX;
+        targetMoveZ = aMoveZ;
 
-        // 2. Strafe Left / Right
-        if (aStrafe >= 0.2f) {
-            moveRight = true;
-        } else if (aStrafe <= -0.2f) {
-            moveLeft = true;
+        // Auto-sprint if magnitude > 0.8
+        if (Math.sqrt(aMoveX * aMoveX + aMoveZ * aMoveZ) > 0.8f) {
+            sprinting = true;
         }
 
         // 3. Yaw (Continuous)
@@ -235,37 +219,33 @@ public class ActionParser {
     }
 
     private static void applyMovement(ServerPlayerEntity player) {
-        float yawRad = player.getYaw() * MathHelper.RADIANS_PER_DEGREE;
-        double forward = 0, strafe = 0;
+        if (Math.abs(targetMoveX) < 0.05f && Math.abs(targetMoveZ) < 0.05f) {
+            return; // Deadzone
+        }
 
-        if (moveForward) forward = 1.0;
-        else if (moveBackward) forward = -BACKWARD_MULTIPLIER;
+        double vx = targetMoveX;
+        double vz = targetMoveZ;
 
-        if (moveLeft) strafe = 1.0;
-        else if (moveRight) strafe = -1.0;
-
-        if (forward == 0 && strafe == 0) return;
+        double inputLen = Math.sqrt(vx * vx + vz * vz);
+        if (inputLen > 1.0) {
+            vx /= inputLen;
+            vz /= inputLen;
+        }
 
         double speed = WALK_SPEED;
         if (sprinting) speed *= SPRINT_MULTIPLIER;
 
-        // Normalize input vector so diagonal isn't faster than cardinal
-        double inputLen = Math.sqrt(forward * forward + strafe * strafe);
-        forward /= inputLen;
-        strafe /= inputLen;
+        // Rotate player-local input into world-space velocity.
+        // Convention: vz = forward(+) / backward(-), vx = strafe-right(+) / strafe-left(-)
+        // Minecraft yaw: 0=South(+Z), 90=West(-X), 180=North(-Z), -90=East(+X)
+        // Forward world vector: (-sin(yaw), 0, cos(yaw))
+        // Right   world vector: ( cos(yaw), 0, sin(yaw))
+        float yawRad = player.getYaw() * MathHelper.RADIANS_PER_DEGREE;
+        double worldX = -Math.sin(yawRad) * vz + Math.cos(yawRad) * vx;
+        double worldZ =  Math.cos(yawRad) * vz + Math.sin(yawRad) * vx;
 
-        // Apply strafe multiplier to perpendicular component
-        strafe *= STRAFE_MULTIPLIER;
-
-        // Compute velocity from yaw
-        double vx = forward * -MathHelper.sin(yawRad) + strafe * MathHelper.cos(yawRad);
-        double vz = forward * MathHelper.cos(yawRad) + strafe * MathHelper.sin(yawRad);
-
-        // Scale to desired speed
-        vx *= speed;
-        vz *= speed;
-
-        player.setVelocity(vx, player.getVelocity().y, vz);
+        Vec3d v = player.getVelocity();
+        player.setVelocity(worldX * speed, v.y, worldZ * speed);
         player.velocityModified = true;
     }
 
