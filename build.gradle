@@ -29,6 +29,7 @@ loom {
 			vmArg "-Drlport=${System.getProperty('rlport', '5670')}"
 			vmArg "-Drlphase=${System.getProperty('rlphase', 'p1')}"
 			vmArg "-Drlcombatmode=${System.getProperty('rlcombatmode', 'mixed')}"
+			vmArg "-Drltps=${System.getProperty('rltps', '0')}"
 		}
 
 		clientP2 {
@@ -36,6 +37,7 @@ loom {
 			vmArg "-Drlport=${System.getProperty('rlport', '5670')}"
 			vmArg "-Drlphase=p2"
 			vmArg "-Drlcombatmode=${System.getProperty('rlcombatmode', 'mixed')}"
+			vmArg "-Drltps=${System.getProperty('rltps', '0')}"
 		}
 
 		def numEnvs = project.hasProperty('numEnvs') ? project.property('numEnvs').toInteger() : 4
@@ -49,6 +51,7 @@ loom {
 				vmArg "-Drlport=${port}"
 				vmArg "-Drlphase=${System.getProperty('rlphase', 'p1')}"
 				vmArg "-Drlcombatmode=${System.getProperty('rlcombatmode', 'mixed')}"
+				vmArg "-Drltps=${System.getProperty('rltps', '0')}"
 				vmArg "-Xmx1024M"
 				vmArg "-Xms512M"
 				programArg "nogui"
@@ -213,5 +216,32 @@ tasks.register('runMultiEnv') {
 		println ""
 
 		processes.each { it.waitFor() }
+	}
+}
+
+tasks.register('runEvalEnv') {
+	group = "dragonkiller"
+	description = "Runs a single Minecraft client for evaluation. Usage: -Prltps=20 (or omit for high/adaptive TPS)"
+
+	doLast {
+		def tps = project.hasProperty('rltps') ? project.property('rltps') : System.getProperty('rltps', '0')
+		def port = 5670
+		def gradlew = System.getProperty("os.name").toLowerCase().contains("windows") ? "gradlew.bat" : "./gradlew"
+
+		println "Starting evaluation Minecraft client on port ${port} with TPS=${tps}..."
+		
+		List<String> cmd = new ArrayList<>()
+		cmd.add(gradlew)
+		cmd.add("runClient")
+		cmd.add("-Drlport=" + port.toString())
+		cmd.add("-Drlcombatmode=mixed")
+		cmd.add("-Drlphase=p2")
+		cmd.add("-Drltps=" + tps.toString())
+		
+		def pb = new ProcessBuilder(cmd)
+		pb.directory(project.projectDir)
+		pb.inheritIO()
+		def process = pb.start()
+		process.waitFor()
 	}
 }

@@ -965,4 +965,8 @@ Fabric Loom: 1.17.14
 [m[34m[21:21:51][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=4644 dist 1.75->2.08 penalty=-10.0
 [m[34m[21:21:51][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mCan't keep up! Is the server overloaded? Running 26525ms or 13262 ticks behind
 [m[34m[21:21:52][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.3ms)
+[m[34m[21:21:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
+[m[34m[21:21:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
 [m

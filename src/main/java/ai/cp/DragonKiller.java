@@ -25,6 +25,14 @@ public class DragonKiller implements ModInitializer {
 			RLConfig.IS_PHASE_2 ? "PHASE 2" : "PHASE 1",
 			RLConfig.IS_PHASE_2,
 			System.getProperty("rlphase", "default_p1"));
+
+		// Set target TPS from system property if specified
+		int initialTps = Integer.getInteger("rltps", 0);
+		if (initialTps > 0) {
+			TickRateHelper.setTargetTps(initialTps);
+			LOGGER.info("Forcing target TPS to: {}", initialTps);
+		}
+
 		registerCommands();
 	}
 

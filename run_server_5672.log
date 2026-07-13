@@ -920,4 +920,21 @@ Fabric Loom: 1.17.14
 [m[34m[21:21:50][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
 [m[34m[21:21:51][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
 [m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.2ms)
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=15876 dist 0.00->0.41 penalty=-10.0
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=15898 dist 0.21->0.80 penalty=-10.0
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=15899 dist 0.80->1.25 penalty=-10.0
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=15900 dist 1.25->2.47 penalty=-10.0
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[DEATH] Dragon killed! +1000.0 reward
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EPISODE] Done reason=dragon_killed totalReward=743.39 ticks=15913
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 5 ended: dragon_killed (15913 ticks, total reward: 743.3893341665841)
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EPISODE] Episode 5 ended: dragon_killed (15913 ticks, total reward: 743.39)
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EP_REWARD] dense=1113.5 breath=-343.1 push=-540.0 trade0=0.0 claw=0.0 death=1000.0 total=743.4
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mBotPlayer created: RLBot (UUID: 75749aa9-5dfe-307b-9f25-d1c6891f911a)
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Phase 2 dragon spawned at (0, 128, 0) in HOLDING_PATTERN
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 6 started
+[m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Episode 6 started, bot at (0.0,65.0,43.0) hp=20.0 dragonHp=200.0
+[m[34m[21:21:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[21:21:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 333 TPS (interval=3ms, mspt=3.7ms)
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.8ms)
+[m[34m[21:21:56][m [33m[Server thread/WARN][m [36m(Minecraft)[m [0mCan't keep up! Is the server overloaded? Running 26561ms or 13280 ticks behind
 [m

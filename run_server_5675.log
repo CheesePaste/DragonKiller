@@ -1571,4 +1571,31 @@ Fabric Loom: 1.17.14
 [m[34m[21:21:51][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=2917 dist 1.82->2.28 penalty=-10.0
 [m[34m[21:21:51][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.1ms)
 [m[34m[21:21:53][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[21:21:54][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=1.0ms)
+[m[34m[21:21:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[21:21:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3691 dist 0.72->2.02 penalty=-10.0
+[m[34m[21:21:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3724 dist 0.20->0.50 penalty=-10.0
+[m[34m[21:21:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3751 dist 0.00->0.36 penalty=-10.0
+[m[34m[21:21:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3752 dist 0.36->0.86 penalty=-10.0
+[m[34m[21:21:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3753 dist 0.86->1.28 penalty=-10.0
+[m[34m[21:21:55][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3754 dist 1.28->1.61 penalty=-10.0
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3775 dist 0.11->0.93 penalty=-10.0
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3776 dist 0.93->1.25 penalty=-10.0
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3822 dist 0.75->1.13 penalty=-10.0
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RATE] 500 TPS (interval=2ms, mspt=0.9ms)
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3845 dist 0.00->0.51 penalty=-10.0
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3846 dist 0.51->1.20 penalty=-10.0
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3857 dist 0.45->0.75 penalty=-10.0
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3858 dist 0.75->1.13 penalty=-10.0
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3885 dist 0.45->0.75 penalty=-10.0
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[PUSH] tick=3886 dist 0.75->1.13 penalty=-10.0
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[DEATH] Dragon killed! +1000.0 reward
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EPISODE] Done reason=dragon_killed totalReward=1038.04 ticks=3894
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 12 ended: dragon_killed (3894 ticks, total reward: 1038.0380057970958)
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EPISODE] Episode 12 ended: dragon_killed (3894 ticks, total reward: 1038.04)
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[EP_REWARD] dense=1179.2 breath=-184.1 push=-850.0 trade0=0.0 claw=0.0 death=1000.0 total=1038.0
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mBotPlayer created: RLBot (UUID: 75749aa9-5dfe-307b-9f25-d1c6891f911a)
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Phase 2 dragon spawned at (0, 128, 0) in HOLDING_PATTERN
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0mEpisode 13 started
+[m[34m[21:21:56][m [32m[Server thread/INFO][m [36m(dragonkiller)[m [0m[RESET] Episode 13 started, bot at (0.0,65.0,43.0) hp=20.0 dragonHp=200.0
 [m
