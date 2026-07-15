@@ -99,6 +99,31 @@ public class DragonKiller implements ModInitializer {
 						false);
 					return 1;
 				}));
+
+			// /watch — toggle auto-spectating RLBot
+			dispatcher.register(CommandManager.literal("watch")
+				.requires(src -> src.hasPermissionLevel(0))
+				.executes(ctx -> {
+					ServerPlayerEntity player = ctx.getSource().getPlayer();
+					if (player == null) return 0;
+					boolean active = RLTickHandler.toggleAutoSpectate(player.getUuid());
+					if (active) {
+						player.changeGameMode(net.minecraft.world.GameMode.SPECTATOR);
+						ServerPlayerEntity bot = RLTickHandler.getBotPlayer();
+						if (bot != null && !bot.isRemoved()) {
+							player.setCameraEntity(bot);
+						}
+						ctx.getSource().sendFeedback(() ->
+							Text.literal("§6[WATCH] §aAuto-spectating RLBot enabled."),
+							false);
+					} else {
+						player.setCameraEntity(player);
+						ctx.getSource().sendFeedback(() ->
+							Text.literal("§6[WATCH] §cAuto-spectating RLBot disabled."),
+							false);
+					}
+					return 1;
+				}));
 		});
 	}
 }

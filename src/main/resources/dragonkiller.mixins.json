@@ -15,7 +15,9 @@
 		"TickRateMixin",
 		"ImmortalDragonMixin",
 		"LivingEntityAccessor",
-		"EnderDragonFightAccessor"
+		"EnderDragonFightAccessor",
+		"ShieldBlockMixin",
+		"AutoOpMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

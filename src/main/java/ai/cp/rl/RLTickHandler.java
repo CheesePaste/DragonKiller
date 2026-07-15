@@ -32,8 +32,10 @@ import net.minecraft.world.World;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class RLTickHandler {
@@ -48,8 +50,12 @@ public class RLTickHandler {
     // Stats tracking
     private static double dragonDamageDealt;
     private static double prevDragonHealth;
-    private static double prevHitDist;       // previous observation's hit distance to dragon (for push detection)
     private static int invincibilityTicks;
+
+    // Shield tracking
+    private static int epShieldBlocks;
+    private static double epTotalShieldBlockReward;
+    private static double tickShieldBlockReward;
 
     // Per-episode stats for TensorBoard
     private static double prevPlayerHealth;
@@ -63,22 +69,18 @@ public class RLTickHandler {
 
     // Anti-trade: damage proximity tracking
     private static int lastDamageEpisodeTick = -100;
-    private static double retroactiveClawback = 0.0;
-    private static final ArrayDeque<double[]> pendingAttackClawbacks = new ArrayDeque<>();
 
     // Passive regen: 1 HP per 80 ticks (same as vanilla with full food, 0 saturation)
     private static int regenTimer;
 
     private static double epRewardDense;       // total from computeDense
     private static double epRewardBreath;      // breath penalty
-    private static double epRewardPush;        // collision push penalty
     private static double epRewardPlayerDamage; // player damage penalty
-    private static double epRewardClawback;    // retroactive clawback
-    private static double epRewardTradeZero;   // anti-trade zeroed damage reward
     private static double epRewardDeath;       // death penalty / dragon kill bonus
 
     // Player game mode override: 0=spectator(default), 1=creative, 2=survival
     private static final Map<UUID, Integer> playerGameModeOverrides = new HashMap<>();
+    private static final Set<UUID> autoSpectators = new HashSet<>();
 
     private static void broadcastActionBar(String msg) {
         if (server == null) return;
@@ -242,6 +244,13 @@ public class RLTickHandler {
                 if (player.interactionManager.getGameMode() != target) {
                     player.changeGameMode(target);
                 }
+
+                // Auto-spectate logic
+                if (target == GameMode.SPECTATOR && autoSpectators.contains(player.getUuid())) {
+                    if (botPlayer != null && !botPlayer.isRemoved() && player.getCameraEntity() != botPlayer) {
+                        player.setCameraEntity(botPlayer);
+                    }
+                }
             }
         }
     }
@@ -302,9 +311,15 @@ public class RLTickHandler {
                     newDragon.setPosition(0.0, 85.0, 0.0);
                     DragonKiller.LOGGER.info("[RESET] Phase 2 dragon spawned at (0, 85, 0) in HOVER for target practice");
                 } else {
-                    newDragon.getPhaseManager().setPhase(PhaseType.HOLDING_PATTERN);
-                    newDragon.setPosition(0.0, 128.0, 0.0);
-                    DragonKiller.LOGGER.info("[RESET] Phase 2 dragon spawned at (0, 128, 0) in HOLDING_PATTERN");
+                    if (ai.cp.config.RLConfig.IS_PHASE_2) {
+                        newDragon.getPhaseManager().setPhase(PhaseType.HOLDING_PATTERN);
+                        newDragon.setPosition(0.0, 128.0, 0.0);
+                        DragonKiller.LOGGER.info("[RESET] Phase 2 dragon spawned at (0, 128, 0) in HOLDING_PATTERN");
+                    } else {
+                        newDragon.getPhaseManager().setPhase(PhaseType.SITTING_SCANNING);
+                        newDragon.setPosition(0.0, 85.0, 0.0);
+                        DragonKiller.LOGGER.info("[RESET] Phase 1 dragon spawned in SITTING_SCANNING");
+                    }
                 }
                 endWorld.spawnEntity(newDragon);
 
@@ -366,10 +381,8 @@ public class RLTickHandler {
         // Diamond sword
         botPlayer.getInventory().setStack(0, new ItemStack(Items.DIAMOND_SWORD));
 
-        // Crossbow in offhand
-        if (ai.cp.config.RLConfig.COMBAT_MODE != ai.cp.config.RLConfig.CombatMode.MELEE_ONLY) {
-            botPlayer.equipStack(net.minecraft.entity.EquipmentSlot.OFFHAND, new ItemStack(Items.CROSSBOW));
-        }
+        // Shield in offhand
+        botPlayer.equipStack(net.minecraft.entity.EquipmentSlot.OFFHAND, new ItemStack(Items.SHIELD));
 
         // Diamond armor
         botPlayer.getInventory().armor.set(3, new ItemStack(Items.DIAMOND_HELMET));
@@ -444,6 +457,7 @@ public class RLTickHandler {
             epMinDragonDistance = Math.min(epMinDragonDistance, dragonDistance);
         }
 
+
         // Check if over void
         boolean isOverVoid = botPlayer.getBlockPos().getY() < 0;
 
@@ -463,40 +477,30 @@ public class RLTickHandler {
         // Compute dragon delta before rewardCalc (it updates prev values internally)
         double dragonDelta = prevDragonHealth - dragonHealth;
 
-        // ── Anti-trade: zero damage reward if recently damaged ──
+        // Player damage penalty
         int epTick = episodeManager.getTickCount();
         double healthLost = prevPlayerHealth - playerHealth;
         double tickPlayerDmgPenalty = 0.0;
         if (healthLost > 0) {
-            tickPlayerDmgPenalty = healthLost * RLConfig.REWARD_PLAYER_DAMAGE_PENALTY;
+            // Scale penalty by remaining health: (maxHP / currentHP)^2
+            // 20 HP → 1x, 10 HP → 4x, 5 HP → 16x, 2 HP → 100x, 1 HP → 400x
+            // This teaches the AI that taking damage at low HP is near-fatal.
+            double maxHP = 20.0;
+            double hpRatio = maxHP / Math.max(playerHealth, 0.5);
+            double lowHpMultiplier = hpRatio * hpRatio;
+            tickPlayerDmgPenalty = healthLost * RLConfig.REWARD_PLAYER_DAMAGE_PENALTY * lowHpMultiplier;
             epRewardPlayerDamage += tickPlayerDmgPenalty;
-
-            lastDamageEpisodeTick = epTick;
             epPlayerDamageTaken += healthLost;
-            // Retroactive clawback: iterate newest→oldest (deque head=oldest, tail=newest).
-            // Descending so we can break early once entries are outside the window.
-            Iterator<double[]> clawIter = pendingAttackClawbacks.descendingIterator();
-            while (clawIter.hasNext()) {
-                double[] entry = clawIter.next();
-                int atkTick = (int) entry[0];
-                if (epTick - atkTick <= RLConfig.ANTI_TRADE_WINDOW_TICKS) {
-                    retroactiveClawback += entry[1];
-                    clawIter.remove();
-                } else {
-                    break; // Older entries are further outside the window; stop.
-                }
-            }
-            // Clean stale entries (older than window) from the head
-            while (!pendingAttackClawbacks.isEmpty()) {
-                if (epTick - (int) pendingAttackClawbacks.peekFirst()[0] > RLConfig.ANTI_TRADE_WINDOW_TICKS)
-                    pendingAttackClawbacks.pollFirst();
-                else break;
-            }
+            lastDamageEpisodeTick = epTick;
+
+            broadcastActionBar(String.format(
+                "§c⚠ AI Hurt §f-%.1f HP §7(§c%+.1f §7x%.0f§7) §f❤%.0f", healthLost, tickPlayerDmgPenalty, lowHpMultiplier, playerHealth));
+            broadcastChat(String.format(
+                "§c⚠ AI Hurt §f-%.1f HP §7| §cPenalty: %+.1f §7(x%.0f) §7| §f❤%.0f left", healthLost, tickPlayerDmgPenalty, lowHpMultiplier, playerHealth));
         }
         prevPlayerHealth = playerHealth;
 
         boolean didAttack = ActionParser.didAttackThisCycle() || ActionParser.wasRangedHit();
-        double hitDist = ObservationBuilder.getHitDistance(botPlayer, endWorld);
 
         // Build observation early so reward calc can read breath data
         float cooldownProgress = ActionParser.getCooldownProgress();
@@ -505,39 +509,17 @@ public class RLTickHandler {
         double denseReward = rewardCalc.computeDense(
             dragonHealth, playerHealth, centerDistance,
             isOverVoid, isDragonSitting, didAttack);
-        double totalReward = denseReward + tickPlayerDmgPenalty;
+        double totalReward = denseReward + tickPlayerDmgPenalty + tickShieldBlockReward;
+        tickShieldBlockReward = 0.0;
         epRewardDense += denseReward;
 
         // Ranged miss penalty
         if (ActionParser.wasRangedMiss()) {
             totalReward += RLConfig.REWARD_RANGED_MISS;
-        }
-
-        // Anti-trade: only zero/queue damage reward when bot actually attacked
-        boolean hitZeroed = false;
-        boolean hadClawback = false;
-        if (didAttack && dragonDelta > 0) {
-            if (epTick - lastDamageEpisodeTick <= RLConfig.ANTI_TRADE_WINDOW_TICKS) {
-                double dmgReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
-                if (isDragonSitting) dmgReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
-                totalReward -= dmgReward;
-                epRewardTradeZero += dmgReward;
-                hitZeroed = true;
-                epBlockedHits++;
-            } else {
-                double dmgReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
-                if (isDragonSitting) dmgReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
-                pendingAttackClawbacks.add(new double[]{epTick, dmgReward});
-            }
-        }
-
-        // Apply retroactive clawback from earlier damage-trading hits
-        if (retroactiveClawback != 0) {
-            totalReward += retroactiveClawback;
-            epRewardClawback += retroactiveClawback;
-            hadClawback = true;
-            epClawbackCount++;
-            retroactiveClawback = 0;
+            broadcastActionBar(String.format(
+                "§7🏹 Ranged Miss §c%+.1f", RLConfig.REWARD_RANGED_MISS));
+            broadcastChat(String.format(
+                "§7🏹 Ranged Miss §7| §cPenalty: %+.1f", RLConfig.REWARD_RANGED_MISS));
         }
 
         // Breath penalty
@@ -555,32 +537,21 @@ public class RLTickHandler {
             epRewardBreath += breathReward;
         }
 
-        // Collision push penalty
-        boolean wasPushed = prevHitDist < RLConfig.COLLISION_PENALTY_RANGE && hitDist > prevHitDist + 0.3;
-        if (wasPushed) {
-            totalReward += RLConfig.REWARD_COLLISION_PENALTY;
-            epRewardPush += RLConfig.REWARD_COLLISION_PENALTY;
-            DragonKiller.LOGGER.info("[PUSH] tick={} dist {}->{} penalty={}", epTick, String.format("%.2f", prevHitDist), String.format("%.2f", hitDist), String.format("%.1f", RLConfig.REWARD_COLLISION_PENALTY));
-            broadcastActionBar(String.format("§7[PUSH] -%.1f", Math.abs(RLConfig.REWARD_COLLISION_PENALTY)));
-        }
-
         // Track total damage dealt + show action bar on hit
         if (dragonDelta > 0 && dragon != null && !dragon.isDead()) {
             dragonDamageDealt += dragonDelta;
             double dmgReward = dragonDelta * RLConfig.REWARD_DRAGON_DAMAGE;
             if (isDragonSitting) dmgReward *= RLConfig.REWARD_SITTING_MULTIPLIER;
-            String tag = hitZeroed ? " §c[BLOCKED]" : (hadClawback ? " §6[CLAWBACK]" : "");
             broadcastActionBar(String.format(
-                "§cDragon §f❤%.0f §7(-%.1f) §e%s%s", dragonHealth, dragonDelta,
-                hitZeroed ? "+0.0" : String.format("+%.1f", dmgReward), tag));
-            broadcastChat(String.format("§cDragon ❤%.0f §7(-%.1f) §eReward: %s%s",
+                "§cDragon §f❤%.0f §7(-%.1f) §e+%s", dragonHealth, dragonDelta,
+                String.format("%.1f", dmgReward)));
+            broadcastChat(String.format("§cDragon ❤%.0f §7(-%.1f) §eReward: +%s",
                 dragonHealth, dragonDelta,
-                hitZeroed ? "+0.0" : String.format("+%.1f", dmgReward), tag));
+                String.format("%.1f", dmgReward)));
         }
         prevDragonHealth = dragonHealth;
 
         episodeManager.addReward(totalReward);
-        prevHitDist = hitDist;
 
         // ── Per-episode stats tracking ──────────────────────────────────────
         if (ActionParser.didAttackThisCycle()) {
@@ -633,8 +604,11 @@ public class RLTickHandler {
             tracker.addProperty("breath_ticks", epBreathTicks);
             tracker.addProperty("low_hp_ticks", epLowHpTicks);
             tracker.addProperty("min_dragon_distance", Math.round(epMinDragonDistance * 10.0) / 10.0);
-            tracker.addProperty("blocked_hits", epBlockedHits);
-            tracker.addProperty("clawback_count", epClawbackCount);
+            tracker.addProperty("blocked_hits", 0);
+            tracker.addProperty("clawback_count", 0);
+            tracker.addProperty("kiting_reward", 0.0);
+            tracker.addProperty("shield_blocks", epShieldBlocks);
+            tracker.addProperty("shield_block_reward", Math.round(epTotalShieldBlockReward * 10.0) / 10.0);
             obs.add("tracker", tracker);
         }
 
@@ -648,11 +622,10 @@ public class RLTickHandler {
             DragonKiller.LOGGER.info("[EPISODE] Episode {} ended: {} ({} ticks, total reward: {})",
                 episodeManager.getEpisodeCount(), doneInfo.reason(),
                 episodeManager.getTickCount(), String.format("%.2f", episodeManager.getTotalReward()));
-            DragonKiller.LOGGER.info("[EP_REWARD] dense={} breath={} push={} playerDmg={} trade0={} claw={} death={} total={}",
+            DragonKiller.LOGGER.info("[EP_REWARD] dense={} breath={} playerDmg={} death={} total={}",
                 String.format("%.1f", epRewardDense),
-                String.format("%.1f", epRewardBreath), String.format("%.1f", epRewardPush),
+                String.format("%.1f", epRewardBreath),
                 String.format("%.1f", epRewardPlayerDamage),
-                String.format("%.1f", epRewardTradeZero), String.format("%.1f", epRewardClawback),
                 String.format("%.1f", epRewardDeath), String.format("%.1f", episodeManager.getTotalReward()));
         }
     }
@@ -665,6 +638,9 @@ public class RLTickHandler {
             default -> 0;
         };
         playerGameModeOverrides.put(playerUuid, mode);
+        if (mode != 0) {
+            autoSpectators.remove(playerUuid);
+        }
         return switch (mode) {
             case 1 -> "§aCreative";
             case 2 -> "§eSurvival";
@@ -674,6 +650,20 @@ public class RLTickHandler {
 
     public static int getPlayerGameMode(UUID playerUuid) {
         return playerGameModeOverrides.getOrDefault(playerUuid, 0);
+    }
+
+    public static boolean toggleAutoSpectate(UUID playerUuid) {
+        if (autoSpectators.contains(playerUuid)) {
+            autoSpectators.remove(playerUuid);
+            return false;
+        } else {
+            autoSpectators.add(playerUuid);
+            return true;
+        }
+    }
+
+    public static boolean isAutoSpectating(UUID playerUuid) {
+        return autoSpectators.contains(playerUuid);
     }
 
     private static void resetStats(double dragonHealth) {
@@ -689,19 +679,30 @@ public class RLTickHandler {
         epClawbackCount = 0;
         lastDamageEpisodeTick = -100;
         regenTimer = 0;
-        retroactiveClawback = 0;
-        prevHitDist = 100.0;
+        epShieldBlocks = 0;
+        epTotalShieldBlockReward = 0.0;
+        tickShieldBlockReward = 0.0;
         epRewardDense = 0;
         epRewardBreath = 0;
-        epRewardPush = 0;
         epRewardPlayerDamage = 0;
-        epRewardClawback = 0;
-        epRewardTradeZero = 0;
         epRewardDeath = 0;
-        pendingAttackClawbacks.clear();
     }
 
     public static SocketServer getSocketServer() { return socketServer; }
     public static EpisodeManager getEpisodeManager() { return episodeManager; }
     public static int getLastDamageEpisodeTick() { return lastDamageEpisodeTick; }
+    public static BotPlayer getBotPlayer() { return botPlayer; }
+
+    public static void onShieldBlock(float amount) {
+        epShieldBlocks++;
+        double reward = RLConfig.REWARD_SHIELD_BLOCK;
+        tickShieldBlockReward += reward;
+        epTotalShieldBlockReward += reward;
+
+        broadcastActionBar(String.format(
+            "§b🛡 Shield Block! §f%.1f dmg blocked §e+%.1f", amount, reward));
+        broadcastChat(String.format(
+            "§b🛡 Shield Block! §fBlocked %.1f dmg §7| §eReward: +%.1f §7(Total: %d blocks)",
+            amount, reward, epShieldBlocks));
+    }
 }

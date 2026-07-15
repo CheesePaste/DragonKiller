@@ -28,11 +28,11 @@ class DragonEnv(gym.Env):
         self._last_tracker = {}
         self._episode_tracker = {}  # persists across reset() — stores last completed episode's tracker
 
-        # 7 continuous actions: [worldX, worldZ, yaw, pitch, attack, jump, shoot]
-        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(7,), dtype=np.float32)
+        # 8 continuous actions: [worldX, worldZ, yaw, pitch, attack, jump, shoot, shield]
+        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(8,), dtype=np.float32)
 
-        # 39-dimensional observation
-        obs_dim = 39
+        # 41-dimensional observation
+        obs_dim = 41
         self.observation_space = spaces.Box(
             low=-1.0, high=1.0, shape=(obs_dim,), dtype=np.float32
         )
@@ -74,9 +74,11 @@ class DragonEnv(gym.Env):
     def _parse_obs(self, data: dict) -> np.ndarray:
         vec = []
 
-        # ── Player state (7) ────────────────────────────────────────
+        # ── Player state (9) ────────────────────────────────────────
         p = data.get("player", {})
         vec.append(p.get("health", 20.0) / PLAYER_HEALTH_MAX)
+        vec.append(1.0 if p.get("low_health_warning", False) else 0.0)
+        vec.append(1.0 if p.get("is_blocking", False) else 0.0)
         vec.append(1.0 if p.get("on_ground", True) else 0.0)
         vel = p.get("velocity", [0, 0, 0])
         vec.append(np.clip(float(vel[0]) / VEL_BOUND, -1.0, 1.0))

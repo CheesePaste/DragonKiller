@@ -49,6 +49,9 @@ public class ActionParser {
     private static boolean rangedMissThisCycle;
     private static boolean rangedHitThisCycle;
 
+    // Shield state
+    private static boolean shieldActive;
+
 
     /** Base walk speed (vanilla ≈0.215 blocks/tick = 4.317 blocks/sec). */
     private static final double WALK_SPEED = 0.215;
@@ -79,6 +82,7 @@ public class ActionParser {
         rangedCooldown = 0;
         rangedMissThisCycle = false;
         rangedHitThisCycle = false;
+        shieldActive = false;
     }
 
     public static void execute(JsonArray actionArray, ServerPlayerEntity player, ServerWorld world) {
@@ -146,6 +150,10 @@ public class ActionParser {
             performRangedAttack(player, world);
         }
 
+        // 8. Shield
+        float aShield = actionArray.size() > 7 ? actionArray.get(7).getAsFloat() : 0.0f;
+        shieldActive = (aShield > 0.0f);
+
         freezeCounter = RLConfig.ACTION_REPEAT;
         observationSent = false;
     }
@@ -176,6 +184,17 @@ public class ActionParser {
         }
 
         player.setSprinting(sprinting);
+
+        // Active shield holding
+        if (shieldActive) {
+            if (!player.isUsingItem()) {
+                player.setCurrentHand(net.minecraft.util.Hand.OFF_HAND);
+            }
+        } else {
+            if (player.isUsingItem() && player.getActiveHand() == net.minecraft.util.Hand.OFF_HAND) {
+                player.stopUsingItem();
+            }
+        }
 
         if (freezeCounter > 0) {
             freezeCounter--;
@@ -271,11 +290,25 @@ public class ActionParser {
         double worldZ =  Math.cos(yawRad) * vz + Math.sin(yawRad) * vx;
 
         Vec3d v = player.getVelocity();
-        // If the player took damage within the last 5 ticks, let the vanilla knockback velocity handle horizontal movement.
+        double horizontalSpeedSq = v.x * v.x + v.z * v.z;
+
+        // Two-layer knockback protection:
+        // 1) Momentum check: if horizontal speed is large, the player is being launched (e.g. dragon wing).
+        //    Do NOT override with setVelocity — only apply gentle steering via addVelocity.
+        // 2) Time check: within 10 ticks of last damage, also avoid overriding (safety net).
+        //    10 ticks is long enough for the player to clear the dragon's 8-block wing hitbox.
         int epTick = RLTickHandler.getEpisodeManager().getTickCount();
         int lastDamageTick = RLTickHandler.getLastDamageEpisodeTick();
-        if (epTick - lastDamageTick <= 5) {
-            // Do not override horizontal velocity; let the knockback push them away!
+        boolean recentlyHurt = (epTick - lastDamageTick) <= 10;
+        boolean beingLaunched = horizontalSpeedSq > 0.5 * 0.5; // >0.5 blocks/tick = strong knockback
+
+        if (beingLaunched || recentlyHurt) {
+            // Apply gentle steering force instead of overriding velocity.
+            // This lets the knockback naturally push the player away while allowing
+            // minor course corrections (like dodging toward safety).
+            double steerForce = 0.02; // similar to vanilla air-control
+            player.addVelocity(worldX * steerForce, 0, worldZ * steerForce);
+            player.velocityModified = true;
         } else {
             player.setVelocity(worldX * speed, v.y, worldZ * speed);
             player.velocityModified = true;

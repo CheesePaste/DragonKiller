@@ -1,0 +1,69 @@
++ set -euo pipefail
++ CLASS_INPUT=EnderDragonEntity
+++ find_project_root
+++ local dir
++++ pwd
+++ dir=/mnt/d/Projects/MCMOD/DragonKiller
+++ [[ /mnt/d/Projects/MCMOD/DragonKiller != \/ ]]
+++ [[ /mnt/d/Projects/MCMOD/DragonKiller != '' ]]
+++ [[ -f /mnt/d/Projects/MCMOD/DragonKiller/gradle.properties ]]
+++ echo /mnt/d/Projects/MCMOD/DragonKiller
+++ return 0
++ PROJECT_ROOT=/mnt/d/Projects/MCMOD/DragonKiller
++ [[ -z /mnt/d/Projects/MCMOD/DragonKiller ]]
++ LOOM_MC_DIR=/mnt/d/Projects/MCMOD/DragonKiller/.gradle/loom-cache/minecraftMaven/net/minecraft
++ [[ ! -d /mnt/d/Projects/MCMOD/DragonKiller/.gradle/loom-cache/minecraftMaven/net/minecraft ]]
+++ grep -E '^minecraft_version=' /mnt/d/Projects/MCMOD/DragonKiller/gradle.properties
+++ cut -d= -f2
+++ tr -d '[:space:]'
++ MC_VERSION=1.20.1
++ ALL_SOURCES_JARS=()
++ IFS=
++ read -r jar
+++ find /mnt/d/Projects/MCMOD/DragonKiller/.gradle/loom-cache/minecraftMaven/net/minecraft -name '*-sources.jar'
+++ grep -F 1.20.1-
++ [[ -n /mnt/d/Projects/MCMOD/DragonKiller/.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-clientOnly-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-clientOnly-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2-sources.jar ]]
++ ALL_SOURCES_JARS+=("$jar")
++ IFS=
++ read -r jar
++ [[ -n /mnt/d/Projects/MCMOD/DragonKiller/.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-common-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-common-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2-sources.jar ]]
++ ALL_SOURCES_JARS+=("$jar")
++ IFS=
++ read -r jar
++ [[ 2 -eq 0 ]]
++ [[ 2 -eq 0 ]]
++ [[ EnderDragonEntity != *\.* ]]
++ [[ EnderDragonEntity != *\/* ]]
++ [[ EnderDragonEntity != *\$* ]]
++ SHORT_NAME=EnderDragonEntity
+++ find_in_jars EnderDragonEntity
+++ local query=EnderDragonEntity
+++ for jar in "${ALL_SOURCES_JARS[@]}"
++++ list_jar /mnt/d/Projects/MCMOD/DragonKiller/.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-clientOnly-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-clientOnly-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2-sources.jar
++++ local jar=/mnt/d/Projects/MCMOD/DragonKiller/.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-clientOnly-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-clientOnly-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2-sources.jar
++++ command -v cygpath
++++ grep -i '/EnderDragonEntity\.java'
++++ grep -v '[$]'
++++ jar tf /mnt/d/Projects/MCMOD/DragonKiller/.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-clientOnly-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-clientOnly-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2-sources.jar
++++ tr -d '\r'
++++ true
+++ local m=
+++ [[ -n '' ]]
+++ for jar in "${ALL_SOURCES_JARS[@]}"
++++ list_jar /mnt/d/Projects/MCMOD/DragonKiller/.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-common-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-common-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2-sources.jar
++++ local jar=/mnt/d/Projects/MCMOD/DragonKiller/.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-common-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-common-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2-sources.jar
++++ grep -i '/EnderDragonEntity\.java'
++++ command -v cygpath
++++ grep -v '[$]'
++++ jar tf /mnt/d/Projects/MCMOD/DragonKiller/.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-common-7a3f71a91a/1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2/minecraft-common-7a3f71a91a-1.20.1-net.fabricmc.yarn.1_20_1.1.20.1+build.10-v2-sources.jar
++++ tr -d '\r'
++++ true
+++ local m=
+++ [[ -n '' ]]
+++ return 1
+++ true
++ RESULT=
++ [[ -z '' ]]
++ echo 'ERROR: No source file found with name '\''EnderDragonEntity.java'\'''
+ERROR: No source file found with name 'EnderDragonEntity.java'
++ exit 1

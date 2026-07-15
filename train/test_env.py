@@ -34,7 +34,7 @@ def test_env(host="127.0.0.1", port=5670, retries=30):
         raise RuntimeError("No MC connection")
 
     # Check observation
-    expected_dim = 39
+    expected_dim = 41
     print(f"\nObservation shape: {obs.shape}")
     assert obs.shape == (expected_dim,), f"Expected ({expected_dim},), got {obs.shape}"
     print(f"[OK] Observation dimension = {expected_dim}")
@@ -46,8 +46,8 @@ def test_env(host="127.0.0.1", port=5670, retries=30):
 
     # Check action space
     print(f"Action space: {env.action_space}")
-    assert env.action_space.shape == (7,)
-    print(f"[OK] Action space = 7 continuous actions")
+    assert env.action_space.shape == (8,)
+    print(f"[OK] Action space = 8 continuous actions")
 
     # Run a few steps with random continuous actions
     print("\nStepping through actions...")
@@ -65,14 +65,14 @@ def test_env(host="127.0.0.1", port=5670, retries=30):
     # Print observation structure breakdown (normalized)
     print("\nObservation breakdown (all normalized to [-1, 1]):")
     sections = {
-        "player":        (0, 7),      # health, on_ground, vel_xyz, center_dx/dz (7)
-        "dragon_rel":    (7, 17),     # in_view, dragon_dx/dz, dy, hurt_time, hit_dist, hit_yaw/pitch, head_yaw/pitch (10)
-        "dragon_phase":  (17, 28),    # 11 one-hot phase (11)
-        "dragon_vel":    (28, 31),    # toward, lateral, vertical relative velocity (3)
-        "terrain":       (31, 32),    # ground_distance (1)
-        "raytrace":      (32, 33),    # dragon_in_crosshair (1)
-        "stats":         (33, 36),    # attack_cooldown, ranged_cooldown, last_hit_type (3)
-        "breath":        (36, 39),    # nearest_breath, breath_warning, breath_yaw_delta (3)
+        "player":        (0, 9),      # health, low_health_warning, is_blocking, on_ground, vel_xyz, center_dx/dz (9)
+        "dragon_rel":    (9, 19),     # in_view, dragon_dx/dz, dy, hurt_time, hit_dist, hit_yaw/pitch, head_yaw/pitch (10)
+        "dragon_phase":  (19, 30),    # 11 one-hot phase (11)
+        "dragon_vel":    (30, 33),    # toward, lateral, vertical relative velocity (3)
+        "terrain":       (33, 34),    # ground_distance (1)
+        "raytrace":      (34, 35),    # dragon_in_crosshair (1)
+        "stats":         (35, 38),    # attack_cooldown, ranged_cooldown, last_hit_type (3)
+        "breath":        (38, 41),    # nearest_breath, breath_warning, breath_yaw_delta (3)
     }
     for name, (start, end) in sections.items():
         vals = obs[start:end]

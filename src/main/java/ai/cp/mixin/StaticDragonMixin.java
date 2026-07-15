@@ -1,11 +1,10 @@
 package ai.cp.mixin;
 
 import ai.cp.config.RLConfig;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonFight;
-import net.minecraft.entity.boss.dragon.phase.PhaseType;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.gen.feature.EndPortalFeature;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,13 +21,24 @@ public class StaticDragonMixin {
     @Unique
     private boolean dragonInitialized = false;
     @Unique
-    private int initDelay = 0;
-    @Unique
-    private int settleTicks = 0;
+    private BlockPos perchPos = null;
 
-    @Inject(method = "tickMovement", at = @At("HEAD"), cancellable = true)
-    private void cancelDragonAI(CallbackInfo ci) {
-        if (RLConfig.IS_PHASE_2) return; // Phase 2: let dragon AI run freely
+    // ── MELEE_ONLY mode: mostly grounded with brief airborne windows ──
+    @Unique
+    private static final int MELEE_PERCH_TICKS = 600;     // 30 seconds grounded (melee window)
+    @Unique
+    private static final int MELEE_AIRBORNE_TICKS = 200;   // 10 seconds airborne (ranged practice)
+    @Unique
+    private static final double FLY_HEIGHT = 85.0;          // Y position when airborne
+    @Unique
+    private int cycleTimer = 0;
+    @Unique
+    private boolean airborne = false;
+
+    @Inject(method = "tickMovement", at = @At("HEAD"))
+    private void lockDragonPosition(CallbackInfo ci) {
+        // MIXED mode: let dragon AI run freely (normal vanilla behavior)
+        if (RLConfig.COMBAT_MODE == RLConfig.CombatMode.MIXED) return;
 
         EnderDragonEntity dragon = (EnderDragonEntity) (Object) this;
         if (!dragonInitialized) {
@@ -38,13 +48,8 @@ public class StaticDragonMixin {
                 EndPortalFeature.offsetOrigin(fightOrigin)
             );
 
-            // Wait for terrain/podium to load (height should be > 30 in a loaded End)
+            // Scan the block column manually if height is not loaded
             if (topPos.getY() < 30) {
-                if (++initDelay < 100) {
-                    ci.cancel(); // Freeze and wait for terrain load + podium gen
-                    return;
-                }
-                // Fallback: scan the block column manually
                 BlockPos.Mutable scanPos = new BlockPos.Mutable(0, 127, 0);
                 for (int y = 127; y >= 0; y--) {
                     scanPos.setY(y);
@@ -55,25 +60,40 @@ public class StaticDragonMixin {
                 }
             }
 
-            // Perch on top of the highest block (+1 to sit ON TOP not inside)
-            dragon.setPosition(topPos.getX() + 0.5, topPos.getY() + 1.0, topPos.getZ() + 0.5);
-            // Set sitting phase so client renders perched pose
-            dragon.getPhaseManager().setPhase(PhaseType.SITTING_SCANNING);
+            perchPos = topPos;
             dragonInitialized = true;
-            settleTicks = 30; // Let body parts settle into stable sitting pose
-            return; // Let tickMovement() run to position body parts
         }
 
-        // Let body parts settle for ~30 ticks to reach stable sitting pose
-        if (settleTicks > 0) {
-            settleTicks--;
-            return; // Don't cancel — let tickMovement() run for body part positioning
+        if (RLConfig.COMBAT_MODE == RLConfig.CombatMode.RANGED_ONLY) {
+            // Always airborne for target practice
+            dragon.setPosition(0.5, FLY_HEIGHT, 0.5);
+            dragon.setVelocity(Vec3d.ZERO);
+            dragon.velocityModified = true;
+            return;
         }
 
-        // Still update boss bar and fight state before freezing AI
-        if (this.fight != null) {
-            this.fight.updateFight(dragon);
+        // MELEE_ONLY: mostly grounded, with periodic brief airborne windows
+        cycleTimer++;
+        if (!airborne) {
+            // Currently perched — melee phase
+            if (cycleTimer >= MELEE_PERCH_TICKS) {
+                airborne = true;
+                cycleTimer = 0;
+            }
+        } else {
+            // Currently airborne — brief ranged window
+            if (cycleTimer >= MELEE_AIRBORNE_TICKS) {
+                airborne = false;
+                cycleTimer = 0;
+            }
         }
-        ci.cancel(); // Freeze dragon after settled
+
+        if (airborne) {
+            dragon.setPosition(0.5, FLY_HEIGHT, 0.5);
+        } else if (perchPos != null) {
+            dragon.setPosition(perchPos.getX() + 0.5, perchPos.getY() + 1.0, perchPos.getZ() + 0.5);
+        }
+        dragon.setVelocity(Vec3d.ZERO);
+        dragon.velocityModified = true;
     }
 }

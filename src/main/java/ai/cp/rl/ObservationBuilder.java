@@ -36,6 +36,8 @@ public class ObservationBuilder {
     private static JsonObject buildPlayer(ServerPlayerEntity player) {
         JsonObject obj = new JsonObject();
         obj.addProperty("health", player.getHealth());
+        obj.addProperty("low_health_warning", player.getHealth() < 6.0f);
+        obj.addProperty("is_blocking", player.isBlocking());
         obj.addProperty("on_ground", player.isOnGround());
         Vec3d vel = player.getVelocity();
         JsonArray v = new JsonArray();
